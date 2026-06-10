@@ -1,0 +1,100 @@
+.tableWrap {
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+  /* No horizontal scroll — table is constrained to fit. */
+}
+
+.table {
+  width: 100%;
+  table-layout: fixed; /* lock columns to declared widths so nothing pushes overflow */
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.table thead th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-text-muted);
+  padding: 10px 14px;
+  background: var(--c-bg-soft);
+  border-bottom: 1px solid var(--c-border);
+  white-space: nowrap;
+}
+
+.table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--c-border);
+  color: var(--c-text);
+  vertical-align: middle;
+  /* Wrap long content gracefully instead of forcing overflow. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table tbody tr:hover {
+  background: var(--c-bg-soft);
+}
+
+.empty {
+  text-align: center !important;
+  padding: var(--s-7) !important;
+  color: var(--c-text-faint);
+}
+
+.action_col {
+  width: 44px;
+  text-align: right;
+  white-space: nowrap;
+  padding-left: 0 !important;
+  padding-right: 8px !important;
+}
+
+.edit_btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 10px;
+  height: 30px;
+  border: 1px solid var(--c-border-strong);
+  background: var(--c-bg);
+  border-radius: var(--radius);
+  color: var(--c-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: background var(--t-fast);
+}
+.edit_btn:hover { background: var(--c-bg-soft); }
+
+@media (max-width: 640px) {
+  .hide_mobile { display: none; }
+  .edit_label { display: none; }
+
+  /* Tighten mobile padding and shrink the action button so nothing spills. */
+  .table thead th { padding: 8px 10px; }
+  .table tbody td { padding: 10px 10px; }
+
+  .action_col {
+    width: 36px;
+    padding-right: 6px !important;
+  }
+  .edit_btn {
+    padding: 0;
+    width: 30px;
+    height: 30px;
+  }
+}
