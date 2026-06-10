@@ -1,0 +1,38 @@
+/**
+ * RailBack Status Badge Component
+ * Based on Brand Guide Section 9.3
+ */
+
+.rb-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  width: fit-content;
+}
+
+.rb-status-badge-icon {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rb-status-badge--pending {
+  background-color: rgba(74, 107, 130, 0.1);
+  color: var(--color-muted-gray-blue);
+}
+
+.rb-status-badge--approved {
+  background-color: rgba(147, 205, 28, 0.1);
+  color: var(--color-relief-green);
+}
+
+.rb-status-badge--rejected {
+  background-color: rgba(217, 48, 37, 0.1);
+  color: var(--color-error-red);
+}
