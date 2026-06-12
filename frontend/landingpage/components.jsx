@@ -70,7 +70,7 @@ function BurgerMenu({ open, onClose, t, lang, setLang, loggedIn, toggleAuth, go,
     <button className={"menu__item" + (opts.active ? " active" : "")} onClick={onClick}>
       <Icon name={icon} size={21} className="ic" />
       <span>{label}</span>
-      {opts.chev !== false && <Icon name={opts.chev || "chevronRight"} size={18} stroke={2.2} color="var(--graublau)" style={{ marginLeft: "auto" }} />}
+      {opts.chev !== false && <Icon name={opts.chev || "chevronRight"} size={18} stroke={2.2} color="var(--color-muted-gray-blue)" style={{ marginLeft: "auto" }} />}
     </button>
   );
 
@@ -125,7 +125,7 @@ function PhoneMockup({ p }) {
         <div className="phone__screen">
           <div className="phone__status">
             <span>{p.time}</span>
-            <span className="sig"><Icon name="bolt" size={13} color="var(--anthrazit)" /> 100%</span>
+            <span className="sig"><Icon name="bolt" size={13} color="var(--color-text-primary)" /> 100%</span>
           </div>
           <div className="phone__body">
             <div className="phone__hi">{p.hi}</div>

@@ -8,7 +8,7 @@ function Landing({ t, go, onCheckClaim }) {
   return (
     <section className="hero">
       <div className="hero__bg"></div>
-      <div className="wrap">
+      <div className="wrap container">
         <div className="hero__grid">
           <div className="hero__copy fade-in">
             <div className="hero__mobilelogo">
@@ -19,13 +19,13 @@ function Landing({ t, go, onCheckClaim }) {
             <h1 className="h1">{t.hero.title}</h1>
             <p className="hero__sub">{t.hero.sub}</p>
             <div className="hero__cta">
-              <button className="btn btn--primary" onClick={onCheckClaim}>
+              <button className="rb-button rb-button--primary rb-button--large" onClick={onCheckClaim}>
                 <Icon name="upload" size={20} color="#fff" /> {t.hero.cta1}
               </button>
-              <button className="btn btn--secondary" onClick={() => go("faq")}>{t.hero.cta2}</button>
+              <button className="rb-button rb-button--secondary rb-button--large" onClick={() => go("faq")}>{t.hero.cta2}</button>
             </div>
             <div className="hero__tag">
-              {t.hero.tag.map((w, i) => <b key={i} style={{ color: i === 1 ? "var(--green-ink)" : "var(--blue)" }}>{w} </b>)}
+              {t.hero.tag.map((w, i) => <b key={i} style={{ color: i === 1 ? "var(--landing-green-ink)" : "var(--color-deep-trust-blue)" }}>{w} </b>)}
             </div>
             <div className="trust">
               {t.hero.trust.map((tr, i) => (
@@ -46,7 +46,7 @@ function Landing({ t, go, onCheckClaim }) {
 function FAQOverview({ t, openTopic }) {
   const icons = { ticket: "ticket", reise: "clock", anspruch: "euro", antrag: "checkCircle" };
   return (
-    <div className="wrap page fade-in">
+    <div className="wrap container page fade-in">
       <h1 className="h1 title">{t.faq.title}</h1>
       <p className="page__lead">{t.faq.lead}</p>
       <div className="faq-grid">
@@ -57,7 +57,7 @@ function FAQOverview({ t, openTopic }) {
               <span className="faq-tile__t">{tp.t}</span>
               <span className="faq-tile__d" style={{ display: "block" }}>{tp.d}</span>
             </span>
-            <Icon name="chevronRight" size={20} className="faq-tile__arrow" color="var(--graublau)" />
+            <Icon name="chevronRight" size={20} className="faq-tile__arrow" color="var(--color-muted-gray-blue)" />
           </button>
         ))}
       </div>
@@ -72,9 +72,9 @@ function FAQDetail({ t, lang, topicId, back }) {
   const [open, setOpen] = useStateS(0);
 
   return (
-    <div className="wrap page fade-in">
+    <div className="wrap container page fade-in">
       <div className="page__head">
-        <button className="back" onClick={back}>
+        <button className="rb-button rb-button--secondary rb-button--medium back" onClick={back}>
           <Icon name="arrowLeft" size={18} /> {t.faq.title}
         </button>
       </div>
@@ -108,9 +108,9 @@ function FAQDetail({ t, lang, topicId, back }) {
 /* ---------- Legal wrapper ---------- */
 function LegalPage({ t, back, children }) {
   return (
-    <div className="wrap page fade-in">
+    <div className="wrap container page fade-in">
       <div className="page__head">
-        <button className="back" onClick={back}>
+        <button className="rb-button rb-button--secondary rb-button--medium back" onClick={back}>
           <Icon name="arrowLeft" size={18} /> {t.menu.back}
         </button>
       </div>
