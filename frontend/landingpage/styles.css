@@ -70,7 +70,7 @@ a { color: inherit; }
   display: flex; align-items: center; gap: 14px; width: 100%;
   padding: 15px 14px; border: 0; background: none; cursor: pointer;
   border-radius: 12px; text-align: left; font-size: 17px; font-weight: 500; color: var(--color-text-primary);
-  transition: background .14s;
+  text-decoration: none; transition: background .14s;
 }
 .menu__item:hover { background: var(--color-warm-off-white); }
 .menu__item .ic { color: var(--color-deep-trust-blue); flex: none; }

@@ -29,7 +29,12 @@ function App() {
 
   const go = (r) => {
     setMenuOpen(false);
-    if (r === "konto" || r === "support") { showToast(t.toast.soon); return; }
+    if (r === "support") {
+      const subject = encodeURIComponent("Support-Anfrage RailBack");
+      window.location.href = `mailto:support@railback.de?subject=${subject}`;
+      return;
+    }
+    if (r === "konto") { showToast(t.toast.soon); return; }
     setRoute(r);
     setTopic(null);
     scrollTop();

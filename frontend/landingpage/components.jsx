@@ -66,13 +66,31 @@ function BurgerMenu({ open, onClose, t, lang, setLang, loggedIn, toggleAuth, go,
     window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const item = (icon, label, onClick, opts = {}) => (
-    <button className={"menu__item" + (opts.active ? " active" : "")} onClick={onClick}>
+  const itemContent = (icon, label, opts = {}) => (
+    <>
       <Icon name={icon} size={21} className="ic" />
       <span>{label}</span>
       {opts.chev !== false && <Icon name={opts.chev || "chevronRight"} size={18} stroke={2.2} color="var(--color-muted-gray-blue)" style={{ marginLeft: "auto" }} />}
-    </button>
+    </>
   );
+
+  const item = (icon, label, onClick, opts = {}) => {
+    const className = "menu__item" + (opts.active ? " active" : "");
+
+    if (opts.href) {
+      return (
+        <a className={className} href={opts.href} onClick={onClose}>
+          {itemContent(icon, label, opts)}
+        </a>
+      );
+    }
+
+    return (
+      <button className={className} onClick={onClick}>
+        {itemContent(icon, label, opts)}
+      </button>
+    );
+  };
 
   return (
     <>
@@ -89,7 +107,7 @@ function BurgerMenu({ open, onClose, t, lang, setLang, loggedIn, toggleAuth, go,
         </div>
         <div className="menu__list">
           {item("user", t.nav.konto, () => go("konto"))}
-          {item("support", t.nav.support, () => go("support"))}
+          {item("support", t.nav.support, null, { href: "mailto:support@railback.de?subject=Support-Anfrage%20RailBack" })}
           {item("globe", t.nav.sprache, () => setLangOpen(v => !v), { chev: langOpen ? "chevronDown" : "chevronRight" })}
           {langOpen && (
             <div className="lang-row">
