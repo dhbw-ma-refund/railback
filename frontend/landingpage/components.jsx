@@ -33,7 +33,7 @@ function Icon({ name, size = 24, color = "currentColor", stroke = 2, style }) {
   return <svg {...p}>{paths[name] || null}</svg>;
 }
 
-const LOGO = "assets/railback-logo.png";
+const LOGO = "../shared/assets/railback-logo.png";
 
 /* ---------- Brand lockup ---------- */
 function Brand({ onClick, name = true }) {
