@@ -1,0 +1,38 @@
+.rb-admin-shell {
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--color-warm-off-white);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-primary);
+}
+
+.rb-admin-shell__title {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-h1);
+  margin: 0 0 16px 0;
+}
+
+.rb-admin-shell__section {
+  margin-top: 24px;
+}
+
+.rb-admin-shell__section-title {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 12px 0;
+}
+
+.rb-admin-shell__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.rb-admin-shell__error {
+  color: var(--color-error-red);
+  font-size: var(--font-size-caption);
+  margin-top: 8px;
+  min-height: 1em;
+}
