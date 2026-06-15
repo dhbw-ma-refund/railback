@@ -20,14 +20,14 @@ function Icon({ name, size = 24, color = "currentColor", stroke = 2, style }) {
     globe: <><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18"/></>,
     legal: <><path d="M12 3v18"/><path d="M5 7h14"/><path d="M8 7l-3 6a3 3 0 0 0 6 0z"/><path d="M16 7l3 6a3 3 0 0 1-6 0z"/></>,
     info: <><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><line x1="12" y1="8" x2="12" y2="8.01"/></>,
-    ticket: <><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4z"/><line x1="14" y1="6" x2="14" y2="18" strokeDasharray="1 3"/></>,
+    ticket: <><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M8 9h5"/><path d="M8 12h3"/><polyline points="13.5 13.2 15.4 15 18.4 11.5"/></>,
     clock: <><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></>,
-    euro: <><path d="M16 6a6 6 0 1 0 0 12"/><line x1="4" y1="10" x2="13" y2="10"/><line x1="4" y1="14" x2="11" y2="14"/></>,
+    euro: <><path d="M4 10h12"/><path d="M4 14h9"/><path d="M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2"/></>,
     check: <polyline points="4 12 10 18 20 6"/>,
     checkCircle: <><circle cx="12" cy="12" r="9"/><polyline points="8 12 11 15 16 9"/></>,
     shield: <><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><polyline points="9 12 11 14 15 10"/></>,
     bolt: <polygon points="13 2 4 14 11 14 10 22 20 10 13 10 13 2"/>,
-    upload: <><path d="M12 16V4"/><polyline points="7 9 12 4 17 9"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></>,
+    upload: <><path d="M5 19V7a2 2 0 0 1 2-2h6l6 6v8a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M13 5v5a1 1 0 0 0 1 1h5"/><path d="M10 15h4"/><polyline points="12 17 14 15 12 13"/></>,
     image: <><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5-5L4 20"/></>,
   };
   return <svg {...p}>{paths[name] || null}</svg>;

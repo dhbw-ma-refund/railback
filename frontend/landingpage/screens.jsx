@@ -20,7 +20,7 @@ function Landing({ t, go, onCheckClaim }) {
             <p className="hero__sub">{t.hero.sub}</p>
             <div className="hero__cta">
               <button className="rb-button rb-button--primary rb-button--large" onClick={onCheckClaim}>
-                <Icon name="upload" size={20} color="#fff" /> {t.hero.cta1}
+                <Icon name="euro" size={20} color="#fff" /> {t.hero.cta1}
               </button>
               <button className="rb-button rb-button--secondary rb-button--large" onClick={() => go("faq")}>{t.hero.cta2}</button>
             </div>
