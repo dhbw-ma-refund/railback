@@ -46,10 +46,17 @@ function Brand({ onClick, name = true }) {
 }
 
 /* ---------- Header ---------- */
-function Header({ onHome, onBurger, menuOpen }) {
+function Header({ onHome, onBurger, menuOpen, showBack = false, onBack, backLabel = "Zurück" }) {
   return (
     <header className="hdr">
-      <Brand onClick={onHome} />
+      <div className="hdr__left">
+        <Brand onClick={onHome} />
+        {showBack && (
+          <button className="hdr__back rb-button rb-button--secondary rb-button--medium" onClick={onBack}>
+            <Icon name="arrowLeft" size={18} /> {backLabel}
+          </button>
+        )}
+      </div>
       <button className="burger" aria-expanded={menuOpen} aria-label="Menü" onClick={onBurger}>
         <span></span><span></span><span></span>
       </button>

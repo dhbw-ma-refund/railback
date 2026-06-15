@@ -35,6 +35,8 @@ a { color: inherit; }
 .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; border: 0; background: none; padding: 0; }
 .brand__logo { height: 40px; width: auto; display: block; }
 .brand__name { font-weight: 800; font-size: 21px; color: var(--color-deep-trust-blue); letter-spacing: -0.01em; }
+.hdr__left { display: flex; align-items: center; }
+.hdr__back { display: none; gap: 8px; }
 
 .burger {
   width: 48px; height: 48px; border-radius: 14px;
@@ -293,7 +295,20 @@ a { color: inherit; }
     border-bottom: 0;
     backdrop-filter: none;
   }
-  .hdr .brand { visibility: hidden; pointer-events: none; }
+  .hdr .brand { display: none; }
+  .hdr__left { min-width: 0; }
+  .app--impressum .hdr__back,
+  .app--rechtliches .hdr__back {
+    display: inline-flex;
+    height: 44px;
+    min-height: 44px;
+    padding: 0 16px 0 12px;
+    background: transparent;
+  }
+  .app--impressum .page__head,
+  .app--rechtliches .page__head {
+    display: none;
+  }
   .burger {
     width: 44px; height: 44px; border-radius: 0;
     background: transparent; border: 0; box-shadow: none;

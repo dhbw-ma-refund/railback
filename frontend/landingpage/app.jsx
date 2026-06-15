@@ -55,7 +55,14 @@ function App() {
 
   return (
     <div className={"app app--" + route}>
-      <Header onHome={() => go("landing")} onBurger={() => setMenuOpen(v => !v)} menuOpen={menuOpen} />
+      <Header
+        onHome={() => go("landing")}
+        onBurger={() => setMenuOpen(v => !v)}
+        menuOpen={menuOpen}
+        showBack={route === "impressum" || route === "rechtliches"}
+        onBack={() => go("landing")}
+        backLabel={t.menu.back}
+      />
       <BurgerMenu
         open={menuOpen} onClose={() => setMenuOpen(false)}
         t={t} lang={lang} setLang={setLang}
