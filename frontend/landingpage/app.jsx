@@ -52,6 +52,8 @@ function App() {
   };
 
   const onCheckClaim = () => showToast(t.toast.soon);
+  const headerBackRoutes = ["faq", "faq-detail", "impressum", "rechtliches"];
+  const headerBack = () => go(route === "faq-detail" ? "faq" : "landing");
 
   return (
     <div className={"app app--" + route}>
@@ -59,8 +61,8 @@ function App() {
         onHome={() => go("landing")}
         onBurger={() => setMenuOpen(v => !v)}
         menuOpen={menuOpen}
-        showBack={route === "impressum" || route === "rechtliches"}
-        onBack={() => go("landing")}
+        showBack={headerBackRoutes.includes(route)}
+        onBack={headerBack}
         backLabel={t.menu.back}
       />
       <BurgerMenu

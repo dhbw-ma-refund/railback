@@ -297,6 +297,8 @@ a { color: inherit; }
   }
   .hdr .brand { display: none; }
   .hdr__left { min-width: 0; }
+  .app--faq .hdr__back,
+  .app--faq-detail .hdr__back,
   .app--impressum .hdr__back,
   .app--rechtliches .hdr__back {
     display: inline-flex;
@@ -305,6 +307,7 @@ a { color: inherit; }
     padding: 0 16px 0 12px;
     background: transparent;
   }
+  .app--faq-detail .page__head,
   .app--impressum .page__head,
   .app--rechtliches .page__head {
     display: none;
