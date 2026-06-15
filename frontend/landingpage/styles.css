@@ -450,11 +450,65 @@ a { color: inherit; }
   }
   .hero__cta .rb-button svg { display: none; }
   .hero__mobilelogo { display: flex; }
-  .faq-grid { grid-template-columns: 1fr; }
+  .app--faq .page,
+  .app--faq-detail .page {
+    padding: 24px clamp(22px, 6vw, 34px) 58px;
+  }
+  .app--faq .page h1.title,
+  .app--faq-detail .page h1.title {
+    margin-top: 0;
+    font-size: 30px;
+    line-height: 1.18;
+  }
+  .app--faq .page__lead,
+  .app--faq-detail .page__lead {
+    margin-bottom: 24px;
+    font-size: 15.5px;
+    line-height: 1.45;
+  }
+  .faq-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .faq-tile {
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 10px;
+  }
+  .faq-tile__ic {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+  .faq-tile__t { font-size: 16.5px; }
+  .faq-tile__d { font-size: 13.5px; line-height: 1.35; }
+  .app--faq-detail .imgph {
+    margin: 0 0 14px;
+    min-height: 132px;
+  }
+  .qa-wrap { gap: 12px; }
+  .qa { border-radius: 10px; }
+  .qa__q {
+    padding: 16px;
+    gap: 12px;
+    font-size: 15.5px;
+    line-height: 1.35;
+  }
+  .qa__a-inner {
+    padding: 0 16px 16px 54px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
   .foot__links { margin-left: 0; width: 100%; }
 }
 @media (max-width: 420px) {
   .container { padding: 0 28px; }
+  .app--faq .page,
+  .app--faq-detail .page {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
   .hero__mobilelogo { margin-bottom: 38px; }
   .hero h1 { font-size: 23px; }
   .hero__sub { font-size: 15px; }
