@@ -2,11 +2,28 @@
    RailBack — App (Routing, Login-State, Sprache)
    ============================================================ */
 const { useState: useStateA, useEffect: useEffectA, useRef: useRefA } = React;
+const ROUTES = ["landing", "faq", "faq-detail", "impressum", "rechtliches"];
+const FAQ_TOPIC_IDS = ["ticket", "reise", "anspruch", "antrag"];
+
+function getInitialView() {
+  const savedRoute = localStorage.getItem("rb_route");
+  const savedTopic = localStorage.getItem("rb_topic");
+  const route = ROUTES.includes(savedRoute) ? savedRoute : "landing";
+
+  if (route === "faq-detail") {
+    return FAQ_TOPIC_IDS.includes(savedTopic)
+      ? { route, topic: savedTopic }
+      : { route: "faq", topic: null };
+  }
+
+  return { route, topic: null };
+}
 
 function App() {
+  const initialView = getInitialView();
   const [lang, setLangRaw] = useStateA(() => localStorage.getItem("rb_lang") || "de");
-  const [route, setRoute] = useStateA("landing");      // landing | faq | faq-detail | impressum | rechtliches
-  const [topic, setTopic] = useStateA(null);
+  const [route, setRoute] = useStateA(initialView.route);      // landing | faq | faq-detail | impressum | rechtliches
+  const [topic, setTopic] = useStateA(initialView.topic);
   const [menuOpen, setMenuOpen] = useStateA(false);
   const [loggedIn, setLoggedIn] = useStateA(false);
   const [toast, setToast] = useStateA(null);
@@ -18,6 +35,14 @@ function App() {
   const setLang = (l) => { setLangRaw(l); localStorage.setItem("rb_lang", l); };
 
   useEffectA(() => { document.documentElement.lang = lang; }, [lang]);
+  useEffectA(() => {
+    localStorage.setItem("rb_route", route);
+    if (route === "faq-detail" && topic) {
+      localStorage.setItem("rb_topic", topic);
+    } else {
+      localStorage.removeItem("rb_topic");
+    }
+  }, [route, topic]);
 
   const showToast = (msg) => {
     setToast(msg);

@@ -114,6 +114,7 @@ function BurgerMenu({ open, onClose, t, lang, setLang, loggedIn, toggleAuth, go,
         </div>
         <div className="menu__list">
           {item("user", t.nav.konto, () => go("konto"))}
+          {item("info", t.nav.faq, () => go("faq"), { active: route === "faq" || route === "faq-detail" })}
           {item("support", t.nav.support, null, { href: "mailto:support@railback.de?subject=Support-Anfrage%20RailBack" })}
           {item("globe", t.nav.sprache, () => setLangOpen(v => !v), { chev: langOpen ? "chevronDown" : "chevronRight" })}
           {langOpen && (

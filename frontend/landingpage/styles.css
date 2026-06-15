@@ -35,11 +35,12 @@ a { color: inherit; }
 .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; border: 0; background: none; padding: 0; }
 .brand__logo { height: 40px; width: auto; display: block; }
 .brand__name { font-weight: 800; font-size: 21px; color: var(--color-deep-trust-blue); letter-spacing: -0.01em; }
-.hdr__left { display: flex; align-items: center; }
+.hdr__left { display: flex; align-items: center; flex: 1 1 auto; min-width: 0; }
 .hdr__back { display: none; gap: 8px; }
 
 .burger {
   width: 48px; height: 48px; border-radius: 14px;
+  flex: 0 0 48px;
   position: relative;
   display: block;
   padding: 0;
