@@ -13,7 +13,7 @@ function ImpressumBody() {
         Musterstraße 1a<br/>
         D-68163 Mannheim<br/>
         Tel.: +49 261 89428<br/>
-        E-Mail: hallo@railback.de
+        E-Mail: support@railback.de
       </address>
 
       <h3>Geschäftsführung</h3>
@@ -23,7 +23,7 @@ function ImpressumBody() {
       <p className="meta">Mannheim, eingetragen beim Amtsgericht Mannheim unter HRB XXXX.</p>
 
       <h3>Umsatzsteuer-Identifikationsnummer</h3>
-      <p className="meta">gemäß § 27 a Umsatzsteuergesetz: DE 897529687</p>
+      <p className="meta">gemäß § 27 a Umsatzsteuergesetz: MusterUmsatzID</p>
 
       <h3>Verantwortlich für den Inhalt</h3>
       <p className="meta">Dr. Vorname Nachname (Anschrift wie oben)</p>
