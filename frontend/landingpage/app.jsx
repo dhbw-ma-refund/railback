@@ -54,7 +54,7 @@ function App() {
   const onCheckClaim = () => showToast(t.toast.soon);
 
   return (
-    <div className="app">
+    <div className={"app app--" + route}>
       <Header onHome={() => go("landing")} onBurger={() => setMenuOpen(v => !v)} menuOpen={menuOpen} />
       <BurgerMenu
         open={menuOpen} onClose={() => setMenuOpen(false)}
