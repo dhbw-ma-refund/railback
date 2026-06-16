@@ -1,7 +1,6 @@
 /* ============================================================
    RailBack — Inhalte & i18n
-   UI/Hero/FAQ zweisprachig (DE/EN). Lange Rechtstexte (Impressum,
-   AGB, Datenschutz) bleiben juristisch korrekt auf Deutsch.
+   UI/Hero/FAQ und Rechtstexte zweisprachig (DE/EN).
    ============================================================ */
 
 const I18N = {

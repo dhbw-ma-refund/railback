@@ -100,8 +100,8 @@ function App() {
         {route === "landing" && <Landing t={t} go={go} onCheckClaim={onCheckClaim} />}
         {route === "faq" && <FAQOverview t={t} openTopic={openTopic} />}
         {route === "faq-detail" && topic && <FAQDetail t={t} lang={lang} topicId={topic} back={() => go("faq")} />}
-        {route === "impressum" && <LegalPage t={t} back={() => go("landing")}><ImpressumBody /></LegalPage>}
-        {route === "rechtliches" && <LegalPage t={t} back={() => go("landing")}><RechtlichesBody /></LegalPage>}
+        {route === "impressum" && <LegalPage t={t} back={() => go("landing")}><ImpressumBody lang={lang} /></LegalPage>}
+        {route === "rechtliches" && <LegalPage t={t} back={() => go("landing")}><RechtlichesBody lang={lang} /></LegalPage>}
       </main>
 
       <Footer t={t} go={go} />

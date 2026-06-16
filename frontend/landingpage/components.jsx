@@ -22,7 +22,7 @@ function Icon({ name, size = 24, color = "currentColor", stroke = 2, style }) {
     info: <><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><line x1="12" y1="8" x2="12" y2="8.01"/></>,
     ticket: <><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M8 9h5"/><path d="M8 12h3"/><polyline points="13.5 13.2 15.4 15 18.4 11.5"/></>,
     clock: <><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></>,
-    euro: <><path d="M4 10h12"/><path d="M4 14h9"/><path d="M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2"/></>,
+    euro: <path fill="currentColor" stroke="none" d="M15 21q-2.95 0-5.25-1.675T6.5 15H3v-2h3.05Q5.975 12.4 5.988 11.888T6.05 11H3V9h3.5q.95-2.65 3.25-4.325T15 3q1.725 0 3.263.613T21 5.3l-1.425 1.4q-.925-.8-2.087-1.25T15 5q-2.125 0-3.8 1.113T8.675 9H15v2H8.075q-.1.675-.075 1.188t.075.812H15v2H8.675q.85 1.775 2.525 2.888T15 19q1.325 0 2.488-.45t2.087-1.25L21 18.7q-1.2 1.075-2.738 1.688T15 21Z"/>,
     check: <polyline points="4 12 10 18 20 6"/>,
     checkCircle: <><circle cx="12" cy="12" r="9"/><polyline points="8 12 11 15 16 9"/></>,
     shield: <><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><polyline points="9 12 11 14 15 10"/></>,
