@@ -98,7 +98,7 @@ function App() {
 
       <main className="main" ref={mainRef}>
         {route === "landing" && <Landing t={t} go={go} onCheckClaim={onCheckClaim} />}
-        {route === "faq" && <FAQOverview t={t} openTopic={openTopic} />}
+        {route === "faq" && <FAQOverview t={t} openTopic={openTopic} back={() => go("landing")} />}
         {route === "faq-detail" && topic && <FAQDetail t={t} lang={lang} topicId={topic} back={() => go("faq")} />}
         {route === "impressum" && <LegalPage t={t} back={() => go("landing")}><ImpressumBody lang={lang} /></LegalPage>}
         {route === "rechtliches" && <LegalPage t={t} back={() => go("landing")}><RechtlichesBody lang={lang} /></LegalPage>}

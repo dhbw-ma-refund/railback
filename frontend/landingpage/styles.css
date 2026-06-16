@@ -323,6 +323,7 @@ a { color: inherit; }
     padding: 0 16px 0 12px;
     background: transparent;
   }
+  .app--faq .page__head,
   .app--faq-detail .page__head,
   .app--impressum .page__head,
   .app--rechtliches .page__head {

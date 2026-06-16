@@ -43,10 +43,15 @@ function Landing({ t, go, onCheckClaim }) {
 }
 
 /* ---------- FAQ overview ---------- */
-function FAQOverview({ t, openTopic }) {
+function FAQOverview({ t, openTopic, back }) {
   const icons = { ticket: "ticket", reise: "clock", anspruch: "euro", antrag: "checkCircle" };
   return (
     <div className="wrap container page fade-in">
+      <div className="page__head">
+        <button className="rb-button rb-button--secondary rb-button--medium back" onClick={back}>
+          <Icon name="arrowLeft" size={18} /> {t.menu.back}
+        </button>
+      </div>
       <h1 className="h1 title">{t.faq.title}</h1>
       <p className="page__lead">{t.faq.lead}</p>
       <div className="faq-grid">
