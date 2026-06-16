@@ -1,0 +1,101 @@
+.root {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--rb-space-2);
+  min-height: var(--rb-touch-target-min);
+  padding: var(--rb-space-1) 0;
+  cursor: pointer;
+  font-family: var(--rb-font-family-base);
+  font-size: var(--rb-font-size-body);
+  line-height: var(--rb-line-height-body);
+  color: var(--rb-color-anthrazit);
+}
+
+.root.disabled {
+  cursor: not-allowed;
+  color: var(--rb-color-disabled-fg);
+}
+
+.input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.dot {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--rb-color-border);
+  border-radius: 50%;
+  background-color: var(--rb-color-surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  transition:
+    border-color var(--rb-transition-fast),
+    box-shadow var(--rb-transition-fast);
+}
+
+.dot::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--rb-color-deep-trust-blue);
+  transform: scale(0);
+  transition: transform var(--rb-transition-fast);
+}
+
+.input:focus-visible + .dot {
+  border-color: var(--rb-color-deep-trust-blue);
+  box-shadow: var(--rb-focus-ring);
+}
+
+.input:checked + .dot {
+  border-color: var(--rb-color-deep-trust-blue);
+  border-width: 2px;
+}
+
+.input:checked + .dot::after {
+  transform: scale(1);
+}
+
+.input:disabled + .dot {
+  background-color: var(--rb-color-disabled-bg);
+  border-color: var(--rb-color-disabled-bg);
+}
+
+.input:disabled + .dot::after {
+  background-color: var(--rb-color-disabled-fg);
+}
+
+.error .dot {
+  border-color: var(--rb-color-error);
+  border-width: 2px;
+}
+
+.error .input:focus-visible + .dot {
+  box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.2);
+}
+
+/* --- RadioGroup -------------------------------------------------------- */
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rb-space-2);
+}
+
+.groupHorizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--rb-space-3);
+}
