@@ -1,0 +1,36 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rb-space-2);
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font-family: var(--rb-font-family-base);
+}
+
+.legend {
+  display: block;
+  font-size: var(--rb-font-size-body);
+  font-weight: var(--rb-font-weight-semibold);
+  color: var(--rb-color-anthrazit);
+  line-height: var(--rb-line-height-body);
+  margin: 0;
+  padding: 0;
+}
+
+.required {
+  color: var(--rb-color-error);
+  margin-left: 2px;
+}
+
+.hint {
+  font-size: var(--rb-font-size-caption);
+  line-height: var(--rb-line-height-caption);
+  color: var(--rb-color-graublau);
+}
+
+.error {
+  font-size: var(--rb-font-size-caption);
+  line-height: var(--rb-line-height-caption);
+  color: var(--rb-color-error);
+}

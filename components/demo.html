@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RailBack — Form Primitives Demo</title>
+
+    <!--
+      Standalone-Demo. Lädt React + Babel von esm.sh und bindet die Komponenten-
+      CSS-Dateien direkt ein. Doppelklick auf die Datei genügt — kein Build.
+
+      Wichtig: CSS Modules werden im Browser nicht aufgelöst. Daher liegen die
+      *.module.css hier als globale CSS-Dateien an. Die Klassennamen darin
+      stimmen 1:1 mit denen, die die Komponenten erzeugen, weil wir die
+      Komponenten-Logik in dieser Datei direkt nachbauen statt aus den .tsx-
+      Dateien zu importieren. Reine Vorschau — keine Verifikation der Imports.
+    -->
+
+    <link rel="stylesheet" href="./tokens.css" />
+    <link rel="stylesheet" href="./field.module.css" />
+    <link rel="stylesheet" href="./Button.module.css" />
+    <link rel="stylesheet" href="./Input.module.css" />
+    <link rel="stylesheet" href="./Textarea.module.css" />
+    <link rel="stylesheet" href="./Select.module.css" />
+    <link rel="stylesheet" href="./Checkbox.module.css" />
+    <link rel="stylesheet" href="./Radio.module.css" />
+    <link rel="stylesheet" href="./FormField.module.css" />
+    <link rel="stylesheet" href="./FieldSet.module.css" />
+
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--rb-color-background);
+        color: var(--rb-color-anthrazit);
+        font-family: var(--rb-font-family-base);
+        font-size: var(--rb-font-size-body);
+        line-height: var(--rb-line-height-body);
+      }
+
+      .demo-shell {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: var(--rb-space-5) var(--rb-space-3);
+      }
+
+      .demo-h1 {
+        font-size: var(--rb-font-size-h1);
+        font-weight: var(--rb-font-weight-bold);
+        line-height: var(--rb-line-height-heading);
+        color: var(--rb-color-deep-trust-blue);
+        margin: 0 0 var(--rb-space-2);
+      }
+
+      .demo-lead {
+        font-size: var(--rb-font-size-body);
+        color: var(--rb-color-graublau);
+        margin: 0 0 var(--rb-space-5);
+      }
+
+      .demo-section {
+        background-color: var(--rb-color-surface);
+        border-radius: var(--rb-radius-card);
+        box-shadow: var(--rb-shadow-soft);
+        padding: var(--rb-space-4);
+        margin-bottom: var(--rb-space-4);
+      }
+
+      .demo-section h2 {
+        font-size: var(--rb-font-size-h2);
+        font-weight: var(--rb-font-weight-bold);
+        line-height: var(--rb-line-height-heading);
+        color: var(--rb-color-deep-trust-blue);
+        margin: 0 0 var(--rb-space-1);
+      }
+
+      .demo-section p.note {
+        font-size: var(--rb-font-size-caption);
+        color: var(--rb-color-graublau);
+        margin: 0 0 var(--rb-space-3);
+      }
+
+      .demo-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--rb-space-3);
+        align-items: flex-start;
+      }
+
+      .demo-stack {
+        display: flex;
+        flex-direction: column;
+        gap: var(--rb-space-3);
+      }
+
+      .demo-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--rb-space-3);
+      }
+      @media (min-width: 640px) {
+        .demo-grid-2 {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .demo-state-label {
+        font-size: var(--rb-font-size-caption);
+        color: var(--rb-color-graublau);
+        margin-bottom: var(--rb-space-1);
+      }
+
+      .demo-summary {
+        margin-top: var(--rb-space-3);
+        padding: var(--rb-space-3);
+        background-color: var(--rb-color-soft-beige);
+        border-radius: var(--rb-radius-input);
+        font-size: var(--rb-font-size-caption);
+        color: var(--rb-color-anthrazit);
+        white-space: pre-wrap;
+        font-family:
+          ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      }
+    </style>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.3.1",
+          "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+          "react-dom/client": "https://esm.sh/react-dom@18.3.1/client"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="module">
+      import { createRoot } from "react-dom/client";
+      import {
+        Children,
+        cloneElement,
+        forwardRef,
+        isValidElement,
+        useId,
+        useState,
+      } from "react";
+      import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+
+      // Tiny JSX-Helper, damit wir ohne Babel auskommen.
+      const h = (type, props, ...children) => {
+        const flat = children.flat();
+        const finalProps = { ...(props ?? {}) };
+        if (flat.length === 1) finalProps.children = flat[0];
+        else if (flat.length > 1) finalProps.children = flat;
+        return (flat.length > 1 ? jsxs : jsx)(type, finalProps);
+      };
+
+      // ------------------------------------------------------------------
+      // Komponenten — 1:1-Spiegelung der .tsx-Dateien, nur in JS und mit
+      // den globalen CSS-Klassennamen (statt CSS-Modules-Hashes).
+      // ------------------------------------------------------------------
+
+      const cn = (...parts) => parts.filter(Boolean).join(" ");
+
+      const Button = forwardRef(function Button(
+        {
+          variant = "primary",
+          size = "md",
+          block = false,
+          leadingIcon,
+          trailingIcon,
+          type = "button",
+          className,
+          children,
+          ...rest
+        },
+        ref,
+      ) {
+        const sizeClass = { sm: "size-sm", md: "size-md", lg: "size-lg" }[size];
+        return h(
+          "button",
+          {
+            ref,
+            type,
+            className: cn(
+              "button",
+              variant,
+              sizeClass,
+              block && "block",
+              className,
+            ),
+            ...rest,
+          },
+          leadingIcon,
+          children,
+          trailingIcon,
+        );
+      });
+
+      const Input = forwardRef(function Input(
+        { invalid = false, type = "text", className, ...rest },
+        ref,
+      ) {
+        return h("input", {
+          ref,
+          type,
+          "aria-invalid": invalid || undefined,
+          className: cn(invalid ? "fieldError" : "field", className),
+          ...rest,
+        });
+      });
+
+      const Textarea = forwardRef(function Textarea(
+        { invalid = false, rows = 4, className, ...rest },
+        ref,
+      ) {
+        return h("textarea", {
+          ref,
+          rows,
+          "aria-invalid": invalid || undefined,
+          className: cn(
+            invalid ? "fieldError" : "field",
+            "textarea-resize",
+            className,
+          ),
+          style: { resize: "vertical", minHeight: "96px" },
+          ...rest,
+        });
+      });
+
+      const Select = forwardRef(function Select(
+        { invalid = false, className, children, ...rest },
+        ref,
+      ) {
+        return h(
+          "span",
+          { className: "wrapper", style: { position: "relative", display: "block", width: "100%" } },
+          h(
+            "select",
+            {
+              ref,
+              "aria-invalid": invalid || undefined,
+              className: cn(invalid ? "fieldError" : "field", className),
+              style: {
+                appearance: "none",
+                WebkitAppearance: "none",
+                MozAppearance: "none",
+                paddingRight: "var(--rb-space-5)",
+                backgroundImage: "none",
+              },
+              ...rest,
+            },
+            children,
+          ),
+          h(
+            "span",
+            {
+              "aria-hidden": "true",
+              style: {
+                position: "absolute",
+                top: "50%",
+                right: "var(--rb-space-3)",
+                transform: "translateY(-50%)",
+                pointerEvents: "none",
+                color: "var(--rb-color-deep-trust-blue)",
+                display: "flex",
+                alignItems: "center",
+              },
+            },
+            h(
+              "svg",
+              {
+                width: "16",
+                height: "16",
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                strokeWidth: "2",
+                strokeLinecap: "round",
+                strokeLinejoin: "round",
+              },
+              h("polyline", { points: "6 9 12 15 18 9" }),
+            ),
+          ),
+        );
+      });
+
+      const Checkbox = forwardRef(function Checkbox(
+        { label, invalid = false, disabled, className, ...rest },
+        ref,
+      ) {
+        return h(
+          "label",
+          {
+            className: cn(
+              "root",
+              invalid && "error",
+              disabled && "disabled",
+              className,
+            ),
+          },
+          h("input", {
+            ref,
+            type: "checkbox",
+            disabled,
+            "aria-invalid": invalid || undefined,
+            className: "input",
+            ...rest,
+          }),
+          h(
+            "span",
+            { className: "box", "aria-hidden": "true" },
+            h(
+              "svg",
+              {
+                className: "check",
+                width: "14",
+                height: "14",
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                strokeWidth: "3",
+                strokeLinecap: "round",
+                strokeLinejoin: "round",
+              },
+              h("polyline", { points: "5 12 10 17 19 7" }),
+            ),
+          ),
+          h("span", null, label),
+        );
+      });
+
+      const Radio = forwardRef(function Radio(
+        { label, invalid = false, disabled, className, ...rest },
+        ref,
+      ) {
+        return h(
+          "label",
+          {
+            className: cn(
+              "root",
+              invalid && "error",
+              disabled && "disabled",
+              className,
+            ),
+          },
+          h("input", {
+            ref,
+            type: "radio",
+            disabled,
+            "aria-invalid": invalid || undefined,
+            className: "input",
+            ...rest,
+          }),
+          h("span", { className: "dot", "aria-hidden": "true" }),
+          h("span", null, label),
+        );
+      });
+
+      function RadioGroup({
+        name,
+        children,
+        horizontal = false,
+        className,
+        ...rest
+      }) {
+        const patched = Children.map(children, (child) => {
+          if (!isValidElement(child)) return child;
+          if (child.type !== Radio) return child;
+          if (child.props.name) return child;
+          return cloneElement(child, { name });
+        });
+        return h(
+          "div",
+          {
+            role: "radiogroup",
+            className: cn("group", horizontal && "groupHorizontal", className),
+            ...rest,
+          },
+          patched,
+        );
+      }
+
+      function FormField({
+        label,
+        hint,
+        error,
+        required = false,
+        optional = false,
+        htmlFor,
+        children,
+        className,
+      }) {
+        const reactId = useId();
+        const child = Children.only(children);
+        const childProps = child.props;
+        const controlId = htmlFor ?? childProps.id ?? `rb-field-${reactId}`;
+        const hintId = hint ? `${controlId}-hint` : undefined;
+        const errorId = error ? `${controlId}-error` : undefined;
+        const describedBy =
+          [childProps["aria-describedby"], hintId, errorId]
+            .filter(Boolean)
+            .join(" ") || undefined;
+
+        const childWithProps = cloneElement(child, {
+          id: controlId,
+          "aria-describedby": describedBy,
+          invalid: error ? true : childProps.invalid,
+          required: required || childProps.required,
+        });
+
+        return h(
+          "div",
+          { className: cn("root", "form-field-root", className) },
+          h(
+            "label",
+            { htmlFor: controlId, className: "label" },
+            label,
+            required &&
+              h("span", { className: "required", "aria-hidden": "true" }, "*"),
+            optional &&
+              !required &&
+              h("span", { className: "optional" }, "(optional)"),
+          ),
+          childWithProps,
+          hint && h("span", { id: hintId, className: "hint" }, hint),
+          error &&
+            h(
+              "span",
+              { id: errorId, className: "error", role: "alert" },
+              h(
+                "svg",
+                {
+                  className: "errorIcon",
+                  width: "14",
+                  height: "14",
+                  viewBox: "0 0 24 24",
+                  fill: "none",
+                  stroke: "currentColor",
+                  strokeWidth: "2.5",
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round",
+                  "aria-hidden": "true",
+                },
+                h("circle", { cx: "12", cy: "12", r: "10" }),
+                h("line", { x1: "12", y1: "7", x2: "12", y2: "13" }),
+                h("line", { x1: "12", y1: "16.5", x2: "12", y2: "17" }),
+              ),
+              error,
+            ),
+        );
+      }
+
+      function FieldSet({
+        legend,
+        hint,
+        error,
+        required = false,
+        children,
+        className,
+      }) {
+        const id = useId();
+        const hintId = hint ? `rb-fs-${id}-hint` : undefined;
+        const errorId = error ? `rb-fs-${id}-error` : undefined;
+        const describedBy =
+          [hintId, errorId].filter(Boolean).join(" ") || undefined;
+
+        return h(
+          "fieldset",
+          {
+            className: cn("root", "fieldset-root", className),
+            "aria-describedby": describedBy,
+          },
+          h(
+            "legend",
+            { className: "legend" },
+            legend,
+            required &&
+              h("span", { className: "required", "aria-hidden": "true" }, "*"),
+          ),
+          children,
+          hint && h("span", { id: hintId, className: "hint" }, hint),
+          error &&
+            h(
+              "span",
+              { id: errorId, className: "error", role: "alert" },
+              error,
+            ),
+        );
+      }
+
+      // ------------------------------------------------------------------
+      // CSS-Klassen-Konflikt: Checkbox/Radio nutzen `.root`, FormField/
+      // FieldSet ebenfalls. Im echten Build sind die Klassen via CSS-Modules
+      // gescoped, hier sind sie global. Wir disambiguieren über zusätzliche
+      // Helfer-Klassen + eine kleine Override-Style-Schicht weiter unten.
+      // ------------------------------------------------------------------
+
+      // ------------------------------------------------------------------
+      // Demo-Page
+      // ------------------------------------------------------------------
+
+      function Section({ title, note, children }) {
+        return h(
+          "section",
+          { className: "demo-section" },
+          h("h2", null, title),
+          note && h("p", { className: "note" }, note),
+          children,
+        );
+      }
+
+      function StateRow({ label, children }) {
+        return h(
+          "div",
+          { className: "demo-stack", style: { flex: "1 1 220px" } },
+          h("span", { className: "demo-state-label" }, label),
+          children,
+        );
+      }
+
+      function App() {
+        const [name, setName] = useState("Jonas");
+        const [email, setEmail] = useState("not-an-email");
+        const [note, setNote] = useState("");
+        const [status, setStatus] = useState("");
+        const [refundType, setRefundType] = useState("partial");
+        const [confirm, setConfirm] = useState(false);
+        const [submitted, setSubmitted] = useState(null);
+
+        const emailError =
+          email && !email.includes("@")
+            ? "Bitte eine gültige E-Mail eingeben."
+            : "";
+        const statusError = !status ? "Bitte einen Status wählen." : "";
+
+        return h(
+          "main",
+          { className: "demo-shell" },
+          h("h1", { className: "demo-h1" }, "RailBack — Form Primitives"),
+          h(
+            "p",
+            { className: "demo-lead" },
+            "Vorschau aller Komponenten in den relevanten Zuständen. Die Reihenfolge folgt der Library, nicht einer realen Admin-Maske.",
+          ),
+
+          // --- Buttons -----------------------------------------------------
+          h(
+            Section,
+            {
+              title: "Buttons",
+              note: "Pillenförmig, Touch-Target ≥ 44 px. Primary für die Hauptaktion, Secondary für Begleitaktionen.",
+            },
+            h(
+              "div",
+              { className: "demo-row" },
+              h(
+                StateRow,
+                { label: "Primary" },
+                h(Button, null, "Antrag senden"),
+                h(Button, { disabled: true }, "Disabled"),
+              ),
+              h(
+                StateRow,
+                { label: "Secondary" },
+                h(Button, { variant: "secondary" }, "Später erledigen"),
+                h(
+                  Button,
+                  { variant: "secondary", disabled: true },
+                  "Disabled",
+                ),
+              ),
+              h(
+                StateRow,
+                { label: "Größen" },
+                h(Button, { size: "sm" }, "Klein"),
+                h(Button, { size: "md" }, "Standard"),
+                h(Button, { size: "lg" }, "Groß"),
+              ),
+              h(
+                StateRow,
+                { label: "Block" },
+                h(Button, { block: true }, "Volle Breite"),
+              ),
+            ),
+          ),
+
+          // --- Inputs ------------------------------------------------------
+          h(
+            Section,
+            {
+              title: "Input",
+              note: "Default, Hover, Focus (klick rein), Error, Disabled. Radius 12 px, Border-Wechsel ohne Layout-Sprung.",
+            },
+            h(
+              "div",
+              { className: "demo-grid-2" },
+              h(
+                FormField,
+                {
+                  label: "Vorname",
+                  hint: "Wird im Antrag verwendet.",
+                  required: true,
+                },
+                h(Input, {
+                  value: name,
+                  onChange: (e) => setName(e.target.value),
+                  placeholder: "z. B. Jonas",
+                  autoComplete: "given-name",
+                }),
+              ),
+              h(
+                FormField,
+                {
+                  label: "E-Mail",
+                  optional: true,
+                  error: emailError || undefined,
+                },
+                h(Input, {
+                  type: "email",
+                  value: email,
+                  onChange: (e) => setEmail(e.target.value),
+                  placeholder: "name@beispiel.de",
+                  autoComplete: "email",
+                }),
+              ),
+              h(
+                FormField,
+                { label: "Auszahlungsbetrag", hint: "In Euro, ohne Cent." },
+                h(Input, {
+                  type: "number",
+                  defaultValue: "24",
+                  inputMode: "numeric",
+                }),
+              ),
+              h(
+                FormField,
+                { label: "Inaktiv" },
+                h(Input, {
+                  defaultValue: "Nicht editierbar",
+                  disabled: true,
+                }),
+              ),
+            ),
+          ),
+
+          // --- Textarea ----------------------------------------------------
+          h(
+            Section,
+            {
+              title: "Textarea",
+              note: "Vertikal resizable, Default-Höhe ≥ 96 px.",
+            },
+            h(
+              "div",
+              { className: "demo-grid-2" },
+              h(
+                FormField,
+                {
+                  label: "Notiz an die Bahn",
+                  hint: "Maximal 500 Zeichen.",
+                  optional: true,
+                },
+                h(Textarea, {
+                  value: note,
+                  onChange: (e) => setNote(e.target.value),
+                  placeholder: "Optional — was ist passiert?",
+                }),
+              ),
+              h(
+                FormField,
+                {
+                  label: "Mit Fehler",
+                  error: "Bitte eine Begründung angeben.",
+                },
+                h(Textarea, { defaultValue: "" }),
+              ),
+            ),
+          ),
+
+          // --- Select ------------------------------------------------------
+          h(
+            Section,
+            {
+              title: "Select",
+              note: "Native Mobile-/Desktop-Picker, eigener Caret rechts.",
+            },
+            h(
+              "div",
+              { className: "demo-grid-2" },
+              h(
+                FormField,
+                {
+                  label: "Status",
+                  required: true,
+                  error: statusError || undefined,
+                },
+                h(
+                  Select,
+                  {
+                    value: status,
+                    onChange: (e) => setStatus(e.target.value),
+                  },
+                  h(
+                    "option",
+                    { value: "", disabled: true },
+                    "Bitte wählen",
+                  ),
+                  h("option", { value: "pending" }, "In Prüfung"),
+                  h("option", { value: "approved" }, "Bewilligt"),
+                  h("option", { value: "rejected" }, "Abgelehnt"),
+                ),
+              ),
+              h(
+                FormField,
+                { label: "Inaktiv" },
+                h(
+                  Select,
+                  { disabled: true, defaultValue: "x" },
+                  h("option", { value: "x" }, "Gesperrt"),
+                ),
+              ),
+            ),
+          ),
+
+          // --- Checkbox ----------------------------------------------------
+          h(
+            Section,
+            {
+              title: "Checkbox",
+              note: "Eigener Visual-Layer über nativem Input. Tastatur (Space) und Form-Reset funktionieren nativ.",
+            },
+            h(
+              "div",
+              { className: "demo-stack" },
+              h(Checkbox, {
+                label: "Yes, I'm sure",
+                checked: confirm,
+                onChange: (e) => setConfirm(e.target.checked),
+              }),
+              h(Checkbox, {
+                label: "Vorab ausgewählt",
+                defaultChecked: true,
+              }),
+              h(Checkbox, {
+                label: "Mit Fehler",
+                invalid: true,
+              }),
+              h(Checkbox, {
+                label: "Inaktiv",
+                disabled: true,
+              }),
+              h(Checkbox, {
+                label: "Inaktiv + ausgewählt",
+                disabled: true,
+                defaultChecked: true,
+              }),
+            ),
+          ),
+
+          // --- Radio + RadioGroup -----------------------------------------
+          h(
+            Section,
+            {
+              title: "Radio / RadioGroup",
+              note: "RadioGroup verteilt den `name`-Prop automatisch.",
+            },
+            h(
+              FieldSet,
+              { legend: "Erstattungsart", required: true },
+              h(
+                RadioGroup,
+                {
+                  name: "refund-type",
+                  // Controlled: einfaches onChange-Bubbling auf die Group
+                  onChange: (e) => setRefundType(e.target.value),
+                },
+                h(Radio, {
+                  value: "full",
+                  label: "Vollständig",
+                  defaultChecked: refundType === "full",
+                }),
+                h(Radio, {
+                  value: "partial",
+                  label: "Teilweise",
+                  defaultChecked: refundType === "partial",
+                }),
+                h(Radio, {
+                  value: "none",
+                  label: "Keine (abgelehnt)",
+                }),
+                h(Radio, {
+                  value: "blocked",
+                  label: "Inaktiv",
+                  disabled: true,
+                }),
+              ),
+            ),
+            h(
+              "div",
+              { style: { marginTop: "var(--rb-space-3)" } },
+              h(
+                FieldSet,
+                { legend: "Horizontal", hint: "RadioGroup mit horizontal." },
+                h(
+                  RadioGroup,
+                  { name: "demo-horizontal", horizontal: true },
+                  h(Radio, { value: "a", label: "A", defaultChecked: true }),
+                  h(Radio, { value: "b", label: "B" }),
+                  h(Radio, { value: "c", label: "C" }),
+                ),
+              ),
+            ),
+          ),
+
+          // --- Mini-Form als End-to-End-Beispiel ---------------------------
+          h(
+            Section,
+            {
+              title: "End-to-End",
+              note: "Alle Komponenten zusammen, mit echten Submit-Werten.",
+            },
+            h(
+              "form",
+              {
+                className: "demo-stack",
+                onSubmit: (e) => {
+                  e.preventDefault();
+                  setSubmitted({
+                    name,
+                    email,
+                    note,
+                    status,
+                    refundType,
+                    confirm,
+                  });
+                },
+              },
+              h(
+                "div",
+                { className: "demo-row" },
+                h(Button, { type: "submit" }, "Speichern"),
+                h(
+                  Button,
+                  {
+                    variant: "secondary",
+                    type: "button",
+                    onClick: () => setSubmitted(null),
+                  },
+                  "Zurücksetzen",
+                ),
+              ),
+              submitted &&
+                h(
+                  "pre",
+                  { className: "demo-summary" },
+                  JSON.stringify(submitted, null, 2),
+                ),
+            ),
+          ),
+        );
+      }
+
+      createRoot(document.getElementById("root")).render(h(App));
+    </script>
+
+    <!--
+      CSS-Modules-Klassen-Kollision (.root, .input, .box, .dot, .check, .error, .label,
+      .hint) entstehen, weil mehrere Module im echten Build dieselben Namen verwenden,
+      aber unterschiedlich gescoped sind. Hier in der globalen Demo müssen wir per
+      Selektor disambiguieren — dieselben Regeln wie in den Modulen, aber kontext-
+      gebunden. Reihenfolge zählt, daher unten als letzter Stylesheet-Block.
+    -->
+    <style>
+      /* Checkbox/Radio "root" und FormField "root" gegeneinander abgrenzen.
+         FormField setzt zusätzlich .form-field-root, FieldSet setzt
+         .fieldset-root — bei beiden korrigieren wir den Layout-Stil. */
+
+      .form-field-root {
+        display: flex;
+        flex-direction: column;
+        gap: var(--rb-space-1);
+        font-family: var(--rb-font-family-base);
+        min-height: auto;
+        padding: 0;
+        cursor: auto;
+      }
+      .form-field-root > .label {
+        font-size: var(--rb-font-size-body);
+        font-weight: var(--rb-font-weight-semibold);
+        color: var(--rb-color-anthrazit);
+        line-height: var(--rb-line-height-body);
+      }
+      .form-field-root > .hint {
+        font-size: var(--rb-font-size-caption);
+        line-height: var(--rb-line-height-caption);
+        color: var(--rb-color-graublau);
+      }
+      .form-field-root > .error {
+        font-size: var(--rb-font-size-caption);
+        line-height: var(--rb-line-height-caption);
+        color: var(--rb-color-error);
+        display: flex;
+        align-items: flex-start;
+        gap: var(--rb-space-1);
+        background: transparent;
+      }
+      .form-field-root > .error .errorIcon {
+        flex: none;
+        margin-top: 2px;
+      }
+
+      .fieldset-root {
+        display: flex;
+        flex-direction: column;
+        gap: var(--rb-space-2);
+        border: 0;
+        margin: 0;
+        padding: 0;
+        font-family: var(--rb-font-family-base);
+        min-height: auto;
+        cursor: auto;
+      }
+      .fieldset-root > .legend {
+        display: block;
+        font-size: var(--rb-font-size-body);
+        font-weight: var(--rb-font-weight-semibold);
+        color: var(--rb-color-anthrazit);
+        line-height: var(--rb-line-height-body);
+        margin: 0;
+        padding: 0;
+      }
+      .fieldset-root > .hint {
+        font-size: var(--rb-font-size-caption);
+        line-height: var(--rb-line-height-caption);
+        color: var(--rb-color-graublau);
+      }
+      .fieldset-root > .error {
+        font-size: var(--rb-font-size-caption);
+        line-height: var(--rb-line-height-caption);
+        color: var(--rb-color-error);
+      }
+
+      /* Required-Sternchen / optional-Tag — global wirksam, aber nur
+         innerhalb von Label/Legend sichtbar. */
+      .label > .required,
+      .legend > .required {
+        color: var(--rb-color-error);
+        margin-left: 2px;
+      }
+      .label > .optional {
+        color: var(--rb-color-graublau);
+        font-weight: var(--rb-font-weight-regular);
+        margin-left: var(--rb-space-2);
+        font-size: var(--rb-font-size-caption);
+      }
+    </style>
+  </body>
+</html>
