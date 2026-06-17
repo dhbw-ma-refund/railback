@@ -1,0 +1,134 @@
+/* RailBack Design System - Brand Tokens */
+
+:root {
+  /* Brand Colors */
+  --color-primary: #094389; /* Deep Trust Blue */
+  --color-primary-hover: #062D5C;
+  --color-primary-pressed: #041F3E;
+
+  --color-success: #93CD1C; /* Relief Green */
+  --color-success-light: #A8DC3F;
+
+  --color-error: #D93025;
+  --color-warning: #F29900;
+
+  --color-text-primary: #1E2530; /* Anthrazit */
+  --color-text-secondary: #4A6B82; /* Muted Gray-Blue */
+  --color-text-tertiary: #6B7280;
+  --color-text-disabled: #9CA3AF;
+
+  --color-bg-primary: #FFFFFF;
+  --color-bg-secondary: #FAF9F5; /* Warm Off-White */
+  --color-bg-tertiary: #F4F0E6; /* Soft Beige */
+
+  --color-border: #D4D4D4;
+  --color-border-focus: #094389;
+  --color-border-error: #D93025;
+
+  --color-disabled: #E0E0E0;
+  --color-disabled-text: #9E9E9E;
+
+  /* Typography */
+  --font-family-primary: 'Figtree', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --font-size-h1: 28px;
+  --font-size-h2: 22px;
+  --font-size-h3: 18px;
+  --font-size-body: 16px;
+  --font-size-caption: 14px;
+  --font-size-small: 12px;
+
+  --font-weight-bold: 700;
+  --font-weight-semibold: 600;
+  --font-weight-regular: 400;
+
+  --line-height-tight: 130%;
+  --line-height-normal: 140%;
+  --line-height-relaxed: 150%;
+
+  /* Spacing (8-point grid) */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 24px;
+
+  /* Shadows */
+  --shadow-soft: 0 4px 15px rgba(0, 0, 0, 0.04);
+  --shadow-medium: 0 4px 15px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  /* Touch Targets */
+  --touch-target-min: 44px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+}
+
+/* Global Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-secondary);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  color: var(--color-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  color: var(--color-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+h3 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-normal);
+  color: var(--color-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+p {
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+/* Utility Classes */
+.text-primary { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-success { color: var(--color-success); }
+.text-error { color: var(--color-error); }
+
+.bg-primary { background-color: var(--color-bg-primary); }
+.bg-secondary { background-color: var(--color-bg-secondary); }
+
+.caption {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}

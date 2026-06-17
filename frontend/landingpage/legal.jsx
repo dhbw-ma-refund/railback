@@ -1,0 +1,194 @@
+/* ============================================================
+   RailBack — Rechtstexte (DE/EN, juristischer Kontext)
+   Plausible Platzhalter-Inhalte, Lorem-frei.
+   ============================================================ */
+
+const LEGAL_CONTENT = {
+  de: {
+    impressum: {
+      title: "Impressum",
+      provider: "Anbieterkennzeichnung",
+      company: <>
+        RailBack GmbH<br/>
+        Musterstraße 1a<br/>
+        D-68163 Mannheim<br/>
+        Tel.: +49 261 89428<br/>
+        E-Mail: support@railback.de
+      </>,
+      management: "Geschäftsführung",
+      managers: <>Dr. Vorname Nachname<br/>Dr. Vorname Nachname</>,
+      seatTitle: "Sitz der Gesellschaft",
+      seat: "Mannheim, eingetragen beim Amtsgericht Mannheim unter HRB XXXX.",
+      vatTitle: "Umsatzsteuer-Identifikationsnummer",
+      vat: "gemäß § 27 a Umsatzsteuergesetz: MusterUmsatzID",
+      contentTitle: "Verantwortlich für den Inhalt",
+      content: "Dr. Vorname Nachname (Anschrift wie oben)",
+      copyrightTitle: "Urheberrecht",
+      copyright: [
+        "Die durch RailBack erstellten Inhalte und Werke auf dieser Seite unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung der RailBack GmbH.",
+        "Downloads und Kopien dieser Seite sind nur für den privaten, nicht kommerziellen Gebrauch gestattet. Soweit die Inhalte auf dieser Seite nicht von RailBack erstellt wurden, werden die Urheberrechte Dritter beachtet.",
+      ],
+      disputeTitle: "Streitschlichtung",
+      dispute: "Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung bereit. RailBack ist nicht verpflichtet und nicht bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.",
+    },
+    legal: {
+      termsTitle: "I. Allgemeine Geschäftsbedingungen von RailBack",
+      validityTitle: "§ 1 Geltung",
+      validity: [
+        "(1) Diese Allgemeinen Geschäftsbedingungen enthalten die zwischen der RailBack GmbH, Musterstraße 1a, 68163 Mannheim (nachfolgend „RailBack“) und dem jeweiligen Nutzer (nachfolgend „Nutzer“) geltenden Bedingungen für die Nutzung der RailBack-Dienste zur Geltendmachung von Fahrgastrechten.",
+        "(2) Änderungen dieser Allgemeinen Geschäftsbedingungen werden dem Nutzer rechtzeitig in Textform mitgeteilt. Sie gelten als genehmigt, wenn der Nutzer nicht innerhalb von sechs Wochen nach Mitteilung widerspricht.",
+      ],
+      definitionsTitle: "§ 2 Definitionen",
+      definitions: [
+        "(1) Nutzer im Sinne dieser Allgemeinen Geschäftsbedingungen können Verbraucher und Unternehmer sein.",
+        "(2) „Anspruch“ bezeichnet den auf Grundlage der Fahrgastrechte bestehenden Entschädigungsanspruch des Nutzers gegenüber dem jeweiligen Verkehrsunternehmen wegen Verspätung oder Ausfall.",
+      ],
+      servicesTitle: "§ 3 Leistungen von RailBack",
+      services: "RailBack unterstützt den Nutzer bei der Prüfung, Berechnung und Einreichung von Entschädigungsansprüchen. Ein Antrag wird ausschließlich nach ausdrücklicher Freigabe durch den Nutzer übermittelt.",
+      version: "Version 1.0 · Mai 2026",
+      privacyTitle: "II. Datenschutzbestimmungen",
+      personalDataTitle: "Definition von personenbezogenen Daten",
+      personalData: "Als personenbezogene Daten werden alle Informationen bezeichnet, die sich auf eine identifizierte oder identifizierbare natürliche Person beziehen. Dazu zählen insbesondere Name, Kontaktdaten, Ticket- und Reisedaten sowie Zahlungsinformationen.",
+      storageTitle: "Erhebung personenbezogener Daten und Speicherdauer",
+      storage: "Wir erheben personenbezogene Daten ausschließlich zum Zweck der Prüfung und Durchsetzung deines Entschädigungsanspruchs. Die Daten werden nur so lange gespeichert, wie es für diesen Zweck oder aufgrund gesetzlicher Aufbewahrungsfristen erforderlich ist, und anschließend gelöscht.",
+      objectionTitle: "Allgemeines Widerspruchsrecht (Art. 21 DSGVO)",
+      objection: "Du hast das Recht, aus Gründen, die sich aus deiner besonderen Situation ergeben, jederzeit gegen die Verarbeitung dich betreffender personenbezogener Daten Widerspruch einzulegen. Wir verarbeiten die Daten dann nicht mehr, es sei denn, es liegen zwingende schutzwürdige Gründe vor.",
+      cookiesTitle: "Einsatz von Cookies",
+      cookies: "Wir setzen Cookies ein, um die Funktionalität der Anwendung sicherzustellen und das Nutzungserlebnis zu verbessern. Nicht notwendige Cookies werden nur mit deiner Einwilligung gesetzt. Du kannst deine Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen.",
+      privacyContact: "Bei Fragen zum Datenschutz erreichst du uns unter datenschutz@railback.de.",
+    },
+  },
+  en: {
+    impressum: {
+      title: "Imprint",
+      provider: "Provider identification",
+      company: <>
+        RailBack GmbH<br/>
+        Musterstraße 1a<br/>
+        D-68163 Mannheim<br/>
+        Phone: +49 261 89428<br/>
+        Email: support@railback.de
+      </>,
+      management: "Management",
+      managers: <>Dr. First Name Last Name<br/>Dr. First Name Last Name</>,
+      seatTitle: "Registered office",
+      seat: "Mannheim, registered with the Local Court of Mannheim under HRB XXXX.",
+      vatTitle: "VAT identification number",
+      vat: "pursuant to Section 27a German VAT Act: SampleVATID",
+      contentTitle: "Responsible for content",
+      content: "Dr. First Name Last Name (address as above)",
+      copyrightTitle: "Copyright",
+      copyright: [
+        "The content and works created by RailBack on this website are subject to German copyright law. Reproduction, editing, distribution and any kind of use beyond the limits of copyright require the written consent of RailBack GmbH.",
+        "Downloads and copies of this website are permitted for private, non-commercial use only. Where content on this website was not created by RailBack, third-party copyrights are respected.",
+      ],
+      disputeTitle: "Dispute resolution",
+      dispute: "The European Commission provides a platform for online dispute resolution. RailBack is neither obliged nor willing to participate in dispute resolution proceedings before a consumer arbitration board.",
+    },
+    legal: {
+      termsTitle: "I. General Terms and Conditions of RailBack",
+      validityTitle: "Section 1 Scope",
+      validity: [
+        "(1) These General Terms and Conditions set out the terms applicable between RailBack GmbH, Musterstraße 1a, 68163 Mannheim (hereinafter \"RailBack\") and the respective user (hereinafter \"User\") for the use of RailBack services for asserting passenger rights.",
+        "(2) Changes to these General Terms and Conditions will be communicated to the User in text form in good time. They are deemed approved if the User does not object within six weeks after notification.",
+      ],
+      definitionsTitle: "Section 2 Definitions",
+      definitions: [
+        "(1) Users within the meaning of these General Terms and Conditions may be consumers or entrepreneurs.",
+        "(2) \"Claim\" means the compensation claim of the User against the respective transport company based on passenger rights due to delay or cancellation.",
+      ],
+      servicesTitle: "Section 3 RailBack services",
+      services: "RailBack supports the User in checking, calculating and submitting compensation claims. A claim is transmitted only after the User has expressly approved it.",
+      version: "Version 1.0 · May 2026",
+      privacyTitle: "II. Privacy Policy",
+      personalDataTitle: "Definition of personal data",
+      personalData: "Personal data means any information relating to an identified or identifiable natural person. This includes in particular name, contact details, ticket and travel data, and payment information.",
+      storageTitle: "Collection of personal data and storage period",
+      storage: "We collect personal data exclusively for the purpose of checking and enforcing your compensation claim. The data is stored only for as long as necessary for this purpose or due to statutory retention periods and is then deleted.",
+      objectionTitle: "General right to object (Art. 21 GDPR)",
+      objection: "You have the right to object at any time, on grounds relating to your particular situation, to the processing of personal data concerning you. We will then no longer process the data unless compelling legitimate grounds apply.",
+      cookiesTitle: "Use of cookies",
+      cookies: "We use cookies to ensure the functionality of the application and improve the user experience. Non-essential cookies are set only with your consent. You can withdraw your consent at any time with effect for the future.",
+      privacyContact: "For questions about data protection, contact us at datenschutz@railback.de.",
+    },
+  },
+};
+
+function legalCopy(lang) {
+  return LEGAL_CONTENT[lang] || LEGAL_CONTENT.de;
+}
+
+function Paragraphs({ items }) {
+  return items.map((item, i) => <p key={i}>{item}</p>);
+}
+
+function ImpressumBody({ lang = "de" }) {
+  const copy = legalCopy(lang).impressum;
+
+  return (
+    <div className="legal">
+      <h2>{copy.title}</h2>
+      <h3>{copy.provider}</h3>
+      <address>
+        {copy.company}
+      </address>
+
+      <h3>{copy.management}</h3>
+      <p className="meta">{copy.managers}</p>
+
+      <h3>{copy.seatTitle}</h3>
+      <p className="meta">{copy.seat}</p>
+
+      <h3>{copy.vatTitle}</h3>
+      <p className="meta">{copy.vat}</p>
+
+      <h3>{copy.contentTitle}</h3>
+      <p className="meta">{copy.content}</p>
+
+      <h3>{copy.copyrightTitle}</h3>
+      <Paragraphs items={copy.copyright} />
+
+      <h3>{copy.disputeTitle}</h3>
+      <p>{copy.dispute}</p>
+    </div>
+  );
+}
+
+function RechtlichesBody({ lang = "de" }) {
+  const copy = legalCopy(lang).legal;
+
+  return (
+    <div className="legal">
+      <h2>{copy.termsTitle}</h2>
+
+      <h3>{copy.validityTitle}</h3>
+      <Paragraphs items={copy.validity} />
+
+      <h3>{copy.definitionsTitle}</h3>
+      <Paragraphs items={copy.definitions} />
+
+      <h3>{copy.servicesTitle}</h3>
+      <p>{copy.services}</p>
+
+      <p className="ver">{copy.version}</p>
+
+      <h2>{copy.privacyTitle}</h2>
+
+      <h3>{copy.personalDataTitle}</h3>
+      <p>{copy.personalData}</p>
+
+      <h3>{copy.storageTitle}</h3>
+      <p>{copy.storage}</p>
+
+      <h3>{copy.objectionTitle}</h3>
+      <p>{copy.objection}</p>
+
+      <h3>{copy.cookiesTitle}</h3>
+      <p>{copy.cookies}</p>
+
+      <p className="meta">{copy.privacyContact}</p>
+    </div>
+  );
+}
+
+Object.assign(window, { ImpressumBody, RechtlichesBody });

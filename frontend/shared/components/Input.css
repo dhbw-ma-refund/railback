@@ -1,0 +1,76 @@
+/**
+ * RailBack Input Component
+ * Based on Brand Guide Section 9.2
+ */
+
+.rb-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.rb-input-label {
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+.rb-input {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-body);
+  padding: 12px 16px;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-input);
+  background-color: white;
+  color: var(--color-text-primary);
+  transition: border-color 0.2s ease;
+  min-height: var(--touch-target-min);
+  width: 100%;
+}
+
+.rb-input::placeholder {
+  color: var(--color-muted-gray-blue);
+}
+
+.rb-input:focus {
+  outline: none;
+  border: 2px solid var(--color-deep-trust-blue);
+  padding: 11px 15px;
+}
+
+.rb-input--error {
+  border: 2px solid var(--color-error-red);
+  padding: 11px 15px;
+}
+
+.rb-input--error:focus {
+  border: 2px solid var(--color-error-red);
+}
+
+.rb-input-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-caption);
+  color: var(--color-error-red);
+  font-family: var(--font-family-primary);
+}
+
+.rb-input-error-icon {
+  font-size: 16px;
+}
+
+.rb-input-helper {
+  font-size: var(--font-size-caption);
+  color: var(--color-muted-gray-blue);
+  font-family: var(--font-family-primary);
+}
+
+.rb-input:disabled {
+  background-color: #F5F5F5;
+  color: #9E9E9E;
+  cursor: not-allowed;
+  border-color: var(--color-disabled-grey);
+}

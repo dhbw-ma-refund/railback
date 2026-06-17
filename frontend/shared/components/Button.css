@@ -1,0 +1,73 @@
+/**
+ * RailBack Button Component
+ * Based on Brand Guide Section 9.1
+ */
+
+.rb-button {
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-semibold);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-button);
+  min-height: var(--touch-target-min);
+  padding: 0 var(--spacing-3);
+}
+
+/* Primary Button */
+.rb-button--primary {
+  background-color: var(--color-deep-trust-blue);
+  color: white;
+}
+
+.rb-button--primary:hover,
+.rb-button--primary:focus {
+  background-color: var(--color-button-pressed);
+}
+
+.rb-button--primary:active {
+  background-color: var(--color-button-pressed);
+  transform: scale(0.98);
+}
+
+/* Secondary Button */
+.rb-button--secondary {
+  background-color: transparent;
+  color: var(--color-deep-trust-blue);
+  border: 1px solid var(--color-deep-trust-blue);
+}
+
+.rb-button--secondary:hover,
+.rb-button--secondary:focus {
+  background-color: rgba(9, 67, 137, 0.05);
+}
+
+/* Disabled State */
+.rb-button--disabled,
+.rb-button:disabled {
+  background-color: var(--color-disabled-grey);
+  color: #9E9E9E;
+  cursor: not-allowed;
+  border: none;
+}
+
+.rb-button--disabled:hover,
+.rb-button:disabled:hover {
+  background-color: var(--color-disabled-grey);
+  transform: none;
+}
+
+/* Sizes */
+.rb-button--medium {
+  font-size: var(--font-size-body);
+  height: 44px;
+}
+
+.rb-button--large {
+  font-size: 18px;
+  height: 52px;
+  padding: 0 var(--spacing-4);
+}

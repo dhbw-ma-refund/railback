@@ -1,0 +1,20 @@
+/**
+ * RailBack Card Component
+ * Based on Brand Guide Section 12.6
+ */
+
+.rb-card {
+  background-color: white;
+  border-radius: var(--radius-card);
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--color-input-border);
+}
+
+.rb-card--elevated {
+  box-shadow: var(--shadow-default);
+  border: none;
+}
+
+.rb-card--elevated:hover {
+  box-shadow: var(--shadow-hover);
+}
