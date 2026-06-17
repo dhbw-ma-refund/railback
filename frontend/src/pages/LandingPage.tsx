@@ -133,7 +133,7 @@ export const LandingPage = () => {
               <div className="floating-badge">
                 <div className="infocard">
                   <div className="infocard__badge">25%</div>
-                  <div>
+                  <div className="infocard__copy">
                     <div className="infocard__title">{t.hero.phone.refundPossible}</div>
                     <div className="infocard__sub">{t.hero.phone.refundBasis}</div>
                   </div>
