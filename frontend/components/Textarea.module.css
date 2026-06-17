@@ -1,0 +1,13 @@
+.textarea {
+  composes: field from "./field.module.css";
+  resize: vertical;
+  min-height: 96px;
+  line-height: var(--rb-line-height-body);
+}
+
+.error {
+  composes: fieldError from "./field.module.css";
+  resize: vertical;
+  min-height: 96px;
+  line-height: var(--rb-line-height-body);
+}

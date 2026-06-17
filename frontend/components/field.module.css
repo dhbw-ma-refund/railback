@@ -1,0 +1,62 @@
+/*
+ * Gemeinsame Field-Styles für Input, Textarea, Select.
+ * Single source of truth: §9.2 Input-Felder, §8.2 Radien.
+ *
+ * Wird von Input.module.css, Textarea.module.css, Select.module.css
+ * konsumiert via composes oder per direktem Klassennamen aus dem
+ * jeweiligen Modul.
+ */
+
+.field {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--rb-color-surface);
+  border: 1px solid var(--rb-color-border);
+  border-radius: var(--rb-radius-input);
+  color: var(--rb-color-anthrazit);
+  font-family: var(--rb-font-family-base);
+  font-size: var(--rb-font-size-body);
+  line-height: var(--rb-line-height-body);
+  min-height: var(--rb-touch-target-min);
+  padding: var(--rb-space-2) var(--rb-space-3);
+  transition:
+    border-color var(--rb-transition-fast),
+    box-shadow var(--rb-transition-fast);
+}
+
+.field::placeholder {
+  color: var(--rb-color-graublau);
+}
+
+.field:hover:not(:disabled):not(:focus) {
+  border-color: var(--rb-color-graublau);
+}
+
+.field:focus-visible,
+.field:focus {
+  outline: none;
+  border-color: var(--rb-color-deep-trust-blue);
+  border-width: 2px;
+  /* Padding kompensieren, damit der Inhalt nicht springt */
+  padding: calc(var(--rb-space-2) - 1px) calc(var(--rb-space-3) - 1px);
+}
+
+/* Error-Variante (§9.2 — Border 2 px Error Red) */
+.fieldError {
+  border-color: var(--rb-color-error);
+  border-width: 2px;
+  padding: calc(var(--rb-space-2) - 1px) calc(var(--rb-space-3) - 1px);
+}
+
+.fieldError:focus-visible,
+.fieldError:focus {
+  border-color: var(--rb-color-error);
+  box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.2);
+}
+
+.field:disabled {
+  background-color: var(--rb-color-disabled-bg);
+  color: var(--rb-color-disabled-fg);
+  cursor: not-allowed;
+}
