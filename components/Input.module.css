@@ -1,7 +1,0 @@
-.input {
-  composes: field from "./field.module.css";
-}
-
-.error {
-  composes: fieldError from "./field.module.css";
-}
