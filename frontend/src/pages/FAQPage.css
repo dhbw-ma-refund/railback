@@ -86,6 +86,7 @@
 }
 
 .faq-tile__t {
+  font-family: var(--font-family-primary);
   font-weight: 700;
   font-size: 18px;
   color: var(--color-deep-trust-blue);
@@ -93,6 +94,7 @@
 }
 
 .faq-tile__d {
+  font-family: var(--font-family-primary);
   color: var(--color-muted-gray-blue);
   font-size: 14.5px;
   margin-top: 4px;
@@ -122,6 +124,7 @@
 }
 
 .qa__q {
+  font-family: var(--font-family-primary);
   width: 100%;
   text-align: left;
   background: none;

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../lib/LanguageContext';
+import { useAuth } from '../lib/AuthContext';
 import './BurgerMenu.css';
 
 // Simple Icon component
@@ -84,7 +85,7 @@ interface BurgerMenuProps {
 export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
   const navigate = useNavigate();
   const { lang, setLang, t } = useLanguage();
-  const [loggedIn, setLoggedIn] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -94,8 +95,19 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const toggleAuth = () => {
-    setLoggedIn(!loggedIn);
+  const handleAuthAction = () => {
+    if (isAuthenticated) {
+      logout();
+      navigate('/');
+    } else {
+      navigate('/login');
+    }
+    onClose();
+  };
+
+  const handleProfile = () => {
+    navigate('/profile');
+    onClose();
   };
 
   const goTo = (path: string) => {
@@ -108,9 +120,31 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
       <div className={'scrim' + (open ? ' open' : '')} onClick={onClose}></div>
       <nav className={'menu' + (open ? ' open' : '')} aria-hidden={!open}>
         <div className="menu__head">
-          <button className="menu__auth" onClick={toggleAuth}>
-            <Icon name={loggedIn ? 'logout' : 'login'} size={21} />
-            {loggedIn ? t.menu.logout : t.menu.login}
+          {isAuthenticated && user && (
+            <div className="menu__user" style={{ padding: 'var(--spacing-2)', marginBottom: 'var(--spacing-2)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <span style={{ fontSize: '14px', fontWeight: '600', color: '#fff' }}>
+                {user.vorname} {user.nachname}
+              </span>
+              <button
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--color-relief-green)',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  padding: '4px 0',
+                  marginTop: '4px',
+                  textAlign: 'left',
+                }}
+                onClick={handleProfile}
+              >
+                {t.menu.profile}
+              </button>
+            </div>
+          )}
+          <button className="menu__auth" onClick={handleAuthAction}>
+            <Icon name={isAuthenticated ? 'logout' : 'login'} size={21} />
+            {isAuthenticated ? t.menu.logout : t.menu.login}
           </button>
           <button className="menu__close" onClick={onClose} aria-label="Zurück">
             <Icon name="close" size={18} color="#fff" />
