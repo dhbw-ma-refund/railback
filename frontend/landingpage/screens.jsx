@@ -15,17 +15,22 @@ function Landing({ t, go, onCheckClaim }) {
               <img src={LOGO} alt="RailBack Logo" />
               <span className="nm">RailBack</span>
             </div>
-            <span className="hero__claim"><span className="dot"></span>{t.hero.claim}</span>
-            <h1 className="h1">{t.hero.title}</h1>
-            <p className="hero__sub">{t.hero.sub}</p>
-            <div className="hero__cta">
-              <button className="rb-button rb-button--primary rb-button--large" onClick={onCheckClaim}>
-                <Icon name="euro" size={20} color="#fff" /> {t.hero.cta1}
-              </button>
-              <button className="rb-button rb-button--secondary rb-button--large" onClick={() => go("faq")}>{t.hero.cta2}</button>
+            <span className="hero__claim">
+              <Icon name="checkCircle" size={14} color="var(--color-relief-green)" />
+              {t.hero.claim}
+            </span>
+            <div className="hero__focal-block">
+              <h1 className="h1">{t.hero.title}</h1>
+              <p className="hero__sub">{t.hero.sub}</p>
+              <div className="hero__cta">
+                <button className="rb-button rb-button--primary rb-button--large" onClick={onCheckClaim}>
+                  <Icon name="euro" size={20} color="#fff" /> {t.hero.cta1}
+                </button>
+                <button className="rb-button rb-button--secondary rb-button--large" onClick={() => go("faq")}>{t.hero.cta2}</button>
+              </div>
             </div>
             <div className="hero__tag">
-              {t.hero.tag.map((w, i) => <b key={i} style={{ color: i === 1 ? "var(--landing-green-ink)" : "var(--color-deep-trust-blue)" }}>{w} </b>)}
+              {t.hero.tag.map((w, i) => <b key={i} style={{ color: i === 1 ? "var(--color-landing-green-ink)" : "var(--color-deep-trust-blue)" }}>{w} </b>)}
             </div>
             <div className="trust">
               {t.hero.trust.map((tr, i) => (

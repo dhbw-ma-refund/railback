@@ -1,0 +1,35 @@
+.feature-card {
+  padding: var(--spacing-3);
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+}
+
+.feature-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto var(--spacing-2);
+  border-radius: 50%;
+  background: rgba(9, 67, 137, 0.06);
+}
+
+.feature-card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 140%;
+  color: var(--color-deep-trust-blue);
+  margin-bottom: var(--spacing-2);
+}
+
+.feature-card p {
+  font-size: 16px;
+  line-height: 150%;
+  color: var(--color-muted-gray-blue);
+  margin: 0;
+}

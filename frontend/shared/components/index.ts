@@ -9,3 +9,6 @@ export type { CardProps } from './Card';
 
 export { StatusBadge } from './StatusBadge';
 export type { StatusBadgeProps, StatusType } from './StatusBadge';
+
+export { FeatureCard } from './FeatureCard';
+export type { FeatureCardProps } from './FeatureCard';

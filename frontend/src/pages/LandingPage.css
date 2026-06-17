@@ -1,64 +1,516 @@
+/* Import shared styles */
+@import '@shared/styles/tokens.css';
+@import '@shared/styles/typography.css';
+
+/* Landing page specific styles */
 .landing-page {
   min-height: 100vh;
+  background: var(--color-warm-off-white);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: var(--spacing-4) var(--margin-mobile);
-  background-color: var(--color-warm-off-white);
 }
 
-.landing-hero {
-  max-width: 600px;
-  text-align: center;
-  margin-bottom: var(--spacing-4);
-  padding-top: var(--spacing-4);
+.landing-page > .hero {
+  flex: 1;
 }
 
-.landing-title {
-  margin-bottom: var(--spacing-2);
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 40px);
 }
 
-.landing-subtitle {
-  margin-bottom: var(--spacing-4);
-  color: var(--color-text-secondary);
-}
-
-.landing-actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-  align-items: center;
-  margin-bottom: var(--spacing-4);
-}
-
-.landing-actions a {
-  text-decoration: none;
-  width: 100%;
-  max-width: 300px;
-}
-
-.landing-actions button {
+.container {
   width: 100%;
 }
 
-.landing-features {
+/* Hero Section */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(48px, 8vh, 88px) 0 clamp(48px, 8vh, 96px);
+}
+
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 500px at 88% -8%, rgba(147, 205, 28, 0.10), transparent 60%),
+    radial-gradient(700px 600px at 8% 110%, rgba(9, 67, 137, 0.06), transparent 60%);
+}
+
+.hero__grid {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: var(--spacing-4);
+  align-items: center;
+}
+
+.hero__copy {
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero__claim {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  background: rgba(147, 205, 28, 0.16);
+  color: var(--color-landing-green-ink);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-button);
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: 0.01em;
+  margin-bottom: var(--spacing-3);
+  white-space: nowrap;
+}
+
+.hero .h1 {
+  font-size: clamp(32px, 4.6vw, 52px);
+  max-width: 16ch;
+  margin: 0 0 var(--spacing-3);
+  line-height: 1.15;
+  color: var(--color-deep-trust-blue);
+}
+
+.hero__sub {
+  font-size: clamp(15px, 1.4vw, 18px);
+  max-width: 50ch;
+  margin: 0 0 var(--spacing-4);
+  line-height: 1.6;
+  color: var(--color-muted-gray-blue);
+}
+
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--spacing-2);
-  width: 100%;
-  max-width: 800px;
+  margin-bottom: var(--spacing-4);
 }
 
-.landing-features h3 {
-  margin-bottom: var(--spacing-1);
+.hero__cta button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.landing-features p {
-  margin: 0;
+.hero__tag {
+  margin-bottom: var(--spacing-4);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  font-size: clamp(16px, 1.8vw, 22px);
 }
 
-@media (min-width: 768px) {
-  .landing-features {
-    grid-template-columns: repeat(3, 1fr);
+.hero__tag b {
+  color: var(--color-deep-trust-blue);
+}
+
+.hero__tag b:nth-child(2) {
+  color: var(--color-landing-green-ink);
+}
+
+.trust {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-4);
+}
+
+.trust__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-muted-gray-blue);
+  font-size: 14.5px;
+  font-weight: 500;
+}
+
+.trust__item svg {
+  color: var(--color-landing-green-ink);
+  flex: none;
+}
+
+/* Phone Mockup */
+.phone-col {
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+/* Floating badge container */
+.floating-badge {
+  position: absolute;
+  bottom: 40px;
+  left: -20px;
+  z-index: 10;
+  animation: float 5s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.phone {
+  position: relative;
+  width: 300px;
+  height: 612px;
+  border-radius: 44px;
+  background: #0b1a2b;
+  padding: 12px;
+  box-shadow: 0 30px 70px rgba(9, 67, 137, 0.28), inset 0 0 0 2px rgba(255, 255, 255, 0.06);
+}
+
+.phone__notch {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 26px;
+  background: #0b1a2b;
+  border-radius: 0 0 16px 16px;
+  z-index: 3;
+}
+
+.phone__screen {
+  position: relative;
+  height: 100%;
+  border-radius: 34px;
+  overflow: hidden;
+  background: var(--color-warm-off-white);
+  display: flex;
+  flex-direction: column;
+}
+
+.phone__status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 22px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.phone__body {
+  padding: 6px 16px 16px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.phone__hi {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-deep-trust-blue);
+  margin: 8px 0 2px;
+}
+
+.phone__hi + p {
+  margin: 0 0 14px;
+  color: var(--color-muted-gray-blue);
+  font-size: 13.5px;
+}
+
+.tripcard {
+  background: var(--color-deep-trust-blue);
+  color: #fff;
+  border-radius: 18px;
+  padding: 16px 16px 18px;
+  box-shadow: 0 10px 24px rgba(9, 67, 137, 0.3);
+}
+
+.tripcard__route {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 14.5px;
+}
+
+.tripcard__meta {
+  font-size: 11.5px;
+  opacity: 0.82;
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+.tripcard__amt {
+  font-size: 32px;
+  font-weight: 800;
+  margin-top: 14px;
+  letter-spacing: -0.02em;
+}
+
+.tripcard__amtlabel {
+  font-size: 12px;
+  opacity: 0.82;
+  margin-top: -2px;
+}
+
+.chip-delay {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  background: rgba(255, 255, 255, 0.14);
+  padding: 6px 11px;
+  border-radius: var(--radius-button);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chip-delay svg {
+  color: var(--color-relief-green);
+}
+
+/* Mini card - "Ticket geprüft" */
+.minicard {
+  margin-top: 12px;
+  background: #fff;
+  border: 1px solid var(--color-input-border);
+  border-radius: 14px;
+  padding: 13px 14px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.minicard .badge-ic {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(147, 205, 28, 0.16);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.minicard__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+
+.minicard__sub {
+  font-size: 11.5px;
+  color: var(--color-muted-gray-blue);
+}
+
+/* Info card - "25% Erstattung möglich" - Floating version */
+.floating-badge .infocard {
+  margin-top: 0;
+  background: #fff;
+  border: 1px solid var(--color-input-border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  box-shadow: 0 14px 40px rgba(9, 67, 137, 0.16);
+  max-width: 280px;
+}
+
+.floating-badge .infocard__badge {
+  min-width: 52px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(147, 205, 28, 0.92);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 16px;
+  flex: none;
+}
+
+.floating-badge .infocard__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-deep-trust-blue);
+  margin-bottom: 4px;
+}
+
+.floating-badge .infocard__sub {
+  font-size: 11.5px;
+  color: var(--color-muted-gray-blue);
+  line-height: 1.45;
+}
+
+/* Mobile Logo Card */
+.hero__mobile-logo {
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .hero {
+    padding: var(--spacing-3) 0 var(--spacing-4);
+    text-align: center;
+  }
+
+  .hero__bg {
+    display: none;
+  }
+
+  .hero__grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    align-items: center;
+  }
+
+  .hero__mobile-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-3);
+  }
+
+  .hero__mobile-logo-card {
+    width: 160px;
+    height: 160px;
+    background: #fff;
+    border: 2px solid var(--color-deep-trust-blue);
+    border-radius: 28px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+  }
+
+  .hero__mobile-logo-card img {
+    width: 140px;
+    height: auto;
+  }
+
+  .hero__mobile-logo-name {
+    font-family: 'Figtree', 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 32px;
+    color: var(--color-deep-trust-blue);
+    letter-spacing: -0.01em;
+  }
+
+  .hero__copy {
+    order: 1;
+    max-width: 100%;
+  }
+
+  .hero__claim {
+    display: none;
+  }
+
+  .trust {
+    display: none;
+  }
+
+  .hero__tag {
+    font-size: clamp(15px, 4vw, 18px);
+    text-align: center;
+    margin-bottom: var(--spacing-3);
+  }
+
+  .phone-col {
+    display: none;
+  }
+
+  .hero .h1 {
+    font-size: clamp(26px, 6.5vw, 32px);
+    line-height: 1.25;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .hero__sub {
+    font-size: 15px;
+    max-width: 100%;
+    text-align: center;
+    color: var(--color-muted-gray-blue);
+  }
+
+  .hero__cta {
+    flex-direction: column;
+    gap: var(--spacing-2);
+    margin: 0 auto var(--spacing-4);
+    max-width: 500px;
+  }
+
+  .hero__cta button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero__tag {
+    font-size: clamp(15px, 4vw, 18px);
+    text-align: center;
+    margin-bottom: var(--spacing-3);
+  }
+
+  .trust {
+    flex-direction: column;
+    gap: var(--spacing-2);
+    margin-top: 0;
+    align-items: flex-start;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .trust__item {
+    font-size: 14px;
+    text-align: left;
+  }
+
+  .wrap {
+    padding: 0 var(--spacing-2);
+  }
+}
+
+@media (max-width: 480px) {
+  .hero .h1 {
+    font-size: 24px;
+  }
+
+  .hero__claim {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  .hero__mobile-logo-card {
+    width: 100px;
+    height: 100px;
+    padding: var(--spacing-2);
+  }
+
+  .hero__mobile-logo-card img {
+    width: 60px;
+  }
+
+  .hero__mobile-logo-name {
+    font-size: 20px;
+  }
+
+  .trust__item {
+    font-size: 13px;
   }
 }

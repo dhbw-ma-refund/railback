@@ -128,35 +128,50 @@ a { color: inherit; }
 }
 .hero__grid {
   position: relative; z-index: 1;
-  display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(24px, 5vw, 64px);
-  align-items: center; padding: clamp(40px, 6vw, 88px) 0 clamp(48px, 7vw, 96px);
+  display: grid; grid-template-columns: 1.05fr 0.95fr; gap: var(--spacing-4);
+  align-items: center; padding: var(--spacing-4) 0;
 }
 .hero__claim {
   display: inline-flex; align-items: center; gap: 8px;
-  background: rgba(147,205,28,0.16); color: var(--landing-green-ink);
+  background: rgba(147,205,28,0.16); color: var(--color-landing-green-ink);
   padding: 7px 14px; border-radius: var(--radius-button); font-weight: 700; font-size: 13.5px;
-  letter-spacing: 0.01em; margin-bottom: 22px; white-space: nowrap;
+  letter-spacing: 0.01em; margin-bottom: var(--spacing-3); white-space: nowrap;
 }
 .hero__claim .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-relief-green); }
+
+/* Visual Hierarchy Focal Block (Section 12.1) */
+.hero__focal-block {
+  background: var(--color-deep-trust-blue);
+  border-radius: 20px;
+  padding: var(--spacing-4) var(--spacing-3);
+  margin-bottom: var(--spacing-3);
+}
+
+.hero__focal-block .h1,
+.hero__focal-block .hero__sub {
+  color: #fff;
+}
+
 .hero h1 { font-size: clamp(34px, 4.6vw, 56px); max-width: 13ch; }
 .hero h1 .accent { color: var(--color-text-primary); }
-.hero__sub { font-size: clamp(16px, 1.4vw, 19px); color: var(--color-muted-gray-blue); max-width: 46ch; margin: 22px 0 0; }
-.hero__cta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+.hero__focal-block .h1 .accent { color: rgba(255, 255, 255, 0.9); }
+.hero__sub { font-size: clamp(16px, 1.4vw, 19px); color: var(--color-muted-gray-blue); max-width: 46ch; margin: var(--spacing-3) 0 0; }
+.hero__cta { display: flex; flex-wrap: wrap; gap: var(--spacing-2); margin-top: var(--spacing-4); }
 .hero__cta .rb-button { gap: 10px; text-decoration: none; white-space: nowrap; }
 .hero__tag {
-  margin-top: 30px; font-weight: 800; letter-spacing: 0.12em; color: var(--color-deep-trust-blue);
+  margin-top: var(--spacing-4); font-weight: 800; letter-spacing: 0.12em; color: var(--color-deep-trust-blue);
   font-size: clamp(15px, 1.5vw, 19px);
 }
-.hero__tag b { color: var(--landing-green-ink); }
+.hero__tag b { color: var(--color-landing-green-ink); }
 
 /* Mobile-only logo block (zentriert über Headline, wie Wireframe) */
 .hero__mobilelogo { display: none; flex-direction: column; align-items: center; gap: 10px; }
 .hero__mobilelogo img { height: 64px; }
 .hero__mobilelogo .nm { font-weight: 800; color: var(--color-deep-trust-blue); font-size: 18px; letter-spacing: 0.02em; }
 
-.trust { display: flex; gap: 26px; flex-wrap: wrap; margin-top: 34px; }
+.trust { display: flex; gap: var(--spacing-3); flex-wrap: wrap; margin-top: var(--spacing-4); }
 .trust__item { display: flex; align-items: center; gap: 10px; color: var(--color-muted-gray-blue); font-size: 14.5px; font-weight: 500; }
-.trust__item .ic { color: var(--landing-green-ink); flex: none; }
+.trust__item .ic { color: var(--color-landing-green-ink); flex: none; }
 
 /* ---------- Phone Mockup ---------- */
 .phone-col { display: flex; justify-content: center; position: relative; }
