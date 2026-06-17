@@ -22,11 +22,11 @@
   top: 12px;
   right: 12px;
   width: min(340px, calc(100vw - 24px));
-  background: #fff;
+  background: var(--color-deep-trust-blue);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 14px 40px rgba(9, 67, 137, 0.16);
-  border: 1px solid rgba(9, 67, 137, 0.08);
+  border: 0;
   transform-origin: top right;
   transform: scale(0.96) translateY(-6px);
   opacity: 0;
@@ -79,6 +79,8 @@
 }
 
 .menu__list {
+  background: #fff;
+  border-radius: 0 0 20px 20px;
   padding: 8px;
 }
 
