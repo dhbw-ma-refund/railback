@@ -6,7 +6,17 @@ import { Footer } from '../components/Footer';
 import './FAQPage.css';
 
 // Icon component
-const Icon = ({ name, size = 20, color = 'currentColor' }: { name: string; size?: number; color?: string }) => {
+const Icon = ({
+  name,
+  size = 20,
+  color = 'currentColor',
+  className,
+}: {
+  name: string;
+  size?: number;
+  color?: string;
+  className?: string;
+}) => {
   const icons: Record<string, JSX.Element> = {
     ticket: (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -50,15 +60,9 @@ const Icon = ({ name, size = 20, color = 'currentColor' }: { name: string; size?
       </svg>
     ),
   };
-  return icons[name] || null;
+  const icon = icons[name];
+  return icon ? <span className={className}>{icon}</span> : null;
 };
-
-interface Topic {
-  id: string;
-  t: string;
-  d: string;
-  icon: string;
-}
 
 interface QA {
   q: string;
@@ -70,13 +74,6 @@ interface TopicContent {
   img2?: string;
   qa: QA[];
 }
-
-const topics: Topic[] = [
-  { id: 'ticket', t: 'Ticket & Upload', d: 'Wie du dein Ticket hinzufügst und was wir unterstützen', icon: 'ticket' },
-  { id: 'reise', t: 'Reise & Verspätung', d: 'Wie die Prüfung läuft und ab wann du Anspruch hast', icon: 'clock' },
-  { id: 'anspruch', t: 'Anspruch & Erstattung', d: 'Wie die Berechnung funktioniert und was du erwarten kannst', icon: 'euro' },
-  { id: 'antrag', t: 'Antrag & Auszahlung', d: 'Was nach der Freigabe passiert und wann du dein Geld bekommst', icon: 'checkCircle' },
-];
 
 const content: Record<string, Record<string, TopicContent>> = {
   de: {
@@ -195,7 +192,7 @@ export const FAQPage = () => {
                     onClick={() => setOpenQA(openQA === i ? -1 : i)}
                   >
                     <span className="num">{i + 1}</span>
-                    <span>{item.q}</span>
+                    <span className="qa__q-text">{item.q}</span>
                     <Icon name="chevronDown" size={18} className="chev" />
                   </button>
                   <div className="qa__a">

@@ -109,8 +109,9 @@
   flex: none;
 }
 
-.menu__item svg:last-child {
+.menu__item .menu__arrow {
   margin-left: auto;
+  display: inline-flex;
 }
 
 .menu__item.active {

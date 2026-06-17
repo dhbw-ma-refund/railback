@@ -4,7 +4,17 @@ import { useLanguage } from '../lib/LanguageContext';
 import './BurgerMenu.css';
 
 // Simple Icon component
-const Icon = ({ name, size = 21, color = 'currentColor' }: { name: string; size?: number; color?: string }) => {
+const Icon = ({
+  name,
+  size = 21,
+  color = 'currentColor',
+  className,
+}: {
+  name: string;
+  size?: number;
+  color?: string;
+  className?: string;
+}) => {
   const icons: Record<string, JSX.Element> = {
     close: (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -73,7 +83,8 @@ const Icon = ({ name, size = 21, color = 'currentColor' }: { name: string; size?
     ),
   };
 
-  return icons[name] || null;
+  const icon = icons[name];
+  return icon ? <span className={className}>{icon}</span> : null;
 };
 
 interface BurgerMenuProps {
@@ -120,17 +131,17 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
           <button className="menu__item" onClick={() => goTo('/user')}>
             <Icon name="user" size={21} className="ic" />
             <span>{t.menu.account}</span>
-            <Icon name="chevronRight" size={18} color="var(--color-muted-gray-blue)" />
+            <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
           <button className="menu__item" onClick={() => goTo('/faq')}>
             <Icon name="info" size={21} className="ic" />
             <span>{t.menu.faq}</span>
-            <Icon name="chevronRight" size={18} color="var(--color-muted-gray-blue)" />
+            <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
           <a className="menu__item" href="mailto:support@railback.de?subject=Support-Anfrage%20RailBack">
             <Icon name="support" size={21} className="ic" />
             <span>{t.menu.support}</span>
-            <Icon name="chevronRight" size={18} color="var(--color-muted-gray-blue)" />
+            <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </a>
           <div className="lang-row">
             <button
@@ -150,12 +161,12 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
           <button className="menu__item" onClick={() => goTo('/rechtliches')}>
             <Icon name="legal" size={21} className="ic" />
             <span>{t.menu.legal}</span>
-            <Icon name="chevronRight" size={18} color="var(--color-muted-gray-blue)" />
+            <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
           <button className="menu__item" onClick={() => goTo('/impressum')}>
             <Icon name="info" size={21} className="ic" />
             <span>{t.menu.imprint}</span>
-            <Icon name="chevronRight" size={18} color="var(--color-muted-gray-blue)" />
+            <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
         </div>
       </nav>

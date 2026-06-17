@@ -142,11 +142,17 @@
   border-radius: 8px;
   background: rgba(9, 67, 137, 0.08);
   color: var(--color-deep-trust-blue);
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 13px;
   font-weight: 800;
+  line-height: 1;
   flex: none;
+}
+
+.qa__q-text {
+  color: var(--color-deep-trust-blue);
 }
 
 .qa__q .chev {
@@ -172,7 +178,7 @@
 
 .qa__a-inner {
   padding: 0 20px 20px 60px;
-  color: var(--color-text-primary);
+  color: var(--color-muted-gray-blue);
   line-height: 1.6;
 }
 

@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 
-type Language = 'de' | 'en';
+export type Language = 'de' | 'en';
 
 interface LanguageContextType {
   lang: Language;
@@ -34,7 +35,7 @@ const translations = {
     hero: {
       claim: 'From Delay to Pay',
       title: 'Bahnverspätung? Wir helfen bei der Entschädigung!',
-      sub: 'Lade dein Ticket hoch, lass die Verspätung prüfen und erhalte eine klare Übersicht über mögliche Entschädigungen. Kein Antrag wird ohne deine Freigabe versendet.',
+      sub: 'Lade dein Ticket hoch, lass die Verspätung prüfen und erhalte eine klare Übersicht über mögliche Entschädigungen.',
       cta1: 'Anspruch prüfen',
       cta2: 'FAQ',
       tag: ['EINFACH.', 'DIGITAL.', 'STRESSFREI.'],
@@ -43,6 +44,19 @@ const translations = {
         'Antrag in unter 60 Sekunden',
         'DSGVO-konform aus Mannheim',
       ],
+      phone: {
+        greeting: 'Hallo Tobias!',
+        overview: 'Hier ist dein Reiseüberblick.',
+        route: 'München → Berlin',
+        meta: '24.06.2026 • ICE 1232',
+        amount: '24,50 €',
+        amountLabel: 'Erwartete Entschädigung',
+        delay: 'Verspätung erkannt · 78 Min',
+        ticketChecked: 'Ticket geprüft',
+        claimCalculated: 'Anspruch berechnet',
+        refundPossible: 'Erstattung möglich',
+        refundBasis: 'Basierend auf Ticketpreis und erkannter Verspätung.',
+      },
     },
     faq: {
       title: 'Häufig gestellte Fragen',
@@ -73,7 +87,7 @@ const translations = {
     hero: {
       claim: 'From Delay to Pay',
       title: 'Train Delayed? We Help with Your Compensation!',
-      sub: 'Upload your ticket, have the delay checked and get a clear overview of possible compensations. No claim is sent without your approval.',
+      sub: 'Upload your ticket, have the delay checked and get a clear overview of possible compensations.',
       cta1: 'Check claim',
       cta2: 'FAQ',
       tag: ['SIMPLE.', 'DIGITAL.', 'STRESS-FREE.'],
@@ -82,6 +96,19 @@ const translations = {
         'Claim in under 60 seconds',
         'GDPR-compliant from Mannheim',
       ],
+      phone: {
+        greeting: 'Hello Tobias!',
+        overview: 'Here is your trip overview.',
+        route: 'Munich → Berlin',
+        meta: '24 Jun 2026 • ICE 1232',
+        amount: '€24.50',
+        amountLabel: 'Expected compensation',
+        delay: 'Delay detected · 78 min',
+        ticketChecked: 'Ticket checked',
+        claimCalculated: 'Claim calculated',
+        refundPossible: 'Refund possible',
+        refundBasis: 'Based on ticket price and detected delay.',
+      },
     },
     faq: {
       title: 'Frequently Asked Questions',
@@ -100,12 +127,24 @@ const translations = {
   },
 };
 
+const isLanguage = (value: string | null): value is Language => value === 'de' || value === 'en';
+
+const getInitialLanguage = (): Language => {
+  const savedLanguage = window.localStorage.getItem('rb_lang');
+  return isLanguage(savedLanguage) ? savedLanguage : 'de';
+};
+
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [lang, setLang] = useState<Language>('de');
+  const [lang, setLangState] = useState<Language>(getInitialLanguage);
+
+  useEffect(() => {
+    window.localStorage.setItem('rb_lang', lang);
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   const value = {
     lang,
-    setLang,
+    setLang: setLangState,
     t: translations[lang],
   };
 

@@ -17,23 +17,28 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  align-items: center;
 }
 
 .footer__logo-wrapper {
   display: flex;
   align-items: center;
-  gap: var(--spacing-1);
+  gap: 8px;
+  min-height: 32px;
 }
 
 .footer__logo-img {
-  height: 32px;
-  width: auto;
+  width: 34px;
+  height: 24px;
+  object-fit: contain;
+  flex: none;
 }
 
 .footer__logo {
   font-family: 'Figtree', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 800;
   font-size: 20px;
+  line-height: 24px;
   color: var(--color-deep-trust-blue);
   letter-spacing: -0.01em;
 }

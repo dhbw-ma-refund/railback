@@ -2,11 +2,7 @@ import { useState } from 'react';
 import './Header.css';
 import { BurgerMenu } from './BurgerMenu';
 
-interface HeaderProps {
-  onMenuClick?: () => void;
-}
-
-export const Header = ({ onMenuClick }: HeaderProps) => {
+export const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => {

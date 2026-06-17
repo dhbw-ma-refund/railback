@@ -68,16 +68,23 @@
 .hero__claim {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-1);
-  background: rgba(147, 205, 28, 0.16);
-  color: var(--color-landing-green-ink);
-  padding: var(--spacing-1) var(--spacing-2);
-  border-radius: var(--radius-button);
-  font-weight: 700;
-  font-size: 13.5px;
-  letter-spacing: 0.01em;
+  gap: 10px;
+  background: #edf8d9;
+  color: #537f12;
+  padding: 11px 17px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 15px;
   margin-bottom: var(--spacing-3);
   white-space: nowrap;
+}
+
+.hero__claim-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #93cd1c;
+  flex: none;
 }
 
 .hero .h1 {
@@ -298,8 +305,9 @@
 .minicard .badge-ic {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  background: rgba(147, 205, 28, 0.16);
+  border-radius: 11px;
+  background: #edf8d9;
+  color: var(--color-landing-green-ink);
   display: grid;
   place-items: center;
   flex: none;
@@ -322,39 +330,39 @@
   margin-top: 0;
   background: #fff;
   border: 1px solid var(--color-input-border);
-  border-radius: 14px;
-  padding: 16px 18px;
+  border-radius: 16px;
+  padding: 20px 22px;
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  box-shadow: 0 14px 40px rgba(9, 67, 137, 0.16);
-  max-width: 280px;
+  gap: 18px;
+  box-shadow: 0 16px 44px rgba(9, 67, 137, 0.18);
+  max-width: 330px;
 }
 
 .floating-badge .infocard__badge {
-  min-width: 52px;
-  height: 40px;
-  border-radius: 10px;
+  min-width: 64px;
+  height: 52px;
+  border-radius: 12px;
   background: rgba(147, 205, 28, 0.92);
   color: #fff;
   display: grid;
   place-items: center;
   font-weight: 800;
-  font-size: 16px;
+  font-size: 20px;
   flex: none;
 }
 
 .floating-badge .infocard__title {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   color: var(--color-deep-trust-blue);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .floating-badge .infocard__sub {
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--color-muted-gray-blue);
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 /* Mobile Logo Card */

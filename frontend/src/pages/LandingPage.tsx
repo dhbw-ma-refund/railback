@@ -65,7 +65,7 @@ export const LandingPage = () => {
             </div>
             <div className="hero__copy fade-in">
               <span className="hero__claim">
-                <Icon name="checkCircle" size={14} color="var(--color-relief-green)" />
+                <span className="hero__claim-dot" aria-hidden="true"></span>
                 {t.hero.claim}
               </span>
               <h1 className="h1">{t.hero.title}</h1>
@@ -104,27 +104,27 @@ export const LandingPage = () => {
                     <span className="sig">100%</span>
                   </div>
                   <div className="phone__body">
-                    <p className="phone__hi">Hallo!</p>
-                    <p>Lass uns deinen Anspruch prüfen.</p>
+                    <p className="phone__hi">{t.hero.phone.greeting}</p>
+                    <p>{t.hero.phone.overview}</p>
                     <div className="tripcard">
                       <div className="tripcard__route">
-                        München → Berlin
+                        {t.hero.phone.route}
                       </div>
-                      <div className="tripcard__meta">ICE 123 • 24.06.2026</div>
-                      <div className="tripcard__amt">24,50 €</div>
-                      <div className="tripcard__amtlabel">Erwartete Entschädigung</div>
+                      <div className="tripcard__meta">{t.hero.phone.meta}</div>
+                      <div className="tripcard__amt">{t.hero.phone.amount}</div>
+                      <div className="tripcard__amtlabel">{t.hero.phone.amountLabel}</div>
                       <div className="chip-delay">
                         <Icon name="check" size={14} />
-                        60 Min. Verspätung
+                        {t.hero.phone.delay}
                       </div>
                     </div>
                     <div className="minicard">
                       <div className="badge-ic">
-                        <Icon name="check" size={16} color="var(--color-landing-green-ink)" />
+                        <Icon name="checkCircle" size={18} color="var(--color-landing-green-ink)" />
                       </div>
                       <div>
-                        <div className="minicard__title">Ticket geprüft</div>
-                        <div className="minicard__sub">Anspruch berechnet</div>
+                        <div className="minicard__title">{t.hero.phone.ticketChecked}</div>
+                        <div className="minicard__sub">{t.hero.phone.claimCalculated}</div>
                       </div>
                     </div>
                   </div>
@@ -134,8 +134,8 @@ export const LandingPage = () => {
                 <div className="infocard">
                   <div className="infocard__badge">25%</div>
                   <div>
-                    <div className="infocard__title">Erstattung möglich</div>
-                    <div className="infocard__sub">Basierend auf Ticketpreis und erkannter Verspätung.</div>
+                    <div className="infocard__title">{t.hero.phone.refundPossible}</div>
+                    <div className="infocard__sub">{t.hero.phone.refundBasis}</div>
                   </div>
                 </div>
               </div>
