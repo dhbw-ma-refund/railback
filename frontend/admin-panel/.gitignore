@@ -1,8 +1,0 @@
-node_modules
-dist
-
-# Re-include files ignored by the repo-root .gitignore
-!package.json
-!package-lock.json
-!src/lib/
-!src/lib/**
