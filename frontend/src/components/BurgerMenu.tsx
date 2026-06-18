@@ -136,22 +136,18 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
         </div>
         <div className="menu__list">
           <button className="menu__item" onClick={() => goTo('/user')}>
-            <Icon name="user" size={21} className="ic" />
             <span>{t.menu.account}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
           <button className="menu__item" onClick={() => goTo('/faq')}>
-            <Icon name="info" size={21} className="ic" />
             <span>{t.menu.faq}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
           <button className="menu__item" onClick={() => goTo('/preise')}>
-            <Icon name="card" size={21} className="ic" />
             <span>{t.menu.prices}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
           <a className="menu__item" href="mailto:support@railback.de?subject=Support-Anfrage%20RailBack">
-            <Icon name="support" size={21} className="ic" />
             <span>{t.menu.support}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </a>
@@ -171,12 +167,10 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
           </div>
           <div className="menu__divider"></div>
           <button className="menu__item" onClick={() => goTo('/rechtliches')}>
-            <Icon name="legal" size={21} className="ic" />
             <span>{t.menu.legal}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
           <button className="menu__item" onClick={() => goTo('/impressum')}>
-            <Icon name="info" size={21} className="ic" />
             <span>{t.menu.imprint}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
