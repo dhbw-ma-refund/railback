@@ -109,6 +109,14 @@
 .menu__item .ic {
   color: var(--color-deep-trust-blue);
   flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+}
+
+.menu__item .ic svg {
+  display: block;
 }
 
 .menu__item .menu__arrow {

@@ -49,12 +49,11 @@ const Icon = ({
         <line x1="12" y1="8" x2="12" y2="8.01" />
       </svg>
     ),
-    euro: (
+    card: (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 10h12" />
-        <path d="M4 14h12" />
-        <path d="M19 6a8 8 0 0 0-8 8 8 8 0 0 0 8 8" />
-        <path d="M5 6a8 8 0 0 1 8 8 8 8 0 0 1-8 8" />
+        <rect x="3" y="6" width="18" height="12" rx="3" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+        <line x1="7" y1="15" x2="10" y2="15" />
       </svg>
     ),
     support: (
@@ -147,7 +146,7 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
           <button className="menu__item" onClick={() => goTo('/preise')}>
-            <Icon name="euro" size={21} className="ic" />
+            <Icon name="card" size={21} className="ic" />
             <span>{t.menu.prices}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
