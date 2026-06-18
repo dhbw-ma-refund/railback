@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Input } from '../ui-library';
 import { login } from '../services/auth';
 import './LoginPage.css';
@@ -6,6 +7,8 @@ import './LoginPage.css';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function LoginPage() {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -21,18 +24,21 @@ export function LoginPage() {
     setError(null);
     const result = await login(email, password);
     setSubmitting(false);
-    if (!result.ok) {
-      setError(result.error ?? '');
+    if (result.ok) {
+      const next = params.get('next');
+      navigate(next && next.startsWith('/admin-panel') ? next : '/admin-panel', {
+        replace: true,
+      });
+      return;
     }
+    setError(result.error ?? '');
   }
 
   return (
     <div className="rb-admin-login">
       <form className="rb-admin-login__card" onSubmit={onSubmit} noValidate>
         <h1 className="rb-admin-login__title">Admin-Login</h1>
-        <p className="rb-admin-login__subtitle">
-          Zugang nur für Konten mit Admin-Rolle.
-        </p>
+        <p className="rb-admin-login__subtitle">Zugang nur für Konten mit Admin-Rolle.</p>
 
         <div className="rb-admin-login__field">
           <Input
