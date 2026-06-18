@@ -27,6 +27,7 @@ const translations = {
       logout: 'Abmelden',
       account: 'Konto',
       faq: 'FAQ',
+      prices: 'Preise',
       support: 'Support',
       legal: 'Rechtliches',
       imprint: 'Impressum',
@@ -34,9 +35,9 @@ const translations = {
     },
     hero: {
       claim: 'From Delay to Pay',
-      title: 'Bahnverspätung? Wir helfen bei der Entschädigung!',
+      title: 'Deine Bahnverspätung kostet dich Zeit. Hol dir wenigstens dein Geld zurück.',
       sub: 'Lade dein Ticket hoch, lass die Verspätung prüfen und erhalte eine klare Übersicht über mögliche Entschädigungen.',
-      cta1: 'Anspruch prüfen',
+      cta1: 'Entschädigung sichern',
       cta2: 'FAQ',
       tag: ['EINFACH.', 'DIGITAL.', 'STRESSFREI.'],
       trust: [
@@ -79,6 +80,7 @@ const translations = {
       logout: 'Log out',
       account: 'Account',
       faq: 'FAQ',
+      prices: 'Pricing',
       support: 'Support',
       legal: 'Legal',
       imprint: 'Imprint',
