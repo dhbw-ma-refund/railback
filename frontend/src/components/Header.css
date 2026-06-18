@@ -9,7 +9,7 @@
   background: rgba(250, 249, 245, 0.86);
   backdrop-filter: saturate(140%) blur(10px);
   border-bottom: 1px solid rgba(9, 67, 137, 0.08);
-  gap: var(--spacing-3);
+  gap: 14px;
 }
 
 .brand {
