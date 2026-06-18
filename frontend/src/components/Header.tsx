@@ -29,6 +29,10 @@ export const Header = () => {
             />
             <span className="brand__name">RailBack</span>
           </button>
+          <span className="hdr__claim">
+            <span className="hdr__claim-dot" aria-hidden="true"></span>
+            {t.hero.claim}
+          </span>
         </div>
         <nav className="hdr__nav" aria-label="Hauptnavigation">
           <button className="hdr__link" onClick={() => navigate('/preise')}>

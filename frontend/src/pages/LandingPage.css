@@ -383,8 +383,11 @@
 /* Responsive */
 @media (max-width: 767px) {
   .hero {
-    padding: var(--spacing-3) 0 var(--spacing-4);
+    min-height: calc(100vh - 82px);
+    padding: 18px 0 42px;
     text-align: center;
+    display: flex;
+    align-items: flex-start;
   }
 
   .hero__bg {
@@ -394,7 +397,7 @@
   .hero__grid {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-3);
+    gap: 0;
     align-items: center;
   }
 
@@ -402,37 +405,38 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--spacing-2);
-    margin-bottom: var(--spacing-3);
+    gap: 8px;
+    margin-bottom: 18px;
+    width: 100%;
   }
 
   .hero__mobile-logo-card {
-    width: 160px;
-    height: 160px;
-    background: #fff;
-    border: 2px solid var(--color-deep-trust-blue);
-    border-radius: 28px;
+    width: min(280px, 84vw);
+    height: auto;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
     display: grid;
     place-items: center;
     padding: 0;
   }
 
   .hero__mobile-logo-card img {
-    width: 140px;
+    width: 100%;
     height: auto;
+    display: block;
   }
 
   .hero__mobile-logo-name {
-    font-family: 'Figtree', 'Inter', sans-serif;
-    font-weight: 800;
-    font-size: 32px;
-    color: var(--color-deep-trust-blue);
-    letter-spacing: -0.01em;
+    display: none;
   }
 
   .hero__copy {
     order: 1;
     max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .hero__claim {
@@ -444,9 +448,11 @@
   }
 
   .hero__tag {
-    font-size: clamp(15px, 4vw, 18px);
+    order: 2;
+    font-size: clamp(17px, 4.8vw, 19px);
     text-align: center;
-    margin-bottom: var(--spacing-3);
+    margin: 0 0 26px;
+    line-height: 1.4;
   }
 
   .phone-col {
@@ -454,35 +460,53 @@
   }
 
   .hero .h1 {
-    font-size: clamp(26px, 6.5vw, 32px);
-    line-height: 1.25;
-    max-width: 100%;
+    order: 1;
+    font-size: clamp(24px, 6.5vw, 30px);
+    line-height: 1.18;
+    max-width: 15ch;
     text-align: center;
+    margin: 0 0 28px;
   }
 
   .hero__sub {
-    font-size: 15px;
-    max-width: 100%;
+    order: 4;
+    font-size: 16px;
+    max-width: 30ch;
     text-align: center;
     color: var(--color-muted-gray-blue);
+    margin: 10px 0 0;
+    line-height: 1.35;
   }
 
   .hero__cta {
+    order: 3;
     flex-direction: column;
-    gap: var(--spacing-2);
-    margin: 0 auto var(--spacing-4);
-    max-width: 500px;
+    gap: 0;
+    margin: 0 auto 24px;
+    width: 100%;
+    max-width: 310px;
   }
 
   .hero__cta button {
     width: 100%;
     justify-content: center;
+    min-height: 48px;
+    font-size: 16px;
+    font-weight: 800;
+    border-radius: 8px;
+    box-shadow: 0 6px 12px rgba(9, 67, 137, 0.28);
+  }
+
+  .hero__cta button:first-child span {
+    display: none;
+  }
+
+  .hero__cta button:nth-child(2) {
+    display: none;
   }
 
   .hero__tag {
-    font-size: clamp(15px, 4vw, 18px);
-    text-align: center;
-    margin-bottom: var(--spacing-3);
+    letter-spacing: 0;
   }
 
   .trust {
@@ -500,13 +524,13 @@
   }
 
   .wrap {
-    padding: 0 var(--spacing-2);
+    padding: 0 22px;
   }
 }
 
 @media (max-width: 480px) {
   .hero .h1 {
-    font-size: 24px;
+    font-size: clamp(22px, 6.4vw, 26px);
   }
 
   .hero__claim {
@@ -515,17 +539,15 @@
   }
 
   .hero__mobile-logo-card {
-    width: 100px;
-    height: 100px;
-    padding: var(--spacing-2);
+    width: min(260px, 82vw);
   }
 
   .hero__mobile-logo-card img {
-    width: 60px;
+    width: 100%;
   }
 
   .hero__mobile-logo-name {
-    font-size: 20px;
+    display: none;
   }
 
   .trust__item {
