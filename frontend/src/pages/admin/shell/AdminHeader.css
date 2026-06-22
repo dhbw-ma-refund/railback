@@ -1,0 +1,58 @@
+.rb-admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--color-deep-trust-blue);
+  color: var(--color-warm-off-white);
+  min-height: 56px;
+  gap: 16px;
+}
+
+.rb-admin-header__brand {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-h3);
+  color: inherit;
+  text-decoration: none;
+}
+
+.rb-admin-header__nav {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+  margin-left: 32px;
+}
+
+.rb-admin-header__nav a {
+  color: var(--color-warm-off-white);
+  text-decoration: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: var(--font-size-body);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.rb-admin-header__nav a[aria-current='page'] {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.rb-admin-header__logout {
+  min-height: 40px;
+}
+
+@media (max-width: 767px) {
+  .rb-admin-header {
+    flex-wrap: wrap;
+    padding: 10px 12px;
+  }
+
+  .rb-admin-header__nav {
+    order: 3;
+    margin-left: 0;
+    width: 100%;
+    overflow-x: auto;
+    gap: 8px;
+  }
+}

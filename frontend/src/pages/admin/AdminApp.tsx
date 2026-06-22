@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import { AdminGuard } from './services/auth/AdminGuard';
+import { AppShell } from './shell/AppShell';
 import { LoginPage } from './routes/LoginPage';
 import { DashboardPage } from './routes/DashboardPage';
 import { UsersListPage } from './routes/UsersListPage';
@@ -7,10 +9,18 @@ import { UserDetailPage } from './routes/UserDetailPage';
 import { TicketsListPage } from './routes/TicketsListPage';
 import { TicketDetailPage } from './routes/TicketDetailPage';
 
+function Guarded({ children }: { children: ReactNode }) {
+  return (
+    <AdminGuard>
+      <AppShell>{children}</AppShell>
+    </AdminGuard>
+  );
+}
+
 /**
- * Root of the /admin-panel/* subtree.
- *
- * Login is the only public route; everything else sits behind AdminGuard.
+ * Root of the /admin-panel/* subtree. Login is public; everything else sits
+ * behind AdminGuard and is wrapped in AppShell so the header + logout appear
+ * consistently on every authenticated page.
  */
 export function AdminApp() {
   return (
@@ -19,41 +29,41 @@ export function AdminApp() {
       <Route
         path=""
         element={
-          <AdminGuard>
+          <Guarded>
             <DashboardPage />
-          </AdminGuard>
+          </Guarded>
         }
       />
       <Route
         path="users"
         element={
-          <AdminGuard>
+          <Guarded>
             <UsersListPage />
-          </AdminGuard>
+          </Guarded>
         }
       />
       <Route
         path="users/:email"
         element={
-          <AdminGuard>
+          <Guarded>
             <UserDetailPage />
-          </AdminGuard>
+          </Guarded>
         }
       />
       <Route
         path="tickets"
         element={
-          <AdminGuard>
+          <Guarded>
             <TicketsListPage />
-          </AdminGuard>
+          </Guarded>
         }
       />
       <Route
         path="tickets/:ticketId"
         element={
-          <AdminGuard>
+          <Guarded>
             <TicketDetailPage />
-          </AdminGuard>
+          </Guarded>
         }
       />
       <Route path="*" element={<Navigate to="" replace />} />
