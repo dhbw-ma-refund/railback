@@ -5,11 +5,15 @@ import { usersApi } from '../services/api/users';
 import type { User, UserState } from '../services/types/user';
 import { fmtDate } from '../services/format/date';
 import { useDebouncedValue } from '../services/hooks/useDebouncedValue';
+import { useCursorPagination } from '../services/hooks/useCursorPagination';
 import { Input } from '../ui-library';
 import { Table, type TableColumn } from '../ui/Table';
 import { UserStateBadge } from '../ui/UserStateBadge';
 import { FilterBar } from '../ui/FilterBar';
+import { Pagination } from '../ui/Pagination';
 import '../admin.css';
+
+const PAGE_LIMIT = 50;
 
 const COLUMNS: TableColumn<User>[] = [
   { key: 'email', header: 'E-Mail', render: (u) => u.email },
@@ -40,12 +44,11 @@ export function UsersListPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
 
-  // URL is the source of truth for filters. Local email state exists purely
-  // so typing does not thrash history on every keystroke — we debounce before
-  // syncing back into the URL.
   const [emailInput, setEmailInput] = useState(params.get('email') ?? '');
   const debouncedEmail = useDebouncedValue(emailInput, 300);
   const state = parseState(params.get('user_state'));
+  const activeEmail = params.get('email') ?? '';
+  const cursor = params.get('cursor') ?? undefined;
 
   useEffect(() => {
     setParams(
@@ -53,7 +56,7 @@ export function UsersListPage() {
         const next = new URLSearchParams(prev);
         if (debouncedEmail) next.set('email', debouncedEmail);
         else next.delete('email');
-        next.delete('cursor'); // filter change resets pagination cursor.
+        next.delete('cursor');
         return next;
       },
       { replace: true },
@@ -78,17 +81,30 @@ export function UsersListPage() {
     setParams({}, { replace: true });
   }
 
-  const activeEmail = params.get('email') ?? '';
   const hasActiveFilters = activeEmail !== '' || state !== '';
 
   const [rows, setRows] = useState<User[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const queryKey = useMemo(
-    () => ({ email: activeEmail, state, limit: 50 }),
-    [activeEmail, state],
-  );
+  const resetKey = useMemo(() => `${activeEmail}|${state}`, [activeEmail, state]);
+
+  const pager = useCursorPagination({
+    urlCursor: cursor,
+    nextCursorFromLoad: nextCursor,
+    resetKey,
+    onCursorChange: (c) =>
+      setParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (c) next.set('cursor', c);
+          else next.delete('cursor');
+          return next;
+        },
+        { replace: true },
+      ),
+  });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -97,13 +113,18 @@ export function UsersListPage() {
     usersApi
       .listUsers(
         {
-          email: queryKey.email || undefined,
-          user_state: queryKey.state || undefined,
-          limit: queryKey.limit,
+          email: activeEmail || undefined,
+          user_state: state || undefined,
+          limit: PAGE_LIMIT,
+          cursor,
         },
         controller.signal,
       )
-      .then((page) => setRows(page.items))
+      .then((page) => {
+        setRows(page.items);
+        setNextCursor(page.nextCursor);
+        pager.advance(page.nextCursor);
+      })
       .catch((err: unknown) => {
         if (controller.signal.aborted) return;
         setError(err instanceof ApiError ? err.message : 'Benutzer konnten nicht geladen werden.');
@@ -112,7 +133,10 @@ export function UsersListPage() {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [queryKey]);
+    // pager is intentionally excluded from deps: only real query inputs
+    // should re-fetch; pager updates its own state without new network calls.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeEmail, state, cursor]);
 
   return (
     <div className="rb-admin-shell">
@@ -152,6 +176,13 @@ export function UsersListPage() {
         loading={loading}
         error={error}
         emptyMessage="Keine Benutzer gefunden."
+      />
+
+      <Pagination
+        hasPrev={pager.hasPrev}
+        hasNext={pager.hasNext}
+        onPrev={pager.goPrev}
+        onNext={pager.goNext}
       />
     </div>
   );
