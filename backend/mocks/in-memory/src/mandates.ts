@@ -200,4 +200,18 @@ export class InMemoryMandateRepo implements MandateRepo {
     }
     return out;
   }
+
+  async listByBatchId(batchId: string): Promise<SepaMandate[]> {
+    // Linear scan — admin-tool scale, batches are small.
+    const out: SepaMandate[] = [];
+    for (const [pk, bucket] of this.state.rows) {
+      if (!pk.startsWith("USER#")) continue;
+      for (const [sk, item] of bucket) {
+        if (!sk.endsWith("#MANDATE")) continue;
+        const it = item as SepaMandateItem;
+        if (it.pain008_batch_id === batchId) out.push(fromItem(it));
+      }
+    }
+    return out;
+  }
 }

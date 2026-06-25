@@ -144,6 +144,12 @@ export class InMemoryUserRepo implements UserRepo {
     if (patch.suspended_at !== undefined) next.suspended_at = patch.suspended_at;
     if (patch.suspended_reason !== undefined) next.suspended_reason = patch.suspended_reason;
     if (patch.ttl !== undefined) next.ttl = patch.ttl;
+    if (patch.clear) {
+      for (const k of patch.clear) {
+        // exactOptionalPropertyTypes: delete the key rather than assign undefined.
+        delete (next as unknown as Record<string, unknown>)[k];
+      }
+    }
     putRow(this.state, next.PK, next.SK, next);
     return fromItem(next);
   }
