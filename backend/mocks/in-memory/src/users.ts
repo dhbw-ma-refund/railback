@@ -7,6 +7,7 @@ import type {
   Page,
   ProfilePatch,
   User,
+  UserAdminView,
   UserAuthLookup,
   UserListQuery,
   UserRepo,
@@ -73,6 +74,32 @@ function fromItem(it: UserProfileItem): User {
   return u;
 }
 
+// Repo-layer privacy boundary: admin-handler MUST go through this rather
+// than fromItem(). Strips bank ciphertext + TTL before the bytes leave
+// the repo, so even a buggy admin route can't leak them.
+function fromItemAdminView(it: UserProfileItem): UserAdminView {
+  const u: UserAdminView = {
+    email: it.email,
+    vorname: it.vorname,
+    nachname: it.nachname,
+    telefon: it.telefon,
+    adresse: {
+      strasse: it.adresse_strasse,
+      hausnr: it.adresse_hausnr,
+      plz: it.adresse_plz,
+      ort: it.adresse_ort,
+      land: it.adresse_land,
+    },
+    user_state: it.user_state,
+    created_at: it.created_at,
+    datenschutz_einwilligung: it.datenschutz_einwilligung,
+    agb_akzeptiert: it.agb_akzeptiert,
+  };
+  if (it.suspended_at !== undefined) u.suspended_at = it.suspended_at;
+  if (it.suspended_reason !== undefined) u.suspended_reason = it.suspended_reason;
+  return u;
+}
+
 export class InMemoryUserRepo implements UserRepo {
   constructor(private readonly state: MemState) {}
 
@@ -94,6 +121,11 @@ export class InMemoryUserRepo implements UserRepo {
     };
     if (item.suspended_reason !== undefined) out.suspended_reason = item.suspended_reason;
     return out;
+  }
+
+  async getByEmailAdminView(email: string): Promise<UserAdminView | null> {
+    const item = getRow<UserProfileItem>(this.state, keys.userPk(email), keys.USER_PROFILE_SK);
+    return item ? fromItemAdminView(item) : null;
   }
 
   async create(input: NewUser): Promise<User> {
@@ -167,6 +199,23 @@ export class InMemoryUserRepo implements UserRepo {
     all.sort((a, b) => a.GSI1_SK.localeCompare(b.GSI1_SK));
     const page = paginate(all, query.limit, (it) => it.GSI1_SK, query.cursor);
     const out: Page<User> = { items: page.items.map(fromItem) };
+    if (page.nextCursor !== undefined) out.nextCursor = page.nextCursor;
+    return out;
+  }
+
+  async listAdminView(query: UserListQuery): Promise<Page<UserAdminView>> {
+    const all: UserProfileItem[] = [];
+    for (const [, bucket] of this.state.rows) {
+      const item = bucket.get(keys.USER_PROFILE_SK) as UserProfileItem | undefined;
+      if (!item) continue;
+      if (item.GSI1_PK !== "USER") continue;
+      if (query.emailPrefix && !item.email.startsWith(keys.normaliseEmail(query.emailPrefix))) continue;
+      if (query.state && item.user_state !== query.state) continue;
+      all.push(item);
+    }
+    all.sort((a, b) => a.GSI1_SK.localeCompare(b.GSI1_SK));
+    const page = paginate(all, query.limit, (it) => it.GSI1_SK, query.cursor);
+    const out: Page<UserAdminView> = { items: page.items.map(fromItemAdminView) };
     if (page.nextCursor !== undefined) out.nextCursor = page.nextCursor;
     return out;
   }

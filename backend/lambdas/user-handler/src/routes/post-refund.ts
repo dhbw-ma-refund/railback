@@ -61,16 +61,22 @@ import { errorResponse, okJson } from "../response.js";
 import { requireUserCaller } from "../auth-context.js";
 
 /**
- * Dynamic-import-shim for the refund-pdf Lambda. In phase 2.3 the module
- * does not ship yet — a missing module is treated as a no-op (the ticket
- * stays in EMAIL_SENDING/SENDING and waits for phase 5 to land the
- * renderer). Any error from a present module propagates out so the
- * frontend sees a 5xx.
+ * Dynamic-import-shim for the refund-pdf Lambda. Since phase 2.5 the
+ * package is in the workspace and the import resolves normally. The
+ * try/catch is still needed for two narrow cases:
+ *   1. `npm run test --workspace lambdas/user-handler` without installing
+ *      the refund-pdf workspace (dev convenience — the test would never
+ *      reach the email flow on the happy path).
+ *   2. Hot-reload / partial-tree runs where the workspace dep isn't
+ *      symlinked yet.
  *
- * Phase 5 (sync invoke in-process):
- *   - Add @railback/refund-pdf as a workspace dep, export
- *     `renderAndSend({ email, ticketId })`.
- *   - This shim resolves it via the registered specifier below.
+ * Only ERR_MODULE_NOT_FOUND for the literal `@railback/refund-pdf`
+ * specifier is swallowed. Anything else — a syntax error in the module,
+ * a transitive missing dep, a thrown error from renderAndSend itself —
+ * propagates as 5xx. Eating those would leave the ticket stuck in
+ * EMAIL_SENDING with no rendered PDF, which the sweeper cannot recover
+ * from (the sweeper resends an already-persisted PDF; it does not
+ * render).
  *
  * Phase 6 (RAILBACK_STORAGE=ddb, cross-Lambda AWS Invoke):
  *   - Branch on env and use @aws-sdk/client-lambda InvokeCommand instead.
@@ -78,11 +84,18 @@ import { requireUserCaller } from "../auth-context.js";
 async function invokeRefundPdf(args: { email: string; ticketId: string }): Promise<void> {
   let mod: { renderAndSend?: (args: { email: string; ticketId: string }) => Promise<void> };
   try {
-    // @ts-expect-error — module is not in the workspace yet (phase 5 lands it).
     mod = await import("@railback/refund-pdf");
-  } catch {
-    // Module not installed — phase 2.3 path. No-op; the email-sweeper
-    // is not yet running either, so the ticket simply waits.
+  } catch (err) {
+    // Narrow: only swallow "module not found for our own specifier".
+    // Node's ESM loader sets err.code === "ERR_MODULE_NOT_FOUND" and the
+    // message contains the specifier. Anything else (compile failure
+    // inside the loaded graph, missing transitive dep) re-throws.
+    const e = err as NodeJS.ErrnoException & { code?: string };
+    const isOwnSpecifierMissing =
+      e?.code === "ERR_MODULE_NOT_FOUND"
+      && typeof e.message === "string"
+      && e.message.includes("@railback/refund-pdf");
+    if (!isOwnSpecifierMissing) throw err;
     return;
   }
   if (typeof mod.renderAndSend === "function") {
@@ -333,19 +346,25 @@ export async function handlePostRefund(event: ApiGwEvent): Promise<ApiGwResponse
     // Lambdas loaded in-process this is a direct function call; the
     // AWS-SDK Invoke variant lands when RAILBACK_STORAGE=ddb (Phase 5).
     //
-    // Phase 2.3 reality: the refund-pdf module doesn't ship yet. We
-    // dynamic-import behind a try/catch so a missing module is a no-op
-    // and the ticket simply sits in EMAIL_SENDING/SENDING until phase 5
-    // plugs in the renderer — which is the exact state shape the
-    // sweeper will expect. Any throw from the real handler propagates
-    // out so the frontend sees a 5xx and the user can retry.
+    // After the invoke returns, refund-pdf has either:
+    //   - patched email_status → SENT (happy path), or
+    //   - patched ticket_state → EMAIL_FAILED + email_status → FAILED
+    //     (permanent SES error or max-retries), or
+    //   - patched email_status → FAILED_TRANSIENT (sweeper will retry), or
+    //   - left both unchanged (render failure rolled the ticket back to
+    //     READY and re-threw — we never reach this point in that case).
+    // Re-read the ticket so the response reflects what actually happened
+    // instead of the snapshot from BEFORE the renderer ran.
     await invokeRefundPdf({ email, ticketId });
+    const final = await db().tickets.get(email, ticketId);
+    const finalTicketState = final?.ticket_state ?? updated.ticket_state;
+    const finalEmailStatus = final?.email_status ?? updated.email_status ?? "SENDING";
 
     return okJson(202, {
       ticketId: updated.ticketId,
-      ticket_state: "EMAIL_SENDING" as const,
-      submitted_at: updated.submitted_at ?? now,
-      email_status: updated.email_status ?? "SENDING",
+      ticket_state: finalTicketState,
+      submitted_at: final?.submitted_at ?? updated.submitted_at ?? now,
+      email_status: finalEmailStatus,
       erwartete_erstattung: computed.erwartete_erstattung,
       service_fee_betrag: computed.service_fee_betrag,
       ...(serviceFeeState !== undefined ? { service_fee_state: serviceFeeState } : {}),

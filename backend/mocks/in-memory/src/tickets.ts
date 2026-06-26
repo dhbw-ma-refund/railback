@@ -43,7 +43,10 @@ function toItem(email: string, t: Ticket): UserTicketItem {
     item.GSI2_SK = keys.barcodeGsi2Sk(t.barcode_uid);
     item.barcode_uid = t.barcode_uid;
   }
-  if (t.email_status === "SENDING" || t.email_status === "FAILED_TRANSIENT") {
+  if (
+    (t.email_status === "SENDING" || t.email_status === "FAILED_TRANSIENT") &&
+    t.ticket_state === "EMAIL_SENDING"
+  ) {
     if ((t.email_attempts ?? 0) < 3 && t.email_last_attempt) {
       item.GSI_EMAIL_PENDING_PK = keys.EMAIL_PENDING_GSI_PK;
       item.GSI_EMAIL_PENDING_SK = keys.emailPendingGsiSk(t.email_last_attempt);
@@ -182,9 +185,23 @@ export class InMemoryTicketRepo implements TicketRepo {
     const prev = fromItem(item);
     const now = new Date().toISOString();
     const stateChanged = patch.ticket_state !== undefined && patch.ticket_state !== prev.ticket_state;
+    // `null` in a patch means "clear" — apply the patch and then delete any
+    // keys whose value is null so the resulting Ticket matches its strict
+    // (exactOptionalPropertyTypes) type. The clear is also visible to toItem,
+    // which only writes !== undefined.
+    // `patch.clear` (added 2026-06-25 for the render-fail rollback path)
+    // is also field-deletion; we drop it from the merged payload before it
+    // could land as a stray attribute.
+    const { clear, ...patchRest } = patch;
+    const mergedRaw = { ...prev, ...patchRest } as Record<string, unknown>;
+    for (const [k, v] of Object.entries(patchRest)) {
+      if (v === null) delete mergedRaw[k];
+    }
+    if (clear) {
+      for (const k of clear) delete mergedRaw[k];
+    }
     const merged: Ticket = {
-      ...prev,
-      ...patch,
+      ...(mergedRaw as unknown as Ticket),
       email: prev.email,
       ticketId: prev.ticketId,
       state_timeline: stateChanged
@@ -243,5 +260,50 @@ export class InMemoryTicketRepo implements TicketRepo {
       }
     }
     return null;
+  }
+
+  async queryEmailPending(limit: number): Promise<Ticket[]> {
+    // toItem only sets GSI_EMAIL_PENDING_PK when email_status ∈
+    // (SENDING|FAILED_TRANSIENT) AND email_attempts<3 AND email_last_attempt
+    // is set AND ticket_state="EMAIL_SENDING" — DB_SCHEMA.md:59. We can
+    // trust the GSI marker alone here (no re-filter).
+    const matches: Ticket[] = [];
+    for (const [pk, bucket] of this.state.rows) {
+      if (!pk.startsWith("USER#")) continue;
+      for (const [sk, item] of bucket) {
+        if (!sk.startsWith("TICKET#")) continue;
+        if (!keys.parseTicketSk(sk)) continue;
+        const it = item as UserTicketItem;
+        if (it.GSI_EMAIL_PENDING_PK !== keys.EMAIL_PENDING_GSI_PK) continue;
+        matches.push(fromItem(it));
+      }
+    }
+    // Oldest email_last_attempt first; tie-break on ticketId for determinism.
+    matches.sort((a, b) => {
+      const al = a.email_last_attempt ?? "";
+      const bl = b.email_last_attempt ?? "";
+      if (al !== bl) return al.localeCompare(bl);
+      return a.ticketId.localeCompare(b.ticketId);
+    });
+    return matches.slice(0, Math.max(0, limit));
+  }
+
+  async scanEmailWatchdog(cutoffIso: string): Promise<Ticket[]> {
+    const matches: Ticket[] = [];
+    for (const [pk, bucket] of this.state.rows) {
+      if (!pk.startsWith("USER#")) continue;
+      for (const [sk, item] of bucket) {
+        if (!sk.startsWith("TICKET#")) continue;
+        if (!keys.parseTicketSk(sk)) continue;
+        const it = item as UserTicketItem;
+        if (it.ticket_state !== "EMAIL_SENDING") continue;
+        if (it.email_status !== "SENT") continue;
+        if (!it.email_last_attempt) continue;
+        if (it.email_last_attempt >= cutoffIso) continue;
+        matches.push(fromItem(it));
+      }
+    }
+    matches.sort((a, b) => a.ticketId.localeCompare(b.ticketId));
+    return matches;
   }
 }

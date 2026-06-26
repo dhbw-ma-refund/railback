@@ -177,6 +177,23 @@ export class InMemoryBlobRepo implements BlobRepo {
     deleteRow(this.state, keys.userPk(email), keys.belegSk(id, belegId));
   }
 
+  async getBytes(key: string): Promise<{ bytes: Uint8Array; contentType: string } | null> {
+    const bucket = this.state.blobs.get(BUCKET);
+    if (!bucket) return null;
+    const v = bucket.get(key);
+    if (!v) return null;
+    return { bytes: v.bytes, contentType: v.contentType };
+  }
+
+  async putBytes(
+    key: string,
+    bytes: Uint8Array,
+    contentType: string,
+    uploadedAt: string
+  ): Promise<void> {
+    setBlob(this.state, key, bytes, contentType, uploadedAt);
+  }
+
   async presignRawUploadPost(email: string, id: string, contentType: string): Promise<PresignedPost> {
     const eh = emailHash(email);
     const ext = extFromContentType(contentType);

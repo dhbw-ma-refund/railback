@@ -25,7 +25,7 @@ import type {
 import type {
   SepaMandate,
   Ticket,
-  User,
+  UserAdminView,
 } from "@railback/lib/types/dto";
 
 // --- Stats ---------------------------------------------------------------
@@ -73,7 +73,7 @@ export interface UserSummaryDerived {
   totalRefunded: string;
 }
 
-export function userSummary(u: User, derived: UserSummaryDerived): AdminUserSummary {
+export function userSummary(u: UserAdminView, derived: UserSummaryDerived): AdminUserSummary {
   const out: AdminUserSummary = {
     email: u.email,
     vorname: u.vorname,
@@ -101,7 +101,7 @@ export function recentTicketEntry(t: Ticket): AdminRecentTicketEntry {
 }
 
 export function userDetailView(
-  u: User,
+  u: UserAdminView,
   derived: UserSummaryDerived,
   recentTickets: Ticket[],
 ): GetAdminUserResponse {

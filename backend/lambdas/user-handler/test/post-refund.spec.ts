@@ -92,7 +92,11 @@ describe("POST /users/me/tickets/{ticketId}/refund", () => {
     const body = JSON.parse(res.body);
     expect(body.ticketId).toBe(ticketId);
     expect(body.ticket_state).toBe("EMAIL_SENDING");
-    expect(body.email_status).toBe("SENDING");
+    // After the sync refund-pdf invoke, the response reflects the post-
+    // invoke ticket state. The default SES mock in setup.ts returns 2xx,
+    // so the happy-path response shows email_status="SENT" (not the
+    // pre-invoke "SENDING" snapshot).
+    expect(body.email_status).toBe("SENT");
     // ENTSCHAEDIGUNG_60_119 = 0.25 * 100.00
     expect(body.erwartete_erstattung).toBe("25.00");
     // Locked fee 2026-06-24: 0.75 EUR pauschal pro Antrag.
@@ -111,8 +115,11 @@ describe("POST /users/me/tickets/{ticketId}/refund", () => {
     expect(t?.antragsart).toBe("ENTSCHAEDIGUNG_60_119");
     expect(t?.antragstellung_ort).toBe("Berlin");
     expect(t?.delayMinutes).toBe(90);
-    expect(t?.email_status).toBe("SENDING");
-    expect(t?.email_attempts).toBe(0);
+    // refund-pdf (sync-invoked via dynamic-import shim, default mock SES
+    // in setup.ts returns 2xx) has already run and bumped these. The
+    // response body now reflects the post-invoke state.
+    expect(t?.email_status).toBe("SENT");
+    expect(t?.email_attempts).toBe(1);
 
     // Non-zero fee: SEPA mandate row is issued with snapshotted fee.
     const m = await db.mandates.get(ALICE_EMAIL, ticketId);
@@ -360,5 +367,76 @@ describe("POST /users/me/tickets/{ticketId}/refund", () => {
     const t = await db.tickets.get(ALICE_EMAIL, ticketId);
     expect(t).not.toBeNull();
     expect(keys.ticketSk(ticketId)).toBe(`TICKET#${ticketId}`);
+  });
+
+  it("render failure inside refund-pdf rolls the ticket back to READY and surfaces 5xx", async () => {
+    // refund-pdf's render path calls db.blobs.listReceipts. user-handler also
+    // calls it once (to count belege for the validateRefundSubmission gate)
+    // BEFORE the refund-pdf invoke. We need to let the first call succeed
+    // (so user-handler can patch the ticket to EMAIL_SENDING) and fail only
+    // the second one (inside refund-pdf), which simulates a render-side
+    // blowup AFTER the submit landed.
+    const { vi } = await import("vitest");
+    const db = installTestEnv();
+    await seedAlice(db);
+    const ticketId = await seedReadyTicket(db, { withDelay: 90 });
+
+    const realListReceipts = db.blobs.listReceipts.bind(db.blobs);
+    let calls = 0;
+    const spy = vi
+      .spyOn(db.blobs, "listReceipts")
+      .mockImplementation(async (email, id) => {
+        calls += 1;
+        if (calls === 1) return realListReceipts(email, id);
+        throw new Error("simulated render-side blowup");
+      });
+
+    const res = await handler(
+      makeEvent({
+        method: "POST",
+        path: `/users/me/tickets/${ticketId}/refund`,
+        token: aliceAccessToken(),
+        pathParameters: { ticketId },
+        body: validBody(),
+      }),
+    );
+    spy.mockRestore();
+
+    expect(res.statusCode).toBe(500);
+    expect(calls).toBe(2); // user-handler + refund-pdf
+
+    // Ticket rolled back: state=READY, no submit-time fields left.
+    const t = await db.tickets.get(ALICE_EMAIL, ticketId);
+    expect(t?.ticket_state).toBe("READY");
+    expect(t?.email_status).toBeUndefined();
+    expect(t?.email_attempts).toBeUndefined();
+    expect(t?.submitted_at).toBeUndefined();
+    // Form-data prefill stays so the user can re-confirm without re-typing
+    // (user-handler's patch landed before the render throw).
+    expect(t?.antragsart).toBe("ENTSCHAEDIGUNG_60_119");
+    expect(t?.erwartete_erstattung).toBe("25.00");
+  });
+
+  it("response reflects the post-invoke email_status (P2 fix)", async () => {
+    // Default SES mock in setup.ts returns 2xx → renderAndSend transitions
+    // email_status to SENT before returning. The /refund response must
+    // reflect that (it used to echo the pre-invoke "SENDING" snapshot).
+    const db = installTestEnv();
+    await seedAlice(db);
+    const ticketId = await seedReadyTicket(db, { withDelay: 90 });
+
+    const res = await handler(
+      makeEvent({
+        method: "POST",
+        path: `/users/me/tickets/${ticketId}/refund`,
+        token: aliceAccessToken(),
+        pathParameters: { ticketId },
+        body: validBody(),
+      }),
+    );
+    expect(res.statusCode).toBe(202);
+    const body = JSON.parse(res.body);
+    expect(body.email_status).toBe("SENT");
+    expect(body.ticket_state).toBe("EMAIL_SENDING");
   });
 });

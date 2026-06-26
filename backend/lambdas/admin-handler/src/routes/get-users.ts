@@ -37,7 +37,7 @@ export async function handleGetUsers(event: ApiGwEvent): Promise<ApiGwResponse> 
     if (parsed.data.user_state !== undefined) query.state = parsed.data.user_state;
     if (parsed.data.cursor !== undefined) query.cursor = parsed.data.cursor;
 
-    const page = await db().users.list(query);
+    const page = await db().users.listAdminView(query);
 
     // Derive ticket_count + total_refunded per user. One adminList per
     // page-row — fine for admin tooling, denormalisation lands in Phase 5

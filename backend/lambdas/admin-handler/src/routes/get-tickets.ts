@@ -8,7 +8,7 @@ import { AppError } from "@railback/lib/errors";
 import { db } from "@railback/lib/storage";
 import { normaliseEmail } from "@railback/lib/storage/ddb/keys";
 import { listTicketsQuerySchema } from "@railback/lib/schemas/admin";
-import type { AdminTicketQuery, User } from "@railback/lib/types/dto";
+import type { AdminTicketQuery, UserAdminView } from "@railback/lib/types/dto";
 
 import type { ApiGwEvent, ApiGwResponse } from "../event.js";
 import { errorResponse, okJson } from "../response.js";
@@ -40,12 +40,12 @@ export async function handleGetTickets(event: ApiGwEvent): Promise<ApiGwResponse
 
     const page = await db().tickets.adminList(query);
 
-    const userCache = new Map<string, User | null>();
+    const userCache = new Map<string, UserAdminView | null>();
     const items = await Promise.all(
       page.items.map(async (t) => {
         let u = userCache.get(t.email);
         if (u === undefined) {
-          u = await db().users.getByEmail(t.email);
+          u = await db().users.getByEmailAdminView(t.email);
           userCache.set(t.email, u);
         }
         const slice = u

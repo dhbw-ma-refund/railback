@@ -42,7 +42,7 @@ export async function getStatsSnapshot(now: Date = new Date()): Promise<AdminSta
     return _cache.snapshot;
   }
 
-  const users = await db().users.list({ limit: LARGE });
+  const users = await db().users.listAdminView({ limit: LARGE });
   const tickets = await db().tickets.adminList({ limit: LARGE });
 
   let usersActive = 0;

@@ -9,13 +9,17 @@
 // §257 / AO §147). Setting `db_paid_at` is valid on its own (timestamp
 // correction) without a state change.
 //
-// Phase 2.9 TODO: when ticket_state transitions to APPROVED, sync-invoke
-// the pain008-generator Lambda. For now the state transition just lands
-// in DDB; pain008 build happens out-of-band via the (manual / EventBridge)
-// trigger that ARCHITECTURE.md describes.
+// ⚠ DEPLOY-GAP — pain008-generator sync invoke (Phase 2.9):
+// ARCHITECTURE.md (L243, L1062) and API_CONTRACT_ADMINFORMS.md (L420)
+// say that admin PATCH to APPROVED MUST sync-invoke the pain008-generator
+// Lambda. In Phase 2.4 the state transition lands but the sync invoke is
+// not yet wired (the Lambda doesn't exist yet). Tracked as
+// `PHASE_2_9_PAIN008_GAP` so a CloudWatch alarm can fire on it if the
+// gap is still present after Phase 2.9 lands.
 
 import { AppError } from "@railback/lib/errors";
 import { db } from "@railback/lib/storage";
+import { log } from "@railback/lib/http/logging";
 import { patchAdminTicketRequestSchema } from "@railback/lib/schemas/admin";
 import type { TicketPatch } from "@railback/lib/types/dto";
 
@@ -78,15 +82,24 @@ export async function handlePatchTicket(event: ApiGwEvent): Promise<ApiGwRespons
       if (ticket.ticket_state === "APPROVED" && parsed.data.ticket_state === "COMPLETED") {
         patch.archive_ttl = Math.floor(Date.now() / 1000) + 10 * SECONDS_PER_YEAR_AVG;
       }
-      // Phase 2.9 TODO: sync-invoke pain008-generator when transitioning
-      // into APPROVED. State change still lands today.
+      // PHASE_2_9_PAIN008_GAP — emit a structured warn line every time
+      // we transition into APPROVED. Lets ops see (and alarm on) the
+      // gap if Phase 2.9 ships without wiring this site. Drop the
+      // log() call together with the gap when the sync invoke lands.
+      if (parsed.data.ticket_state === "APPROVED" && ticket.ticket_state !== "APPROVED") {
+        log.warn("PHASE_2_9_PAIN008_GAP: ticket APPROVED but pain008-generator not yet invoked", {
+          ticketId,
+          email: owner.email,
+          fromState: ticket.ticket_state,
+        });
+      }
     }
     if (parsed.data.db_paid_at !== undefined) patch.db_paid_at = parsed.data.db_paid_at;
     if (parsed.data.admin_note !== undefined) patch.admin_note = parsed.data.admin_note;
 
     const updated = await db().tickets.patch(owner.email, ticketId, patch);
 
-    const user = await db().users.getByEmail(owner.email);
+    const user = await db().users.getByEmailAdminView(owner.email);
     const slice: { vorname?: string; nachname?: string } = {};
     if (user) {
       slice.vorname = user.vorname;

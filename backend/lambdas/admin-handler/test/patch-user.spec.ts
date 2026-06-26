@@ -101,6 +101,39 @@ describe("PATCH /admin/users/{email}", () => {
     expect(body.suspended_reason).toBeUndefined();
   });
 
+  // DB_SCHEMA.md U5: SUSPENDED → DELETION_SCHEDULED clears the suspension
+  // metadata (the row is on its way out, no point retaining a stale
+  // ban reason on a tombstoned user).
+  it("SUSPENDED → DELETION_SCHEDULED clears suspended_at + suspended_reason and sets ttl", async () => {
+    const db = installTestEnv();
+    await seedAdmin();
+    await seedAlice(db);
+    await db.users.updateProfile(ALICE_EMAIL, {
+      user_state: "SUSPENDED",
+      suspended_at: "2026-06-01T00:00:00Z",
+      suspended_reason: "lasting ban reason",
+    });
+
+    const res = await handler(
+      makeEvent({
+        method: "PATCH",
+        path: `/admin/users/${encodeURIComponent(ALICE_EMAIL)}`,
+        token: adminAccessToken(),
+        body: { user_state: "DELETION_SCHEDULED" },
+      }),
+    );
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    expect(body.user_state).toBe("DELETION_SCHEDULED");
+    expect(body.suspended_at).toBeUndefined();
+    expect(body.suspended_reason).toBeUndefined();
+    // ttl is internal — not in admin-view — but assert via the repo.
+    const internal = await db.users.getByEmail(ALICE_EMAIL);
+    expect(typeof internal?.ttl).toBe("number");
+    expect(internal?.suspended_at).toBeUndefined();
+    expect(internal?.suspended_reason).toBeUndefined();
+  });
+
   it("rejects DELETION_SCHEDULED → SUSPENDED with ERR_CONFLICT", async () => {
     const db = installTestEnv();
     await seedAdmin();

@@ -38,7 +38,7 @@ export async function handleGetUser(event: ApiGwEvent): Promise<ApiGwResponse> {
     requireAdminCaller(event);
     const email = extractEmail(event);
 
-    const user = await db().users.getByEmail(email);
+    const user = await db().users.getByEmailAdminView(email);
     if (!user) {
       throw new AppError("ERR_NOT_FOUND", `user ${email} not found`);
     }

@@ -50,7 +50,7 @@ export async function handlePatchUser(event: ApiGwEvent): Promise<ApiGwResponse>
       );
     }
 
-    const user = await db().users.getByEmail(email);
+    const user = await db().users.getByEmailAdminView(email);
     if (!user) {
       throw new AppError("ERR_NOT_FOUND", `user ${email} not found`);
     }
@@ -90,6 +90,13 @@ export async function handlePatchUser(event: ApiGwEvent): Promise<ApiGwResponse>
         patch.clear = ["suspended_at", "suspended_reason", "ttl"];
       } else if (next === "DELETION_SCHEDULED" && isStateChange) {
         patch.ttl = Math.floor(Date.now() / 1000) + 30 * SECONDS_PER_DAY;
+        // DB_SCHEMA.md U5: SUSPENDED → DELETION_SCHEDULED clears the
+        // suspension metadata (row is on its way out, no point retaining
+        // a stale ban reason on a tombstoned user). Same shape as the
+        // ACTIVE-unban clear, minus `ttl` (we just set it).
+        if (user.user_state === "SUSPENDED") {
+          patch.clear = ["suspended_at", "suspended_reason"];
+        }
       }
     }
 
@@ -109,7 +116,13 @@ export async function handlePatchUser(event: ApiGwEvent): Promise<ApiGwResponse>
       );
     }
 
-    const updated = await db().users.updateProfile(email, patch);
+    await db().users.updateProfile(email, patch);
+    // Re-read through the admin-view so the response is built off the
+    // ciphertext-stripped projection (repo-layer privacy boundary).
+    const updated = await db().users.getByEmailAdminView(email);
+    if (!updated) {
+      throw new AppError("ERR_INTERNAL", "user vanished after updateProfile");
+    }
 
     const ticks = await db().tickets.adminList({ email: updated.email, limit: LARGE });
     const completedAmounts = ticks.items

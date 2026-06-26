@@ -37,7 +37,7 @@ export async function handleGetTicket(event: ApiGwEvent): Promise<ApiGwResponse>
       throw new AppError("ERR_NOT_FOUND", `ticket ${ticketId} not found`);
     }
 
-    const user = await db().users.getByEmail(owner.email);
+    const user = await db().users.getByEmailAdminView(owner.email);
     const slice: { vorname?: string; nachname?: string } = {};
     if (user) {
       slice.vorname = user.vorname;

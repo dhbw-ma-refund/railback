@@ -31,6 +31,10 @@ const RESTRICTED_IMPORTS = ['error', {
       name: '@aws-sdk/s3-presigned-post',
       message: 'Go through @railback/lib/storage/s3/* helpers.',
     },
+    {
+      name: '@aws-sdk/client-sesv2',
+      message: 'Go through @railback/lib/email/* helpers.',
+    },
   ],
 }];
 
@@ -50,10 +54,10 @@ module.exports = {
       rules: { 'no-restricted-imports': RESTRICTED_IMPORTS },
     },
     {
-      // lib code: same rule, but the storage/ddb and storage/s3 adapter
-      // dirs ARE allowed to import the SDK — that is their whole job.
+      // lib code: same rule, but the storage/ddb, storage/s3, and email
+      // adapter dirs ARE allowed to import the SDK — that is their whole job.
       files: ['lib/src/**/*.ts'],
-      excludedFiles: ['lib/src/storage/ddb/**', 'lib/src/storage/s3/**'],
+      excludedFiles: ['lib/src/storage/ddb/**', 'lib/src/storage/s3/**', 'lib/src/email/**'],
       rules: { 'no-restricted-imports': RESTRICTED_IMPORTS },
     },
   ],
