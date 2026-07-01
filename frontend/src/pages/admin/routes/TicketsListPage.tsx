@@ -1,11 +1,15 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ApiError } from '../services/api/errors';
 import { ticketsApi } from '../services/api/tickets';
-import type { TicketListItem } from '../services/types/ticket';
+import type { TicketListItem, TicketState } from '../services/types/ticket';
+import { TICKET_STATES } from '../services/types/ticket';
 import { fmtDate, fmtDateTime } from '../services/format/date';
+import { useDebouncedValue } from '../services/hooks/useDebouncedValue';
+import { Input } from '../ui-library';
 import { Table, type TableColumn } from '../ui/Table';
 import { TicketStateBadge } from '../ui/TicketStateBadge';
+import { FilterBar } from '../ui/FilterBar';
 import '../admin.css';
 
 const COLUMNS: TableColumn<TicketListItem>[] = [
@@ -23,18 +27,111 @@ const COLUMNS: TableColumn<TicketListItem>[] = [
   { key: 'submitted_at', header: 'Angelegt', render: (t) => fmtDateTime(t.submitted_at) },
 ];
 
+const TICKET_STATE_SET: ReadonlySet<TicketState> = new Set(TICKET_STATES);
+
+function parseState(raw: string | null): '' | TicketState {
+  if (raw && TICKET_STATE_SET.has(raw as TicketState)) return raw as TicketState;
+  return '';
+}
+
 export function TicketsListPage() {
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+
+  const [emailInput, setEmailInput] = useState(params.get('email') ?? '');
+  const [trainInput, setTrainInput] = useState(params.get('trainNr') ?? '');
+  const debEmail = useDebouncedValue(emailInput, 300);
+  const debTrain = useDebouncedValue(trainInput, 300);
+  const state = parseState(params.get('state'));
+  const date = params.get('date') ?? '';
+  const activeEmail = params.get('email') ?? '';
+  const activeTrain = params.get('trainNr') ?? '';
+
+  useEffect(() => {
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (debEmail) next.set('email', debEmail);
+        else next.delete('email');
+        next.delete('cursor');
+        return next;
+      },
+      { replace: true },
+    );
+  }, [debEmail, setParams]);
+
+  useEffect(() => {
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (debTrain) next.set('trainNr', debTrain);
+        else next.delete('trainNr');
+        next.delete('cursor');
+        return next;
+      },
+      { replace: true },
+    );
+  }, [debTrain, setParams]);
+
+  function onChangeState(value: '' | TicketState) {
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value) next.set('state', value);
+        else next.delete('state');
+        next.delete('cursor');
+        return next;
+      },
+      { replace: true },
+    );
+  }
+
+  function onChangeDate(value: string) {
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value) next.set('date', value);
+        else next.delete('date');
+        next.delete('cursor');
+        return next;
+      },
+      { replace: true },
+    );
+  }
+
+  function onReset() {
+    setEmailInput('');
+    setTrainInput('');
+    setParams({}, { replace: true });
+  }
+
+  const hasActiveFilters =
+    activeEmail !== '' || activeTrain !== '' || state !== '' || date !== '';
+
   const [rows, setRows] = useState<TicketListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const queryKey = useMemo(
+    () => `${activeEmail}|${activeTrain}|${state}|${date}`,
+    [activeEmail, activeTrain, state, date],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
     setError(null);
     ticketsApi
-      .listTickets({ limit: 50 }, controller.signal)
+      .listTickets(
+        {
+          email: activeEmail || undefined,
+          trainNr: activeTrain || undefined,
+          state: state || undefined,
+          date: date || undefined,
+          limit: 50,
+        },
+        controller.signal,
+      )
       .then((page) => setRows(page.items))
       .catch((err: unknown) => {
         if (controller.signal.aborted) return;
@@ -44,18 +141,62 @@ export function TicketsListPage() {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, []);
+    // Query params are folded into queryKey; a change there is what should refetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryKey]);
 
   return (
     <div className="rb-admin-shell">
       <h1 className="rb-admin-shell__title">Tickets</h1>
+
+      <FilterBar onReset={onReset} hasActiveFilters={hasActiveFilters}>
+        <label className="rb-filter-bar__label">
+          <span>State</span>
+          <select
+            className="rb-filter-bar__select"
+            value={state}
+            onChange={(e) => onChangeState(parseState(e.currentTarget.value || null))}
+          >
+            <option value="">Alle</option>
+            {TICKET_STATES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="rb-filter-bar__field">
+          <Input
+            label="E-Mail (exakt)"
+            type="search"
+            value={emailInput}
+            onChange={(e) => setEmailInput(e.currentTarget.value)}
+          />
+        </div>
+        <div className="rb-filter-bar__field">
+          <Input
+            label="Zugnummer"
+            type="search"
+            value={trainInput}
+            onChange={(e) => setTrainInput(e.currentTarget.value)}
+            placeholder="z. B. ICE 500"
+          />
+        </div>
+        <div className="rb-filter-bar__field">
+          <Input
+            label="Datum"
+            type="date"
+            value={date}
+            onChange={(e) => onChangeDate(e.currentTarget.value)}
+          />
+        </div>
+      </FilterBar>
+
       <Table
         columns={COLUMNS}
         rows={rows}
         rowKey={(t) => t.ticketId}
-        onRowClick={(t) =>
-          navigate(`/admin-panel/tickets/${encodeURIComponent(t.ticketId)}`)
-        }
+        onRowClick={(t) => navigate(`/admin-panel/tickets/${encodeURIComponent(t.ticketId)}`)}
         loading={loading}
         error={error}
         emptyMessage="Keine Tickets gefunden."
