@@ -6,11 +6,15 @@ import type { TicketListItem, TicketState } from '../services/types/ticket';
 import { TICKET_STATES } from '../services/types/ticket';
 import { fmtDate, fmtDateTime } from '../services/format/date';
 import { useDebouncedValue } from '../services/hooks/useDebouncedValue';
+import { useCursorPagination } from '../services/hooks/useCursorPagination';
 import { Input } from '../ui-library';
 import { Table, type TableColumn } from '../ui/Table';
 import { TicketStateBadge } from '../ui/TicketStateBadge';
 import { FilterBar } from '../ui/FilterBar';
+import { Pagination } from '../ui/Pagination';
 import '../admin.css';
+
+const PAGE_LIMIT = 50;
 
 const COLUMNS: TableColumn<TicketListItem>[] = [
   { key: 'ticketId', header: 'Ticket', render: (t) => t.ticketId },
@@ -46,6 +50,7 @@ export function TicketsListPage() {
   const date = params.get('date') ?? '';
   const activeEmail = params.get('email') ?? '';
   const activeTrain = params.get('trainNr') ?? '';
+  const cursor = params.get('cursor') ?? undefined;
 
   useEffect(() => {
     setParams(
@@ -109,13 +114,30 @@ export function TicketsListPage() {
     activeEmail !== '' || activeTrain !== '' || state !== '' || date !== '';
 
   const [rows, setRows] = useState<TicketListItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const queryKey = useMemo(
+  const resetKey = useMemo(
     () => `${activeEmail}|${activeTrain}|${state}|${date}`,
     [activeEmail, activeTrain, state, date],
   );
+
+  const pager = useCursorPagination({
+    urlCursor: cursor,
+    nextCursorFromLoad: nextCursor,
+    resetKey,
+    onCursorChange: (c) =>
+      setParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (c) next.set('cursor', c);
+          else next.delete('cursor');
+          return next;
+        },
+        { replace: true },
+      ),
+  });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -128,11 +150,16 @@ export function TicketsListPage() {
           trainNr: activeTrain || undefined,
           state: state || undefined,
           date: date || undefined,
-          limit: 50,
+          limit: PAGE_LIMIT,
+          cursor,
         },
         controller.signal,
       )
-      .then((page) => setRows(page.items))
+      .then((page) => {
+        setRows(page.items);
+        setNextCursor(page.nextCursor);
+        pager.advance(page.nextCursor);
+      })
       .catch((err: unknown) => {
         if (controller.signal.aborted) return;
         setError(err instanceof ApiError ? err.message : 'Tickets konnten nicht geladen werden.');
@@ -141,9 +168,8 @@ export function TicketsListPage() {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-    // Query params are folded into queryKey; a change there is what should refetch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryKey]);
+  }, [activeEmail, activeTrain, state, date, cursor]);
 
   return (
     <div className="rb-admin-shell">
@@ -200,6 +226,13 @@ export function TicketsListPage() {
         loading={loading}
         error={error}
         emptyMessage="Keine Tickets gefunden."
+      />
+
+      <Pagination
+        hasPrev={pager.hasPrev}
+        hasNext={pager.hasNext}
+        onPrev={pager.goPrev}
+        onNext={pager.goNext}
       />
     </div>
   );
