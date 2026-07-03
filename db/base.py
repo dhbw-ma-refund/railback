@@ -1,7 +1,3 @@
-"""
-Shared DB infrastructure: Result type, @db_operation decorator, BaseConnector.
-"""
-
 from __future__ import annotations
 
 import functools
@@ -12,10 +8,6 @@ from typing import Generic, TypeVar
 from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Result type
-# ---------------------------------------------------------------------------
 
 T = TypeVar("T")
 
@@ -59,12 +51,7 @@ class Err(Result):
         raise self.error
 
 
-# ---------------------------------------------------------------------------
-# Decorator
-# ---------------------------------------------------------------------------
-
 def safe(method):
-    """Wraps a connector method so exceptions become Err instead of raising."""
     @functools.wraps(method)
     def wrapper(*args, **kwargs):
         try:
@@ -80,17 +67,13 @@ def safe(method):
     return wrapper
 
 
-# ---------------------------------------------------------------------------
-# BaseConnector
-# ---------------------------------------------------------------------------
-
 class BaseConnector:
     def __init__(self, table):
         self._t = table
 
     @safe
     def _get(self, pk: str, sk: str) -> Result:
-        resp = self._t.get_item(Key={"PK": pk, "SK": sk})
+        resp = self._t.get_item(Key={"pk": pk, "sk": sk})
         return Ok(resp.get("Item"))
 
     @safe
@@ -109,7 +92,7 @@ class BaseConnector:
             names[ph_n] = k
             values[ph_v] = v
         self._t.update_item(
-            Key={"PK": pk, "SK": sk},
+            Key={"pk": pk, "sk": sk},
             UpdateExpression="SET " + ", ".join(set_parts),
             ExpressionAttributeNames=names,
             ExpressionAttributeValues=values,
@@ -118,7 +101,7 @@ class BaseConnector:
 
     @safe
     def _delete(self, pk: str, sk: str) -> Result:
-        self._t.delete_item(Key={"PK": pk, "SK": sk})
+        self._t.delete_item(Key={"pk": pk, "sk": sk})
         return Ok(None)
 
     @safe
@@ -137,5 +120,5 @@ class BaseConnector:
     def _batch_delete(self, keys: list[tuple[str, str]]) -> Result:
         with self._t.batch_writer() as batch:
             for pk, sk in keys:
-                batch.delete_item(Key={"PK": pk, "SK": sk})
+                batch.delete_item(Key={"pk": pk, "sk": sk})
         return Ok(None)

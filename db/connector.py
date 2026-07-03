@@ -1,12 +1,3 @@
-"""
-RailBack DynamoDB connectors.
-
-One connector class per entity, each exposing basic CRUD:
-  get, put, update, delete.
-
-All methods return Result — callers must handle errors explicitly.
-"""
-
 from __future__ import annotations
 
 import os
@@ -16,7 +7,8 @@ from boto3.dynamodb.conditions import Key
 
 from db.base import BaseConnector, Ok, Result, safe
 
-TABLE_NAME = os.environ.get("RAILBACK_DDB_TABLE", "railback")
+TABLE_NAME = os.environ.get("RAILBACK_DDB_TABLE", "RailBack")
+REGION = "eu-north-1"
 ENDPOINT_URL = os.environ.get("DYNAMODB_ENDPOINT_URL", None)
 
 
@@ -26,12 +18,14 @@ def _table_resource(table=None):
     kwargs = {}
     if ENDPOINT_URL:
         kwargs["endpoint_url"] = ENDPOINT_URL
-    ddb = boto3.resource("dynamodb", region_name="eu-central-1", **kwargs)
+        kwargs["aws_access_key_id"] = "fake"
+        kwargs["aws_secret_access_key"] = "fake"
+    ddb = boto3.resource("dynamodb", region_name=REGION, **kwargs)
     return ddb.Table(TABLE_NAME)
 
 
 # ---------------------------------------------------------------------------
-# User  —  PK=USER#{email}  SK=PROFILE
+# User  —  pk=USER#{email}  sk=PROFILE
 # ---------------------------------------------------------------------------
 
 class UserConnector(BaseConnector):
@@ -45,12 +39,11 @@ class UserConnector(BaseConnector):
         return self._update_fields(f"USER#{email}", "PROFILE", updates)
 
     def list_all(self) -> Result:
-        """Ok(list[dict]) — all users via GSI1."""
-        return self._query(IndexName="GSI1", KeyConditionExpression=Key("GSI1_PK").eq("USER"))
+        return self._query(IndexName="gsi1", KeyConditionExpression=Key("gsi1_pk").eq("USER"))
 
 
 # ---------------------------------------------------------------------------
-# Admin  —  PK=ADMIN#{email}  SK=PROFILE
+# Admin  —  pk=ADMIN#{email}  sk=PROFILE
 # ---------------------------------------------------------------------------
 
 class AdminConnector(BaseConnector):
@@ -64,12 +57,11 @@ class AdminConnector(BaseConnector):
         return self._update_fields(f"ADMIN#{email}", "PROFILE", updates)
 
     def list_all(self) -> Result:
-        """Ok(list[dict]) — all admins via GSI1."""
-        return self._query(IndexName="GSI1", KeyConditionExpression=Key("GSI1_PK").eq("ADMIN"))
+        return self._query(IndexName="gsi1", KeyConditionExpression=Key("gsi1_pk").eq("ADMIN"))
 
 
 # ---------------------------------------------------------------------------
-# Ticket  —  PK=USER#{email}  SK=TICKET#{ticket_id}
+# Ticket  —  pk=USER#{email}  sk=TICKET#{ticket_id}
 # ---------------------------------------------------------------------------
 
 class TicketConnector(BaseConnector):
@@ -83,26 +75,23 @@ class TicketConnector(BaseConnector):
         return self._update_fields(f"USER#{email}", f"TICKET#{ticket_id}", updates)
 
     def list_for_user(self, email: str) -> Result:
-        """Ok(list[dict]) — tickets only, excludes receipt and mandate rows."""
         result = self._query(
-            KeyConditionExpression=Key("PK").eq(f"USER#{email}") & Key("SK").begins_with("TICKET#"),
+            KeyConditionExpression=Key("pk").eq(f"USER#{email}") & Key("sk").begins_with("TICKET#"),
         )
         if result.is_err():
             return result
-        return Ok([i for i in result.unwrap() if "#BELEG#" not in i["SK"] and not i["SK"].endswith("#MANDATE")])
+        return Ok([i for i in result.unwrap() if "#BELEG#" not in i["sk"] and not i["sk"].endswith("#MANDATE")])
 
     def get_by_train(self, train_nr: str, date: str) -> Result:
-        """Ok(list[dict]) — all tickets for a train on a date via GSI1."""
         return self._query(
-            IndexName="GSI1",
-            KeyConditionExpression=Key("GSI1_PK").eq(f"TRAIN#{train_nr}#{date}"),
+            IndexName="gsi1",
+            KeyConditionExpression=Key("gsi1_pk").eq(f"TRAIN#{train_nr}#{date}"),
         )
 
     def check_barcode_duplicate(self, barcode_uid: str) -> Result:
-        """Ok(item | None) — item present means duplicate, via GSI2."""
         result = self._query(
-            IndexName="GSI2",
-            KeyConditionExpression=Key("GSI2_PK").eq("BARCODE") & Key("GSI2_SK").eq(barcode_uid),
+            IndexName="gsi2",
+            KeyConditionExpression=Key("gsi2_pk").eq("BARCODE") & Key("gsi2_sk").eq(barcode_uid),
             Limit=1,
         )
         if result.is_err():
@@ -111,16 +100,15 @@ class TicketConnector(BaseConnector):
         return Ok(items[0] if items else None)
 
     def list_email_pending(self) -> Result:
-        """Ok(list[dict]) ordered oldest-first via GSI_EMAIL_PENDING."""
         return self._query(
-            IndexName="GSI_EMAIL_PENDING",
-            KeyConditionExpression=Key("GSI_EMAIL_PENDING_PK").eq("EMAIL_PENDING"),
+            IndexName="gsi_email_pending",
+            KeyConditionExpression=Key("gsi_email_pending_pk").eq("EMAIL_PENDING"),
             ScanIndexForward=True,
         )
 
 
 # ---------------------------------------------------------------------------
-# TicketOwner  —  PK=TICKET#{ticket_id}  SK=OWNER
+# TicketOwner  —  pk=TICKET#{ticket_id}  sk=OWNER
 # ---------------------------------------------------------------------------
 
 class TicketOwnerConnector(BaseConnector):
@@ -135,7 +123,7 @@ class TicketOwnerConnector(BaseConnector):
 
 
 # ---------------------------------------------------------------------------
-# RawUpload  —  PK=USER#{email}  SK=RAW#{ticket_id}
+# RawUpload  —  pk=USER#{email}  sk=RAW#{ticket_id}
 # ---------------------------------------------------------------------------
 
 class RawUploadConnector(BaseConnector):
@@ -150,7 +138,7 @@ class RawUploadConnector(BaseConnector):
 
 
 # ---------------------------------------------------------------------------
-# RenderedPdf  —  PK=USER#{email}  SK=RENDERED#{ticket_id}
+# RenderedPdf  —  pk=USER#{email}  sk=RENDERED#{ticket_id}
 # ---------------------------------------------------------------------------
 
 class RenderedPdfConnector(BaseConnector):
@@ -165,7 +153,7 @@ class RenderedPdfConnector(BaseConnector):
 
 
 # ---------------------------------------------------------------------------
-# OriginalReceipt  —  PK=USER#{email}  SK=TICKET#{ticket_id}#BELEG#{beleg_id}
+# OriginalReceipt  —  pk=USER#{email}  sk=TICKET#{ticket_id}#BELEG#{beleg_id}
 # ---------------------------------------------------------------------------
 
 class OriginalReceiptConnector(BaseConnector):
@@ -179,14 +167,13 @@ class OriginalReceiptConnector(BaseConnector):
         return self._update_fields(f"USER#{email}", f"TICKET#{ticket_id}#BELEG#{beleg_id}", updates)
 
     def list_for_ticket(self, email: str, ticket_id: str) -> Result:
-        """Ok(list[dict]) — all receipts for a ticket."""
         return self._query(
-            KeyConditionExpression=Key("PK").eq(f"USER#{email}") & Key("SK").begins_with(f"TICKET#{ticket_id}#BELEG#"),
+            KeyConditionExpression=Key("pk").eq(f"USER#{email}") & Key("sk").begins_with(f"TICKET#{ticket_id}#BELEG#"),
         )
 
 
 # ---------------------------------------------------------------------------
-# SepaMandate  —  PK=USER#{email}  SK=TICKET#{ticket_id}#MANDATE
+# SepaMandate  —  pk=USER#{email}  sk=TICKET#{ticket_id}#MANDATE
 # ---------------------------------------------------------------------------
 
 class SepaMandateConnector(BaseConnector):
@@ -201,7 +188,7 @@ class SepaMandateConnector(BaseConnector):
 
 
 # ---------------------------------------------------------------------------
-# SepaReport  —  PK=SEPA#REPORT#{date}  SK=REPORT#{report_id}
+# SepaReport  —  pk=SEPA#REPORT#{date}  sk=REPORT#{report_id}
 # ---------------------------------------------------------------------------
 
 class SepaReportConnector(BaseConnector):
@@ -215,12 +202,11 @@ class SepaReportConnector(BaseConnector):
         return self._update_fields(f"SEPA#REPORT#{date}", f"REPORT#{report_id}", updates)
 
     def list_by_date(self, date: str) -> Result:
-        """Ok(list[dict]) — all reports for a given date."""
-        return self._query(KeyConditionExpression=Key("PK").eq(f"SEPA#REPORT#{date}"))
+        return self._query(KeyConditionExpression=Key("pk").eq(f"SEPA#REPORT#{date}"))
 
 
 # ---------------------------------------------------------------------------
-# TrainSegmentDelay  —  PK=TRAIN#{train_nr}#{date}  SK=SEG#{seg_id}
+# TrainSegmentDelay  —  pk=TRAIN#{train_nr}#{date}  sk=SEG#{seg_id}
 # ---------------------------------------------------------------------------
 
 class TrainSegmentDelayConnector(BaseConnector):
@@ -234,21 +220,19 @@ class TrainSegmentDelayConnector(BaseConnector):
         return self._update_fields(f"TRAIN#{train_nr}#{date}", f"SEG#{seg_id}", updates)
 
     def list_for_train(self, train_nr: str, date: str) -> Result:
-        """Ok(list[dict]) — all segments for a train on a date."""
         return self._query(
-            KeyConditionExpression=Key("PK").eq(f"TRAIN#{train_nr}#{date}") & Key("SK").begins_with("SEG#"),
+            KeyConditionExpression=Key("pk").eq(f"TRAIN#{train_nr}#{date}") & Key("sk").begins_with("SEG#"),
         )
 
     def route_lookup(self, origin_eva: int, date: str, from_time: str, to_time: str) -> Result:
-        """Ok(list[dict]) — segments departing from a station within a time range via GSI3."""
         return self._query(
-            IndexName="GSI3",
-            KeyConditionExpression=Key("GSI3_PK").eq(f"STATION#{origin_eva}#{date}") & Key("GSI3_SK").between(from_time, to_time),
+            IndexName="gsi1",
+            KeyConditionExpression=Key("gsi1_pk").eq(f"STATION#{origin_eva}#{date}") & Key("gsi1_sk").between(from_time, to_time),
         )
 
 
 # ---------------------------------------------------------------------------
-# RouteTemplate  —  PK=USER#{email}  SK=TEMPLATE#{template_id}
+# RouteTemplate  —  pk=USER#{email}  sk=TEMPLATE#{template_id}
 # ---------------------------------------------------------------------------
 
 class RouteTemplateConnector(BaseConnector):
@@ -262,9 +246,8 @@ class RouteTemplateConnector(BaseConnector):
         return self._update_fields(f"USER#{email}", f"TEMPLATE#{template_id}", updates)
 
     def list_for_user(self, email: str) -> Result:
-        """Ok(list[dict]) — all templates for a user."""
         return self._query(
-            KeyConditionExpression=Key("PK").eq(f"USER#{email}") & Key("SK").begins_with("TEMPLATE#"),
+            KeyConditionExpression=Key("pk").eq(f"USER#{email}") & Key("sk").begins_with("TEMPLATE#"),
         )
 
 
@@ -289,33 +272,26 @@ class RailBackConnector:
 
     @safe
     def delete_user(self, email: str) -> Result:
-        """Delete a user and everything under their partition, plus all TicketOwner records."""
-        all_items = self.user._query(KeyConditionExpression=Key("PK").eq(f"USER#{email}"))
+        all_items = self.user._query(KeyConditionExpression=Key("pk").eq(f"USER#{email}"))
         if all_items.is_err():
             return all_items
-
         items = all_items.unwrap()
-        keys = [(item["PK"], item["SK"]) for item in items]
-
+        keys = [(item["pk"], item["sk"]) for item in items]
         for item in items:
-            sk = item["SK"]
+            sk = item["sk"]
             if sk.startswith("TICKET#") and sk.count("#") == 1:
                 ticket_id = sk.removeprefix("TICKET#")
                 keys.append((f"TICKET#{ticket_id}", "OWNER"))
-
         return self.user._batch_delete(keys)
 
     @safe
     def delete_ticket(self, email: str, ticket_id: str) -> Result:
-        """Delete a ticket and all its owned items: receipts, mandate, owner, raw upload, rendered pdf."""
-        # Trailing # prevents prefix collision with ticket IDs that share a prefix (e.g. "abc" vs "abcd")
         children = self.ticket._query(
-            KeyConditionExpression=Key("PK").eq(f"USER#{email}") & Key("SK").begins_with(f"TICKET#{ticket_id}#")
+            KeyConditionExpression=Key("pk").eq(f"USER#{email}") & Key("sk").begins_with(f"TICKET#{ticket_id}#")
         )
         if children.is_err():
             return children
-
-        keys = [(item["PK"], item["SK"]) for item in children.unwrap()]
+        keys = [(item["pk"], item["sk"]) for item in children.unwrap()]
         keys += [
             (f"USER#{email}", f"TICKET#{ticket_id}"),
             (f"TICKET#{ticket_id}", "OWNER"),
