@@ -9,6 +9,7 @@ import { UserDetailPage } from './routes/UserDetailPage';
 import { TicketsListPage } from './routes/TicketsListPage';
 import { TicketDetailPage } from './routes/TicketDetailPage';
 
+import './mobile.css';
 function Guarded({ children }: { children: ReactNode }) {
   return (
     <AdminGuard>

@@ -1,0 +1,48 @@
+/*
+ * Mobile portrait fine-tuning. Loaded after admin.css so it can override.
+ * Every rule is scoped inside a max-width media query.
+ */
+
+@media (max-width: 767px) {
+  .rb-admin-shell {
+    padding: 16px 12px;
+  }
+
+  .rb-admin-shell__title {
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+
+  .rb-admin-shell__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rb-admin-shell__row > * {
+    width: 100%;
+  }
+
+  /* Tap targets — the shared Button already meets 44 px; row clicks need help. */
+  .rb-table tbody tr[data-clickable='true'] td {
+    min-height: 44px;
+  }
+
+  .rb-detail {
+    padding: 12px 12px 24px 12px;
+  }
+
+  .rb-detail__title {
+    font-size: 22px;
+    line-height: 1.3;
+  }
+
+  .rb-detail__grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .rb-detail__ticket {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+}
