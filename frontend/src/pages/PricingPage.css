@@ -29,6 +29,7 @@
 .pricing-hero__eyebrow {
   display: inline-flex;
   align-items: center;
+  gap: 10px;
   min-height: 38px;
   padding: 0 16px;
   margin-bottom: var(--spacing-3);
@@ -36,6 +37,15 @@
   background: #edf8d9;
   border-radius: 999px;
   font-weight: 800;
+}
+
+.pricing-hero__eyebrow::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-relief-green);
+  flex: none;
 }
 
 .pricing-hero h1 {

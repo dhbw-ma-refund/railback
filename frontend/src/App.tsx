@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LanguageProvider } from './lib/LanguageContext';
 import { LandingPage } from './pages/LandingPage';
+import { CampaignLandingPage1 } from './pages/CampaignLandingPage1';
 import { UserForms } from './pages/UserForms';
 import { FAQPage } from './pages/FAQPage';
 import { LegalPage } from './pages/LegalPage';
@@ -12,6 +13,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/campaign-landing-page-1" element={<CampaignLandingPage1 />} />
           <Route path="/user" element={<UserForms />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/preise" element={<PricingPage />} />

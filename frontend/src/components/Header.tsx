@@ -27,14 +27,16 @@ export const Header = () => {
               alt="RailBack Logo"
               className="brand__logo"
             />
-            <span className="brand__name">RailBack</span>
+            <span className="brand__text">
+              <span className="brand__name">RailBack</span>
+              <span className="brand__claim">{t.hero.claim}</span>
+            </span>
           </button>
-          <span className="hdr__claim">
-            <span className="hdr__claim-dot" aria-hidden="true"></span>
-            {t.hero.claim}
-          </span>
         </div>
         <nav className="hdr__nav" aria-label="Hauptnavigation">
+          <button className="hdr__link" onClick={() => navigate('/faq')}>
+            {t.menu.faq}
+          </button>
           <button className="hdr__link" onClick={() => navigate('/preise')}>
             {t.menu.prices}
           </button>

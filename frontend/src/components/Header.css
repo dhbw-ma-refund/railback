@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px clamp(18px, 4vw, 48px);
+  padding: 14px clamp(18px, 4vw, 48px);
   background: rgba(250, 249, 245, 0.86);
   backdrop-filter: saturate(140%) blur(10px);
   border-bottom: 1px solid rgba(9, 67, 137, 0.08);
@@ -15,7 +15,7 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 13px;
   cursor: pointer;
   border: 0;
   background: none;
@@ -23,60 +23,47 @@
 }
 
 .brand__logo {
-  height: 72px;
+  height: 82px;
   width: auto;
   display: block;
+}
+
+.brand__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  line-height: 1;
 }
 
 .brand__name {
   font-family: 'Figtree', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 800;
-  font-size: 30px;
+  font-size: 31px;
   color: var(--color-deep-trust-blue);
   letter-spacing: 0;
+}
+
+.brand__claim {
+  color: var(--color-landing-green-ink);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .hdr__left {
   display: flex;
   align-items: center;
-  gap: 18px;
   flex: 1 1 auto;
   min-width: 0;
-}
-
-.hdr__claim {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 38px;
-  padding: 0 16px;
-  color: #537f12;
-  background: #edf8d9;
-  border-radius: 999px;
-  font-family: var(--font-family-primary);
-  font-size: 14px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.hdr__claim-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-relief-green);
-  flex: none;
-}
-
-@media (min-width: 768px) {
-  .hdr__claim {
-    display: none;
-  }
 }
 
 .hdr__nav {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
 }
 
 .hdr__link,
@@ -89,20 +76,17 @@
 }
 
 .hdr__link {
-  min-height: 58px;
-  padding: 0 28px;
+  min-height: 46px;
+  padding: 0 14px;
   color: var(--color-deep-trust-blue);
-  background: rgba(255, 255, 255, 0.82);
-  border: 2px solid rgba(9, 67, 137, 0.16);
-  border-radius: 18px;
-  box-shadow: var(--shadow-default);
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
 }
 
 .hdr__link:hover,
 .hdr__link:focus-visible {
-  background: #fff;
-  border-color: rgba(9, 67, 137, 0.28);
-  box-shadow: var(--shadow-hover);
+  background: rgba(9, 67, 137, 0.06);
 }
 
 .hdr__cta {
@@ -110,15 +94,15 @@
   padding: 0 28px;
   color: #fff;
   background: var(--color-deep-trust-blue);
-  border: 2px solid var(--color-deep-trust-blue);
+  border: 0;
   border-radius: var(--radius-button);
-  box-shadow: var(--shadow-default);
+  box-shadow: 0 12px 26px rgba(9, 67, 137, 0.18);
 }
 
 .hdr__cta:hover,
 .hdr__cta:focus-visible {
-  background: var(--color-button-pressed);
-  box-shadow: var(--shadow-hover);
+  box-shadow: 0 16px 30px rgba(9, 67, 137, 0.24);
+  transform: translateY(-1px);
 }
 
 .hdr__cta:active {
@@ -191,31 +175,32 @@
 /* Mobile Responsive */
 @media (max-width: 767px) {
   .hdr {
-    padding: 14px var(--spacing-2);
+    padding: 20px var(--spacing-2) 8px;
+    background: #fff;
+    border-bottom: 0;
+    backdrop-filter: none;
+  }
+
+  .brand {
+    visibility: hidden;
   }
 
   .brand__logo {
-    display: none;
+    display: block;
+    height: 48px;
   }
 
   .brand__name {
     font-size: 23px;
   }
 
+  .brand__claim {
+    font-size: 9px;
+    letter-spacing: 0.06em;
+  }
+
   .hdr__left {
-    gap: 10px;
-  }
-
-  .hdr__claim {
-    min-height: 34px;
-    padding: 0 12px;
-    gap: 8px;
-    font-size: 12.5px;
-  }
-
-  .hdr__claim-dot {
-    width: 8px;
-    height: 8px;
+    flex: 1;
   }
 
   .hdr__nav {

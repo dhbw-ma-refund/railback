@@ -131,12 +131,12 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
             {loggedIn ? t.menu.logout : t.menu.login}
           </button>
           <button className="menu__close" onClick={onClose} aria-label="Zurück">
-            <Icon name="close" size={18} color="#fff" />
+            <Icon name="close" size={18} />
           </button>
         </div>
         <div className="menu__list">
-          <button className="menu__item" onClick={() => goTo('/user')}>
-            <span>{t.menu.account}</span>
+          <button className="menu__item menu__item--primary" onClick={() => goTo('/user')}>
+            <span>{t.hero.cta1}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
           <button className="menu__item" onClick={() => goTo('/faq')}>
