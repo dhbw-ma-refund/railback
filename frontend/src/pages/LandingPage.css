@@ -43,8 +43,8 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  gap: var(--spacing-4);
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+  gap: clamp(48px, 7vw, 104px);
   align-items: center;
 }
 
@@ -95,8 +95,8 @@
 
 .hero__proof li {
   color: var(--color-deep-trust-blue);
-  font-size: 15px;
-  font-weight: 750;
+  font-size: clamp(20px, 1.65vw, 24px);
+  font-weight: 700;
   line-height: 1.35;
 }
 
@@ -190,18 +190,20 @@
 /* Phone Mockup */
 .phone-col {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   position: relative;
+  margin-right: clamp(-56px, -4vw, -24px);
 }
 
 .hero-photo-col {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   position: relative;
+  margin-right: clamp(-56px, -4vw, -24px);
 }
 
 .hero-photo {
-  width: min(360px, 100%);
+  width: min(390px, 100%);
   aspect-ratio: 1 / 1;
   border-radius: 32px;
   overflow: hidden;
@@ -449,7 +451,7 @@
 .eligibility {
   padding: clamp(48px, 7vh, 82px) 0 clamp(56px, 8vh, 96px);
   background: #eaf1f8;
-  border-top: 1px solid rgba(9, 67, 137, 0.08);
+  border-top: 0;
 }
 
 .eligibility__head {
@@ -504,18 +506,18 @@
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
-  padding: 4px 4px 18px;
+  padding: 0;
   scrollbar-color: rgba(9, 67, 137, 0.26) rgba(9, 67, 137, 0.06);
 }
 
 .eligibility-card {
   min-height: 244px;
   scroll-snap-align: start;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(9, 67, 137, 0.10);
+  background: #fff;
+  border: 0;
   border-radius: 8px;
   padding: 24px;
-  box-shadow: 0 14px 34px rgba(9, 67, 137, 0.08);
+  box-shadow: none;
 }
 
 .eligibility-card__amount {
@@ -636,6 +638,7 @@
 
   .phone-col {
     display: none;
+    margin-right: 0;
   }
 
   .landing-page--campaign .phone-col {
@@ -643,16 +646,12 @@
   }
 
   .hero-photo-col {
-    order: 0;
-    display: flex;
-    width: 100%;
-    justify-content: center;
-    margin: 0 0 18px;
+    display: none;
+    margin-right: 0;
   }
 
-  .hero-photo {
-    width: min(310px, 82vw);
-    border-radius: 24px;
+  .landing-page--default .hero-photo-col {
+    display: none;
   }
 
   .hero__title--desktop,
