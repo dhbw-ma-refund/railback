@@ -18,20 +18,20 @@ export const RegisterPage = () => {
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState<RegisterRequest>({
-    email: '',
-    password: '',
-    vorname: '',
-    nachname: '',
-    telefon: '',
+    email: 'test@example.de',
+    password: 'testpass123',
+    vorname: 'Max',
+    nachname: 'Mustermann',
+    telefon: '+49 151 12345678',
     adresse: {
-      strasse: '',
-      hausnr: '',
-      plz: '',
-      ort: '',
+      strasse: 'Teststraße',
+      hausnr: '42',
+      plz: '68161',
+      ort: 'Mannheim',
       land: 'DE',
     },
-    iban: '',
-    bic: '',
+    iban: 'DE89370400440532013000',
+    bic: 'COBADEFFXXX',
     datenschutz_einwilligung: false,
     agb_akzeptiert: false,
   });

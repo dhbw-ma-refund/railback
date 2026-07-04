@@ -13,8 +13,8 @@ export const LoginPage = () => {
   const { t } = useLanguage();
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('maria.mueller@example.de');
+  const [password, setPassword] = useState('password123');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: FormEvent) => {
