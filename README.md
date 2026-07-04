@@ -8,7 +8,7 @@ DynamoDB connector layer for RailBack. Single-table design on AWS DynamoDB (`eu-
 db/
   base.py        # Result type (Ok/Err), @safe decorator, BaseConnector
   connector.py   # Entity connectors + RailBackConnector
-unittests/       # Integration tests (pytest)
+tests/           # Integration tests (pytest)
 loadtests/       # Load tests (empty, ready for k6/locust)
 ```
 
@@ -29,7 +29,7 @@ podman run -d -p 8000:8000 amazon/dynamodb-local
 Run the tests:
 
 ```bash
-DYNAMODB_ENDPOINT_URL=http://localhost:8000 uv run pytest unittests/ -v
+DYNAMODB_ENDPOINT_URL=http://localhost:8000 uv run pytest tests/ -v
 ```
 
 ## Running tests against real AWS
@@ -43,7 +43,7 @@ aws configure  # region: eu-north-1
 Run the tests:
 
 ```bash
-uv run pytest unittests/ -v
+uv run pytest tests/ -v
 ```
 
 ## Connectors

@@ -9,5 +9,5 @@ dependencies = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["unittests"]
+testpaths = ["tests"]
 pythonpath = ["."]
