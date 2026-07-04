@@ -7,7 +7,7 @@
   backdrop-filter: blur(2px);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s;
+  transition: opacity var(--motion-menu) var(--motion-ease);
 }
 
 .scrim.open {
@@ -31,7 +31,7 @@
   transform: scale(0.96) translateY(-6px);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity var(--motion-menu) var(--motion-ease), transform var(--motion-menu) var(--motion-ease);
 }
 
 .menu.open {
@@ -100,7 +100,7 @@
   font-weight: 650;
   color: var(--color-text-primary);
   text-decoration: none;
-  transition: background 0.14s;
+  transition: background var(--motion-fast) var(--motion-ease);
 }
 
 .menu__item:hover {
@@ -155,7 +155,7 @@
   font-weight: 600;
   font-size: 15px;
   color: var(--color-muted-gray-blue);
-  transition: all 0.14s;
+  transition: background var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
 }
 
 .lang-chip:hover {

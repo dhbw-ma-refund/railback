@@ -48,21 +48,6 @@
   align-items: center;
 }
 
-.hero__copy {
-  animation: fadeIn 0.6s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .hero__claim {
   display: inline-flex;
   align-items: center;
@@ -233,16 +218,6 @@
   bottom: 34px;
   left: -46px;
   z-index: 10;
-  animation: float 5s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
 }
 
 .phone {
@@ -768,14 +743,20 @@
   }
 
   .eligibility__rail {
-    grid-auto-columns: minmax(252px, 82vw);
-    margin-right: -22px;
-    padding-right: 22px;
+    grid-auto-flow: row;
+    grid-auto-columns: unset;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    overflow-x: visible;
+    scroll-snap-type: none;
+    margin-right: 0;
+    padding-right: 0;
   }
 
   .eligibility-card {
-    min-height: 224px;
+    min-height: auto;
     padding: 20px;
+    scroll-snap-align: none;
   }
 
   .eligibility-card__amount {
