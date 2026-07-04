@@ -56,6 +56,7 @@ export class InMemorySepaReportRepo implements SepaReportRepo {
       mandates_correlated: input.mandates_correlated,
       parsed_at: new Date().toISOString(),
       received_at: input.received_at,
+      ttl: input.ttl,
     };
     const item = toItem(r);
     putRow(this.state, item.PK, item.SK, item);

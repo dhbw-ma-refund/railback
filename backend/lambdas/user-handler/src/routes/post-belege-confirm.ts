@@ -10,6 +10,11 @@
 // - 409 if the ticket is past READY (race with /refund-submit).
 // - The blob repo enforces both the 5-beleg cap and the 5 MB per-file
 //   cap; we let those AppErrors bubble up.
+// - **Idempotent retry**: if a receipt with the same `belegId` already
+//   exists on this ticket, we return 200 without re-writing the row
+//   AND without bumping `belege_count`. Without that check the count
+//   would drift past 5 on repeated calls — locked as a fix on
+//   2026-07-01 per audit finding `beleg-confirm-count-drift`.
 
 import { belegConfirmRequestSchema } from "@railback/lib/schemas/ticket";
 import { AppError } from "@railback/lib/errors";
@@ -101,6 +106,19 @@ export async function handlePostBelegeConfirm(
       );
     }
 
+    // Idempotent retry defence — mirrors the RAW#-row check in
+    // post-upload-confirm.ts:145. Without this, a re-POST would
+    // (a) let `blobs.putReceipt` overwrite the same row (it does, via
+    // `putRow` under a `belegSk(id, belegId)` primary key) AND then
+    // (b) still bump `belege_count` — so N retries would push the count
+    // past the 5-cap without any real belege being added. Locked by
+    // the audit finding 2026-07-01 (`beleg-confirm-count-drift`).
+    const existingReceipts = await db().blobs.listReceipts(email, ticketId);
+    const existingForThisBeleg = existingReceipts.find((r) => r.belegId === belegId);
+    if (existingForThisBeleg) {
+      return okJson(200, { belegId });
+    }
+
     await db().blobs.putReceipt(email, ticketId, {
       belegId,
       filename: parsed.data.filename,
@@ -113,7 +131,8 @@ export async function handlePostBelegeConfirm(
       uploaded_at: new Date().toISOString(),
     });
 
-    // Bump belege_count from current ticket state.
+    // Bump belege_count from current ticket state. Safe now because the
+    // idempotency check above guaranteed this is a fresh insert.
     const newCount = (ticket.belege_count ?? 0) + 1;
     await db().tickets.patch(email, ticketId, { belege_count: newCount });
 

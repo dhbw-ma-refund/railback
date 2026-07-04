@@ -8,6 +8,11 @@
 // - Returns the just-stored iban/bic (echoed from the patch input —
 //   re-decrypting would just round-trip the same value). Frontend
 //   uses this echo as a success confirmation; no other side-effects.
+// - If the user row has vanished mid-token (anonymisation-sweeper etc.),
+//   surface ERR_AUTH_EXPIRED like GET / DELETE / PATCH /users/me
+//   instead of the repo's default ERR_NOT_FOUND (which leaks the email
+//   in the message and yields a 404 the frontend can't map to re-auth).
+//   Locked 2026-07-01 per audit finding `patch-me-vanished-row-404`.
 
 import { patchBankRequestSchema } from "@railback/lib/schemas/user";
 import { AppError } from "@railback/lib/errors";
@@ -32,6 +37,12 @@ export async function handlePatchBank(
         undefined,
         { issues: parsed.error.issues },
       );
+    }
+
+    // Vanished-row check symmetric with GET / DELETE / PATCH /users/me.
+    const existing = await db().users.getByEmail(email);
+    if (!existing) {
+      throw new AppError("ERR_AUTH_EXPIRED", "user account no longer exists");
     }
 
     // Encrypt-first so a missing KEK fails BEFORE we touch the row.

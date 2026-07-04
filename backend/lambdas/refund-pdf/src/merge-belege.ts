@@ -114,7 +114,7 @@ export async function mergeBelege(input: MergeBelegeInput): Promise<MergeBelegeR
   if (truncated) {
     await addNoticePage(doc, {
       title: "Weitere Belege",
-      body: "Weitere Belege sind bei Rueckfrage nachreichbar.",
+      body: "Weitere Belege sind bei Rückfrage nachreichbar.",
     });
   }
   if (failedEmbeds.length > 0) {

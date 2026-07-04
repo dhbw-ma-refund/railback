@@ -439,4 +439,35 @@ describe("POST /users/me/tickets/{ticketId}/refund", () => {
     expect(body.email_status).toBe("SENT");
     expect(body.ticket_state).toBe("EMAIL_SENDING");
   });
+
+  it("issues mandate with vorabankuendigung_sent_at anchored to submitted_at", async () => {
+    // CLAUDE.md (locked): vorabankuendigung_sent_at wird beim mandate-issue
+    // gesetzt — User-Konsens-Klick IST das regulatorische Pre-Notification-
+    // Event. pain008-generator validiert das Feld als Pflichtfeld; ohne
+    // diesen Anker bricht der reale /refund→approve→pain008-Pfad mit
+    // ERR_VALIDATION. Same `now` als submitted_at, also Gleichheit testbar.
+    const db = installTestEnv();
+    await seedAlice(db);
+    const ticketId = await seedReadyTicket(db, { withDelay: 90 });
+
+    const res = await handler(
+      makeEvent({
+        method: "POST",
+        path: `/users/me/tickets/${ticketId}/refund`,
+        token: aliceAccessToken(),
+        pathParameters: { ticketId },
+        body: validBody(),
+      }),
+    );
+    expect(res.statusCode).toBe(202);
+
+    const m = await db.mandates.get(ALICE_EMAIL, ticketId);
+    expect(m).not.toBeNull();
+    expect(typeof m?.vorabankuendigung_sent_at).toBe("string");
+    const t = await db.tickets.get(ALICE_EMAIL, ticketId);
+    expect(m?.vorabankuendigung_sent_at).toBe(t?.submitted_at);
+    // Sanity: consent-timestamp is the same `now` snapshot (single Date.now
+    // call in post-refund.ts).
+    expect(m?.user_consent_at).toBe(t?.submitted_at);
+  });
 });

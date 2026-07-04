@@ -233,6 +233,47 @@ export class InMemoryUserRepo implements UserRepo {
     };
     putRow(this.state, next.PK, next.SK, next);
   }
+
+  async scanDeletionScheduledExpired(nowEpochSec: number): Promise<User[]> {
+    // Linear scan over every (PK, USER_PROFILE_SK) row. ttl is in epoch
+    // seconds (DDB TTL convention) — see scheduleDeletion above for the
+    // unit confirmation.
+    const out: User[] = [];
+    for (const [, bucket] of this.state.rows) {
+      const item = bucket.get(keys.USER_PROFILE_SK) as UserProfileItem | undefined;
+      if (!item) continue;
+      if (item.user_state !== "DELETION_SCHEDULED") continue;
+      if (item.ttl === undefined) continue;
+      if (item.ttl >= nowEpochSec) continue;
+      out.push(fromItem(item));
+    }
+    return out;
+  }
+
+  async deleteByEmail(email: string): Promise<void> {
+    const norm = keys.normaliseEmail(email);
+    deleteRow(this.state, keys.userPk(norm), keys.USER_PROFILE_SK);
+  }
+
+  async scanOrphanUserPks(): Promise<string[]> {
+    // Linear walk of every `USER#` partition. Skip already-anonymised
+    // `USER#sha256:` PKs explicitly (filter on the literal prefix —
+    // parseUserPk would otherwise return `sha256:<hex>` which looks
+    // like a valid token but is not the email we want to cascade).
+    // Emit when the partition has at least one child row but no live
+    // PROFILE row — that means DDB's TTL sweeper ate the profile
+    // before our cron got here.
+    const out: string[] = [];
+    for (const [pk, bucket] of this.state.rows) {
+      if (!pk.startsWith("USER#")) continue;
+      if (pk.startsWith("USER#sha256:")) continue;
+      if (bucket.has(keys.USER_PROFILE_SK)) continue;
+      if (bucket.size === 0) continue;
+      const email = keys.parseUserPk(pk);
+      if (email) out.push(email);
+    }
+    return out;
+  }
 }
 
 // Re-export for tests that need the helpers — keeps the module surface tight.

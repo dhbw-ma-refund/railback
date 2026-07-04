@@ -30,10 +30,10 @@ export function resetStatsCache(): void {
   _cache = null;
 }
 
-function startOfThisMonthIso(now: Date): string {
+function startOfThisMonthMs(now: Date): number {
   const y = now.getUTCFullYear();
   const m = now.getUTCMonth();
-  return new Date(Date.UTC(y, m, 1, 0, 0, 0, 0)).toISOString();
+  return Date.UTC(y, m, 1, 0, 0, 0, 0);
 }
 
 export async function getStatsSnapshot(now: Date = new Date()): Promise<AdminStatsResponse> {
@@ -58,7 +58,7 @@ export async function getStatsSnapshot(now: Date = new Date()): Promise<AdminSta
   for (const s of TICKET_STATES) byState[s] = 0;
   let totalPaidOut = "0.00";
   let thisMonthPaidOut = "0.00";
-  const monthStart = startOfThisMonthIso(now);
+  const monthStartMs = startOfThisMonthMs(now);
 
   for (const t of tickets.items) {
     const st: TicketState = t.ticket_state;
@@ -69,8 +69,21 @@ export async function getStatsSnapshot(now: Date = new Date()): Promise<AdminSta
       // that records when DB actually settled with the user. Falling back
       // to submitted_at would leak prior-month dollars into the current
       // month for tickets approved this month but submitted earlier.
-      if (t.db_paid_at !== undefined && t.db_paid_at >= monthStart) {
-        thisMonthPaidOut = addDecimal(thisMonthPaidOut, t.erwartete_erstattung);
+      //
+      // Locked 2026-07-01: compare in UTC epoch-ms, NOT string-wise. The
+      // stored `db_paid_at` carries a Berlin offset (`…+02:00` in summer)
+      // and lexicographic `>=` against a `Z`-suffixed month-start ISO
+      // miscounts by up to 2 h at month boundaries — e.g. a payment
+      // recorded at `2026-07-01T01:30:00+02:00` (which is
+      // `2026-06-30T23:30:00Z` in UTC — still last month) would be
+      // misclassified as "this month" by string compare, and vice
+      // versa. Parse both to instants and compare. Audit finding
+      // `stats-lexicographic-datetime-compare`.
+      if (t.db_paid_at !== undefined) {
+        const paidMs = Date.parse(t.db_paid_at);
+        if (!Number.isNaN(paidMs) && paidMs >= monthStartMs) {
+          thisMonthPaidOut = addDecimal(thisMonthPaidOut, t.erwartete_erstattung);
+        }
       }
     }
   }

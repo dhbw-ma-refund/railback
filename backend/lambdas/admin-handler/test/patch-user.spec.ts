@@ -242,6 +242,35 @@ describe("PATCH /admin/users/{email}", () => {
     expect(JSON.parse(res.body).suspended_reason).toBe("do not lose me");
   });
 
+  // Locked 2026-07-01 per audit finding
+  // `patch-user-suspended-reason-only-rejected`. SUSPENDED→SUSPENDED
+  // with a fresh suspended_reason and NO other profile-field change
+  // must be accepted — the reason itself IS the mutation. Before the
+  // fix, this returned ERR_VALIDATION "no-op patch".
+  it("accepts SUSPENDED→SUSPENDED with only suspended_reason changed", async () => {
+    const db = installTestEnv();
+    await seedAdmin();
+    await seedAlice(db);
+    await db.users.updateProfile(ALICE_EMAIL, {
+      user_state: "SUSPENDED",
+      suspended_at: "2026-06-01T00:00:00.000Z",
+      suspended_reason: "initial reason",
+    });
+
+    const res = await handler(
+      makeEvent({
+        method: "PATCH",
+        path: `/admin/users/${encodeURIComponent(ALICE_EMAIL)}`,
+        token: adminAccessToken(),
+        body: { user_state: "SUSPENDED", suspended_reason: "revised reason" },
+      }),
+    );
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body).suspended_reason).toBe("revised reason");
+    // Original suspended_at preserved — SUSPENDED→SUSPENDED must not stamp a new one.
+    expect(JSON.parse(res.body).suspended_at).toBe("2026-06-01T00:00:00.000Z");
+  });
+
   // Regression: mixed-case email in path must hit the canonical row.
   it("normalises mixed-case email in path before lookup", async () => {
     const db = installTestEnv();

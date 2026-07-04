@@ -191,6 +191,21 @@ export class InMemoryBlobRepo implements BlobRepo {
     contentType: string,
     uploadedAt: string
   ): Promise<void> {
+    // Enforce a registered presigned-POST content-length-range policy, if any.
+    // Server-side direct writes (rendered PDFs, pain.008 XML) don't go through
+    // presignRawUploadPost / presignReceiptPost, so no policy exists and the
+    // write is permitted unconditionally.
+    const policy = this.state.presignPolicies.get(key);
+    if (policy) {
+      if (bytes.byteLength < policy.min || bytes.byteLength > policy.max) {
+        throw new AppError(
+          "ERR_VALIDATION",
+          `S3 policy violation: ${bytes.byteLength} bytes outside [${policy.min}, ${policy.max}] for key ${key}`,
+          undefined,
+          { field: "size_bytes", min: policy.min, max: policy.max, actual: bytes.byteLength },
+        );
+      }
+    }
     setBlob(this.state, key, bytes, contentType, uploadedAt);
   }
 
@@ -198,6 +213,9 @@ export class InMemoryBlobRepo implements BlobRepo {
     const eh = emailHash(email);
     const ext = extFromContentType(contentType);
     const key = `raw/${eh}/${id}.${ext}`;
+    // Register the content-length-range policy so putBytes can reject
+    // oversize/undersize uploads the way S3 would.
+    this.state.presignPolicies.set(key, { min: 1, max: RAW_MAX });
     return {
       url: "http://memory-mock/post",
       fields: {
@@ -216,6 +234,7 @@ export class InMemoryBlobRepo implements BlobRepo {
     const ext = extFromContentType(contentType);
     const belegId = ulid();
     const key = `belege/${eh}/${id}/${belegId}.${ext}`;
+    this.state.presignPolicies.set(key, { min: 1, max: BELEG_MAX });
     return {
       url: "http://memory-mock/post",
       fields: {
@@ -227,6 +246,42 @@ export class InMemoryBlobRepo implements BlobRepo {
       key,
       expiresIn: PRESIGN_TTL_SEC,
     };
+  }
+
+  async deleteBytes(key: string): Promise<void> {
+    const bucket = this.state.blobs.get(BUCKET);
+    if (bucket) bucket.delete(key);
+    // Also drop any registered policy so a fresh presign+putBytes roundtrip
+    // on the same key starts clean. In production this is moot — S3 keys are
+    // short-lived and presigned-POST policies self-expire.
+    this.state.presignPolicies.delete(key);
+  }
+
+  async deleteRawUpload(email: string, id: string): Promise<{ s3_key: string | null }> {
+    const it = getRow<RawUploadItem>(this.state, keys.userPk(email), keys.rawSk(id));
+    if (!it) return { s3_key: null };
+    deleteRow(this.state, keys.userPk(email), keys.rawSk(id));
+    await this.deleteBytes(it.s3_key);
+    return { s3_key: it.s3_key };
+  }
+
+  async deleteRenderedPdf(email: string, id: string): Promise<{ s3_key: string | null }> {
+    const it = getRow<RenderedPdfItem>(this.state, keys.userPk(email), keys.renderedSk(id));
+    if (!it) return { s3_key: null };
+    deleteRow(this.state, keys.userPk(email), keys.renderedSk(id));
+    await this.deleteBytes(it.s3_key);
+    return { s3_key: it.s3_key };
+  }
+
+  async deleteAllReceipts(email: string, id: string): Promise<{ s3_keys: string[] }> {
+    const items = listSk<OriginalReceiptItem>(this.state, keys.userPk(email), `TICKET#${id}#BELEG#`);
+    const s3_keys: string[] = [];
+    for (const it of items) {
+      deleteRow(this.state, keys.userPk(email), it.SK);
+      await this.deleteBytes(it.s3_key);
+      s3_keys.push(it.s3_key);
+    }
+    return { s3_keys };
   }
 }
 

@@ -1,0 +1,2997 @@
+openapi: 3.0.3
+info:
+  title: RailBack API
+  version: 0.1.0
+  description: >-
+    OpenAPI contract for the RailBack backend. Generated from zod schemas via @asteasolutions/zod-to-openapi. Commit
+    this file — CI drift-checks it.
+servers: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    TicketIdParam:
+      type: string
+      example: 01H...
+    BelegIdParam:
+      type: string
+    TemplateIdParam:
+      type: string
+    EmailParam:
+      type: string
+    TrainNrParam:
+      type: string
+    DateParam:
+      type: string
+    BatchIdParam:
+      type: string
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+        user:
+          type: object
+          properties:
+            email:
+              type: string
+            vorname:
+              type: string
+            nachname:
+              type: string
+            role:
+              type: string
+              enum:
+                - USER
+                - ADMIN
+          required:
+            - email
+            - vorname
+            - nachname
+            - role
+      required:
+        - accessToken
+        - refreshToken
+        - expiresIn
+        - user
+      description: Shared response for /auth/register, /auth/login, /auth/refresh.
+    ErrorBody:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+              additionalProperties:
+                nullable: true
+          required:
+            - code
+            - message
+      required:
+        - error
+      description: Uniform error envelope. `error.code` is one of ERROR_CODES; `error.details` is an opaque bag.
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+          minLength: 8
+          maxLength: 256
+        vorname:
+          type: string
+          minLength: 1
+          maxLength: 100
+        nachname:
+          type: string
+          minLength: 1
+          maxLength: 100
+        telefon:
+          type: string
+          minLength: 1
+          maxLength: 40
+        adresse:
+          type: object
+          properties:
+            strasse:
+              type: string
+              minLength: 1
+              maxLength: 200
+            hausnr:
+              type: string
+              minLength: 1
+              maxLength: 20
+            plz:
+              type: string
+              minLength: 1
+              maxLength: 20
+            ort:
+              type: string
+              minLength: 1
+              maxLength: 200
+            land:
+              type: string
+              minLength: 1
+              maxLength: 80
+          required:
+            - strasse
+            - hausnr
+            - plz
+            - ort
+            - land
+        iban:
+          type: string
+        bic:
+          type: string
+        datenschutz_einwilligung:
+          type: boolean
+          enum:
+            - true
+        agb_akzeptiert:
+          type: boolean
+          enum:
+            - true
+      required:
+        - email
+        - password
+        - vorname
+        - nachname
+        - telefon
+        - adresse
+        - iban
+        - bic
+        - datenschutz_einwilligung
+        - agb_akzeptiert
+      description: POST /auth/register body. IBAN/BIC required at registration.
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+          minLength: 1
+          maxLength: 256
+      required:
+        - email
+        - password
+      description: POST /auth/login body.
+    RefreshRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          minLength: 1
+      required:
+        - refreshToken
+      description: POST /auth/refresh body.
+    GetUserResponse:
+      type: object
+      properties:
+        email:
+          type: string
+        vorname:
+          type: string
+        nachname:
+          type: string
+        telefon:
+          type: string
+        adresse:
+          type: object
+          properties:
+            strasse:
+              type: string
+              minLength: 1
+              maxLength: 200
+            hausnr:
+              type: string
+              minLength: 1
+              maxLength: 20
+            plz:
+              type: string
+              minLength: 1
+              maxLength: 20
+            ort:
+              type: string
+              minLength: 1
+              maxLength: 200
+            land:
+              type: string
+              minLength: 1
+              maxLength: 80
+          required:
+            - strasse
+            - hausnr
+            - plz
+            - ort
+            - land
+        user_state:
+          type: string
+          enum: &ref_6
+            - ACTIVE
+            - SUSPENDED
+            - DELETION_SCHEDULED
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - email
+        - vorname
+        - nachname
+        - telefon
+        - adresse
+        - user_state
+        - created_at
+      description: GET /users/me — general profile view. Never carries IBAN/BIC.
+    RefundDataResponse:
+      type: object
+      properties:
+        vorname:
+          type: string
+        nachname:
+          type: string
+        email:
+          type: string
+        telefon:
+          type: string
+        adresse:
+          type: object
+          properties:
+            strasse:
+              type: string
+              minLength: 1
+              maxLength: 200
+            hausnr:
+              type: string
+              minLength: 1
+              maxLength: 20
+            plz:
+              type: string
+              minLength: 1
+              maxLength: 20
+            ort:
+              type: string
+              minLength: 1
+              maxLength: 200
+            land:
+              type: string
+              minLength: 1
+              maxLength: 80
+          required:
+            - strasse
+            - hausnr
+            - plz
+            - ort
+            - land
+        iban:
+          type: string
+          nullable: true
+        bic:
+          type: string
+          nullable: true
+      required:
+        - vorname
+        - nachname
+        - email
+        - telefon
+        - adresse
+        - iban
+        - bic
+      description: GET /users/me/refund-data — field-set the EU-form needs; includes IBAN/BIC.
+    TicketSummary:
+      type: object
+      properties:
+        ticketId:
+          type: string
+          pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+        ticket_state:
+          type: string
+          enum: &ref_0
+            - VALIDATING
+            - READY
+            - EMAIL_SENDING
+            - PENDING_DB_PAYMENT
+            - APPROVED
+            - REJECTED
+            - COMPLETED
+            - EMAIL_FAILED
+            - INVALID
+        abreisedatum:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        abreisebahnhof:
+          type: string
+        zielbahnhof:
+          type: string
+        fahrkartenpreis:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        antragsart:
+          type: string
+          enum: &ref_1
+            - ERSTATTUNG_FAHRKARTE
+            - ENTSCHAEDIGUNG_60_119
+            - ENTSCHAEDIGUNG_120_PLUS
+            - ENTSCHAEDIGUNG_ZEITKARTE
+            - KOSTEN_ALTERNATIVTRANSPORT
+        erwartete_erstattung:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        email_status:
+          type: string
+          enum: &ref_2
+            - SENDING
+            - SENT
+            - FAILED_TRANSIENT
+            - DELIVERED
+            - BOUNCED
+            - FAILED
+        submitted_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - ticketId
+        - ticket_state
+        - updated_at
+      description: Dashboard list-item projection of a ticket.
+    ListTicketsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketSummary'
+      required:
+        - items
+      description: GET /users/me/tickets — user-scoped ticket list.
+    TicketResponse:
+      type: object
+      properties:
+        email:
+          type: string
+        ticketId:
+          type: string
+          pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+        ticket_state:
+          type: string
+          enum: *ref_0
+        state_timeline:
+          type: array
+          items:
+            type: object
+            properties:
+              state:
+                type: string
+                enum: *ref_0
+              at:
+                type: string
+                format: date-time
+            required:
+              - state
+              - at
+        extraction_status:
+          type: string
+          enum: &ref_3
+            - PROCESSING
+            - DONE
+            - FAILED
+        extraction_method:
+          type: string
+          enum: &ref_7
+            - BARCODE
+            - PDF_TEXT
+            - MANUAL
+            - MANUAL_ROUTE
+        extraction_confidence:
+          type: number
+        barcode_uid:
+          type: string
+        vorname_aus_ticket:
+          type: string
+        nachname_aus_ticket:
+          type: string
+        fahrt_abreisedatum:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        fahrt_abreisebahnhof:
+          type: string
+        fahrt_zielbahnhof:
+          type: string
+        fahrt_abfahrtszeit_plan:
+          type: string
+          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+        fahrt_ankunftszeit_plan:
+          type: string
+          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+        fahrt_zugnummer_plan:
+          type: string
+        fahrt_zugkategorie_plan:
+          type: string
+        fahrt_fahrkartennummer:
+          type: string
+        fahrt_fahrkartenpreis:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        tatsaechlich_ankunftsdatum:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        tatsaechlich_abfahrtszeit:
+          type: string
+          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+        tatsaechlich_ankunftszeit:
+          type: string
+          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+        tatsaechlich_zugnummer:
+          type: string
+        tatsaechlich_verpasster_anschluss_bahnhof:
+          type: string
+        antragsgrund:
+          type: array
+          items:
+            type: string
+            enum: &ref_4
+              - VERSPAETUNG
+              - AUSFALL
+              - VERPASSTER_ANSCHLUSS
+        antragsart:
+          type: string
+          enum: *ref_1
+        is_zeitkarte:
+          type: boolean
+        antragstellung_ort:
+          type: string
+        antragstellung_datum:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        zusaetzliche_angaben:
+          type: string
+        datenschutz_einwilligung:
+          type: boolean
+        wahrheitserklaerung:
+          type: boolean
+        delayMinutes:
+          type: integer
+          minimum: 0
+        erwartete_erstattung:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        service_fee_betrag:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        db_paid_at:
+          type: string
+          format: date-time
+        admin_note:
+          type: string
+        email_status:
+          type: string
+          enum: *ref_2
+        email_attempts:
+          type: integer
+          minimum: 0
+        email_last_attempt:
+          type: string
+          format: date-time
+        email_failed_reason:
+          type: string
+        uploaded_at:
+          type: string
+          format: date-time
+        submitted_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        belege_count:
+          type: integer
+          minimum: 0
+      required:
+        - email
+        - ticketId
+        - ticket_state
+        - state_timeline
+        - extraction_status
+        - extraction_method
+        - extraction_confidence
+        - updated_at
+      description: >-
+        Full ticket view. Never includes iban/bic. Optional fields fill in as the ticket progresses through the state
+        machine.
+    UploadResponse:
+      type: object
+      properties:
+        ticketId:
+          type: string
+          pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+        uploadUrl:
+          type: string
+          format: uri
+        s3_key:
+          type: string
+          minLength: 1
+        expiresIn:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+        fields:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - ticketId
+        - uploadUrl
+        - s3_key
+        - expiresIn
+        - fields
+      description: Presigned S3 POST envelope for a raw ticket upload.
+    UploadConfirmResponse:
+      type: object
+      properties:
+        ticketId:
+          type: string
+          pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+        extraction_status:
+          type: string
+          enum: *ref_3
+      required:
+        - ticketId
+        - extraction_status
+      description: Response after landing the RAW#<ticketId> DDB row.
+    RouteLookupResponse:
+      type: object
+      properties:
+        candidates:
+          type: array
+          items:
+            type: object
+            properties:
+              trainNr:
+                type: string
+              zugkategorie:
+                type: string
+              abfahrt_plan:
+                type: string
+                pattern: ^([01]\d|2[0-3]):[0-5]\d$
+              ankunft_plan:
+                type: string
+                pattern: ^([01]\d|2[0-3]):[0-5]\d$
+              abfahrt_tatsaechlich:
+                type: string
+                pattern: ^([01]\d|2[0-3]):[0-5]\d$
+              ankunft_tatsaechlich:
+                type: string
+                pattern: ^([01]\d|2[0-3]):[0-5]\d$
+              delayMinutes:
+                type: integer
+                minimum: 0
+              any_cancelled:
+                type: boolean
+              data_quality:
+                type: string
+                enum:
+                  - FULL
+                  - PARTIAL
+                  - PLAN_ONLY
+            required:
+              - trainNr
+              - abfahrt_plan
+              - ankunft_plan
+              - delayMinutes
+              - any_cancelled
+              - data_quality
+      required:
+        - candidates
+      description: Candidate direct connections for the MANUAL_ROUTE flow.
+    RefundResponse:
+      type: object
+      properties:
+        ticketId:
+          type: string
+          pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+        ticket_state:
+          type: string
+          enum:
+            - EMAIL_SENDING
+            - EMAIL_FAILED
+        submitted_at:
+          type: string
+          format: date-time
+        email_status:
+          type: string
+          enum: *ref_2
+        erwartete_erstattung:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        service_fee_betrag:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+      required:
+        - ticketId
+        - ticket_state
+        - submitted_at
+        - email_status
+        - erwartete_erstattung
+        - service_fee_betrag
+      description: POST /refund response. Amounts are locked at submit; edits require reject + resubmit.
+    RefundRequest:
+      type: object
+      properties:
+        antragsgrund:
+          type: array
+          items:
+            type: string
+            enum: *ref_4
+          minItems: 1
+        antragsart:
+          type: string
+          enum: *ref_1
+        is_zeitkarte:
+          type: boolean
+        fahrt:
+          type: object
+          properties:
+            abreisedatum:
+              type: string
+              pattern: ^\d{4}-\d{2}-\d{2}$
+            abreisebahnhof:
+              type: string
+              minLength: 1
+            zielbahnhof:
+              type: string
+              minLength: 1
+            abfahrtszeit_plan:
+              type: string
+              pattern: ^([01]\d|2[0-3]):[0-5]\d$
+            ankunftszeit_plan:
+              type: string
+              pattern: ^([01]\d|2[0-3]):[0-5]\d$
+            zugnummer_plan:
+              type: string
+              minLength: 1
+            zugkategorie_plan:
+              type: string
+            fahrkartennummer:
+              type: string
+              minLength: 1
+            fahrkartenpreis:
+              type: string
+              pattern: ^-?[0-9]+\.[0-9]{2}$
+          required:
+            - abreisedatum
+            - abreisebahnhof
+            - zielbahnhof
+            - abfahrtszeit_plan
+            - ankunftszeit_plan
+            - zugnummer_plan
+            - fahrkartennummer
+            - fahrkartenpreis
+        fahrt_tatsaechlich:
+          type: object
+          properties:
+            ankunftsdatum_tatsaechlich:
+              type: string
+              nullable: true
+              pattern: ^\d{4}-\d{2}-\d{2}$
+            abfahrtszeit_tatsaechlich:
+              type: string
+              nullable: true
+              pattern: ^([01]\d|2[0-3]):[0-5]\d$
+            ankunftszeit_tatsaechlich:
+              type: string
+              nullable: true
+              pattern: ^([01]\d|2[0-3]):[0-5]\d$
+            zugnummer_tatsaechlich:
+              type: string
+              nullable: true
+            verpasster_anschluss_bahnhof:
+              type: string
+              nullable: true
+        antragstellung_ort:
+          type: string
+          minLength: 1
+        zusaetzliche_angaben:
+          type: string
+        datenschutz_einwilligung:
+          type: boolean
+          enum:
+            - true
+        wahrheitserklaerung:
+          type: boolean
+          enum:
+            - true
+      required:
+        - antragsgrund
+        - antragsart
+        - fahrt
+        - fahrt_tatsaechlich
+        - antragstellung_ort
+        - datenschutz_einwilligung
+        - wahrheitserklaerung
+      description: POST /users/me/tickets/{ticketId}/refund body. Section-5 contact info is NOT in this body.
+    RouteTemplate:
+      type: object
+      properties:
+        templateId:
+          type: string
+          pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+        label:
+          type: string
+          minLength: 1
+        fromStation:
+          type: string
+          minLength: 1
+        fromEva:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+        toStation:
+          type: string
+          minLength: 1
+        toEva:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+        fahrkartennummer:
+          type: string
+        fahrkartenpreis:
+          type: string
+        zugkategorie_pref:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - templateId
+        - label
+        - fromStation
+        - fromEva
+        - toStation
+        - toEva
+        - created_at
+        - updated_at
+      description: Saved A→B route for the MANUAL_ROUTE-ticket flow. No cap, no TTL.
+    ListRouteTemplatesResponse:
+      type: object
+      properties:
+        templates:
+          type: array
+          items:
+            $ref: '#/components/schemas/RouteTemplate'
+      required:
+        - templates
+      description: GET /users/me/route-templates.
+    AdminStatsResponse:
+      type: object
+      properties:
+        users:
+          type: object
+          properties:
+            total:
+              type: integer
+              minimum: 0
+            active:
+              type: integer
+              minimum: 0
+            suspended:
+              type: integer
+              minimum: 0
+            deletion_scheduled:
+              type: integer
+              minimum: 0
+          required:
+            - total
+            - active
+            - suspended
+            - deletion_scheduled
+        tickets:
+          type: object
+          properties:
+            total:
+              type: integer
+              minimum: 0
+            by_state:
+              type: object
+              properties:
+                VALIDATING: &ref_5
+                  type: integer
+                  minimum: 0
+                READY: *ref_5
+                EMAIL_SENDING: *ref_5
+                PENDING_DB_PAYMENT: *ref_5
+                APPROVED: *ref_5
+                REJECTED: *ref_5
+                COMPLETED: *ref_5
+                EMAIL_FAILED: *ref_5
+                INVALID: *ref_5
+            pending:
+              type: integer
+              minimum: 0
+          required:
+            - total
+            - by_state
+            - pending
+        refunds:
+          type: object
+          properties:
+            total_paid_out:
+              type: string
+              pattern: ^-?[0-9]+\.[0-9]{2}$
+            currency:
+              type: string
+              enum:
+                - EUR
+            this_month_paid_out:
+              type: string
+              pattern: ^-?[0-9]+\.[0-9]{2}$
+          required:
+            - total_paid_out
+            - currency
+            - this_month_paid_out
+        as_of:
+          type: string
+          format: date-time
+      required:
+        - users
+        - tickets
+        - refunds
+        - as_of
+      description: GET /admin/stats — KPI snapshot; frontend polls ≥ 30 s.
+    AdminUserSummary:
+      type: object
+      properties:
+        email:
+          type: string
+        vorname:
+          type: string
+        nachname:
+          type: string
+        telefon:
+          type: string
+        adresse:
+          type: object
+          properties:
+            strasse:
+              type: string
+              minLength: 1
+              maxLength: 200
+            hausnr:
+              type: string
+              minLength: 1
+              maxLength: 20
+            plz:
+              type: string
+              minLength: 1
+              maxLength: 20
+            ort:
+              type: string
+              minLength: 1
+              maxLength: 200
+            land:
+              type: string
+              minLength: 1
+              maxLength: 80
+          required:
+            - strasse
+            - hausnr
+            - plz
+            - ort
+            - land
+        user_state:
+          type: string
+          enum: *ref_6
+        suspended_at:
+          type: string
+          format: date-time
+        suspended_reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        ticket_count:
+          type: integer
+          minimum: 0
+        total_refunded:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+      required:
+        - email
+        - vorname
+        - nachname
+        - telefon
+        - adresse
+        - user_state
+        - created_at
+        - ticket_count
+        - total_refunded
+      description: Admin user-list projection. Never carries IBAN/BIC.
+    ListUsersResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUserSummary'
+        nextCursor:
+          type: string
+      required:
+        - items
+      description: GET /admin/users.
+    GetAdminUserResponse:
+      allOf:
+        - $ref: '#/components/schemas/AdminUserSummary'
+        - type: object
+          properties:
+            recent_tickets:
+              type: array
+              items:
+                type: object
+                properties:
+                  ticketId:
+                    type: string
+                    pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+                  ticket_state:
+                    type: string
+                    enum: *ref_0
+                  abreisedatum:
+                    type: string
+                    pattern: ^\d{4}-\d{2}-\d{2}$
+                  erwartete_erstattung:
+                    type: string
+                    pattern: ^-?[0-9]+\.[0-9]{2}$
+                required:
+                  - ticketId
+                  - ticket_state
+          required:
+            - recent_tickets
+      description: GET /admin/users/{email} — user detail with recent tickets.
+    AdminTicketSummary:
+      type: object
+      properties:
+        ticketId:
+          type: string
+          pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+        email:
+          type: string
+        vorname:
+          type: string
+        nachname:
+          type: string
+        ticket_state:
+          type: string
+          enum: *ref_0
+        antragsart:
+          type: string
+          enum: *ref_1
+        antragsgrund:
+          type: array
+          items:
+            type: string
+            enum: *ref_4
+        abreisedatum:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        abreisebahnhof:
+          type: string
+        zielbahnhof:
+          type: string
+        zugnummer_plan:
+          type: string
+        fahrkartenpreis:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        erwartete_erstattung:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        delayMinutes:
+          type: integer
+          minimum: 0
+        submitted_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - ticketId
+        - email
+        - vorname
+        - nachname
+        - ticket_state
+        - updated_at
+      description: Admin ticket-list projection (unprefixed wire names).
+    AdminListTicketsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminTicketSummary'
+        nextCursor:
+          type: string
+      required:
+        - items
+      description: GET /admin/tickets — admin ticket list.
+    GetAdminTicketResponse:
+      type: object
+      properties:
+        ticketId:
+          type: string
+          pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+        email:
+          type: string
+        vorname:
+          type: string
+        nachname:
+          type: string
+        ticket_state:
+          type: string
+          enum: *ref_0
+        state_timeline:
+          type: array
+          items:
+            type: object
+            properties:
+              state:
+                type: string
+                enum: *ref_0
+              at:
+                type: string
+                format: date-time
+            required:
+              - state
+              - at
+        extraction_method:
+          type: string
+          enum: *ref_7
+        extraction_confidence:
+          type: number
+        barcode_uid:
+          type: string
+        fahrt_abreisedatum:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        fahrt_abreisebahnhof:
+          type: string
+        fahrt_zielbahnhof:
+          type: string
+        fahrt_abfahrtszeit_plan:
+          type: string
+          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+        fahrt_ankunftszeit_plan:
+          type: string
+          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+        fahrt_zugnummer_plan:
+          type: string
+        fahrt_zugkategorie_plan:
+          type: string
+        fahrt_fahrkartennummer:
+          type: string
+        fahrt_fahrkartenpreis:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        tatsaechlich_ankunftsdatum:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        tatsaechlich_abfahrtszeit:
+          type: string
+          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+        tatsaechlich_ankunftszeit:
+          type: string
+          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+        tatsaechlich_zugnummer:
+          type: string
+        tatsaechlich_verpasster_anschluss_bahnhof:
+          type: string
+        antragsgrund:
+          type: array
+          items:
+            type: string
+            enum: *ref_4
+        antragsart:
+          type: string
+          enum: *ref_1
+        antragstellung_ort:
+          type: string
+        zusaetzliche_angaben:
+          type: string
+        delayMinutes:
+          type: integer
+          minimum: 0
+        erwartete_erstattung:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        service_fee_betrag:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        has_belege:
+          type: boolean
+        db_paid_at:
+          type: string
+          format: date-time
+        admin_note:
+          type: string
+        email_status:
+          type: string
+          enum: *ref_2
+        email_provider_id:
+          type: string
+        email_failed_reason:
+          type: string
+        submitted_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        sepa_mandate:
+          type: object
+          properties:
+            state:
+              type: string
+              enum:
+                - ISSUED
+                - SUBMITTED
+                - DEBITED
+                - REVERSED
+                - DISPUTED
+                - EXPIRED
+                - CANCELLED
+            debited_at:
+              type: string
+              format: date-time
+            reversed_at:
+              type: string
+              format: date-time
+            reversed_reason:
+              type: string
+            dispute_opened_at:
+              type: string
+              format: date-time
+            expires_at:
+              type: string
+              format: date-time
+          required:
+            - state
+            - expires_at
+      required:
+        - ticketId
+        - email
+        - ticket_state
+        - state_timeline
+        - extraction_method
+        - extraction_confidence
+        - has_belege
+      description: GET /admin/tickets/{ticketId} — full admin view; iban/bic never present.
+    GetPendingBatchesResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              batchId:
+                type: string
+              s3_key:
+                type: string
+              downloadUrl:
+                type: string
+                format: uri
+              downloadUrlExpiresIn:
+                type: integer
+                minimum: 0
+                exclusiveMinimum: true
+              mandate_count:
+                type: integer
+                minimum: 0
+              total_eur:
+                type: string
+                pattern: ^-?[0-9]+\.[0-9]{2}$
+              built_at:
+                type: string
+                format: date-time
+            required:
+              - batchId
+              - s3_key
+              - downloadUrl
+              - downloadUrlExpiresIn
+              - mandate_count
+              - total_eur
+              - built_at
+      required:
+        - items
+      description: GET /admin/sepa/pending-batches — SEPA batches awaiting bank upload.
+    MarkSubmittedResponse:
+      type: object
+      properties:
+        batchId:
+          type: string
+        submitted_at:
+          type: string
+          format: date-time
+        mandates_marked:
+          type: integer
+          minimum: 0
+      required:
+        - batchId
+        - submitted_at
+        - mandates_marked
+      description: POST /admin/sepa/batches/{batchId}/mark-submitted response.
+    SepaReportUploadResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        fields:
+          type: object
+          additionalProperties:
+            type: string
+        expires_in:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+      required:
+        - url
+        - fields
+        - expires_in
+      description: POST /admin/sepa/reports/upload — presigned POST envelope.
+  parameters:
+    TicketIdParam:
+      schema:
+        $ref: '#/components/schemas/TicketIdParam'
+      required: true
+      name: ticketId
+      in: path
+    BelegIdParam:
+      schema:
+        $ref: '#/components/schemas/BelegIdParam'
+      required: true
+      name: belegId
+      in: path
+    TemplateIdParam:
+      schema:
+        $ref: '#/components/schemas/TemplateIdParam'
+      required: true
+      name: templateId
+      in: path
+    EmailParam:
+      schema:
+        $ref: '#/components/schemas/EmailParam'
+      required: true
+      name: email
+      in: path
+    TrainNrParam:
+      schema:
+        $ref: '#/components/schemas/TrainNrParam'
+      required: true
+      name: trainNr
+      in: path
+    DateParam:
+      schema:
+        $ref: '#/components/schemas/DateParam'
+      required: true
+      name: date
+      in: path
+    BatchIdParam:
+      schema:
+        $ref: '#/components/schemas/BatchIdParam'
+      required: true
+      name: batchId
+      in: path
+paths:
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: Register a new user (lands in ACTIVE).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '409':
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Log in. Same endpoint for users and admins; role in JWT claim.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Suspended or deletion-scheduled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /auth/refresh:
+    post:
+      tags:
+        - auth
+      summary: Rotate refresh token; issue new access token.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Suspended or deletion-scheduled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me:
+    get:
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+    patch:
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vorname:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                nachname:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                telefon:
+                  type: string
+                  minLength: 1
+                  maxLength: 40
+                adresse:
+                  type: object
+                  properties:
+                    strasse:
+                      type: string
+                      minLength: 1
+                      maxLength: 200
+                    hausnr:
+                      type: string
+                      minLength: 1
+                      maxLength: 20
+                    plz:
+                      type: string
+                      minLength: 1
+                      maxLength: 20
+                    ort:
+                      type: string
+                      minLength: 1
+                      maxLength: 200
+                    land:
+                      type: string
+                      minLength: 1
+                      maxLength: 80
+                  required:
+                    - strasse
+                    - hausnr
+                    - plz
+                    - ort
+                    - land
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+    delete:
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                confirmPassword:
+                  type: string
+                  minLength: 1
+                  maxLength: 256
+              required:
+                - confirmPassword
+      responses:
+        '204':
+          description: Scheduled for deletion
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/refund-data:
+    get:
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundDataResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/bank:
+    patch:
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                iban:
+                  type: string
+                bic:
+                  type: string
+              required:
+                - iban
+                - bic
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundDataResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/tickets:
+    get:
+      tags:
+        - tickets
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListTicketsResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/tickets/{ticketId}:
+    get:
+      tags:
+        - tickets
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+    delete:
+      tags:
+        - tickets
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/tickets/{ticketId}/upload:
+    post:
+      tags:
+        - tickets
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                  minLength: 1
+                mimeType:
+                  type: string
+                  enum: &ref_8
+                    - application/pdf
+                    - image/jpeg
+                    - image/png
+              required:
+                - filename
+                - mimeType
+      responses:
+        '200':
+          description: Presigned POST envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/tickets/{ticketId}/upload-confirm:
+    post:
+      tags:
+        - tickets
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                s3_key:
+                  type: string
+                  minLength: 1
+                filename:
+                  type: string
+                  minLength: 1
+                mimeType:
+                  type: string
+                  enum: *ref_8
+              required:
+                - s3_key
+                - filename
+                - mimeType
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadConfirmResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/tickets/route-lookup:
+    post:
+      tags:
+        - tickets
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromStation:
+                  type: string
+                fromEva:
+                  type: integer
+                  minimum: 0
+                  exclusiveMinimum: true
+                toStation:
+                  type: string
+                toEva:
+                  type: integer
+                  minimum: 0
+                  exclusiveMinimum: true
+                date:
+                  type: string
+                  pattern: ^\d{4}-\d{2}-\d{2}$
+                timeWindow:
+                  type: object
+                  properties:
+                    from:
+                      type: string
+                      pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                    to:
+                      type: string
+                      pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                  required:
+                    - from
+                    - to
+              required:
+                - date
+      responses:
+        '200':
+          description: Candidate connections
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteLookupResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/tickets/from-route:
+    post:
+      tags:
+        - tickets
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticketId:
+                  type: string
+                  pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+                trainNr:
+                  type: string
+                  minLength: 1
+                date:
+                  type: string
+                  pattern: ^\d{4}-\d{2}-\d{2}$
+                fromStation:
+                  type: string
+                  minLength: 1
+                toStation:
+                  type: string
+                  minLength: 1
+                abfahrtszeit_plan:
+                  type: string
+                  pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                ankunftszeit_plan:
+                  type: string
+                  pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                fahrkartennummer:
+                  type: string
+                  minLength: 1
+                fahrkartenpreis:
+                  type: string
+                  pattern: ^-?[0-9]+\.[0-9]{2}$
+                is_zeitkarte:
+                  type: boolean
+                  default: false
+                templateId:
+                  type: string
+                  pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+              required:
+                - trainNr
+                - date
+                - fromStation
+                - toStation
+                - abfahrtszeit_plan
+                - ankunftszeit_plan
+                - fahrkartennummer
+                - fahrkartenpreis
+      responses:
+        '201':
+          description: MANUAL_ROUTE ticket created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketId:
+                    type: string
+                    pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+                  ticket_state:
+                    type: string
+                    enum:
+                      - READY
+                  extraction_method:
+                    type: string
+                    enum:
+                      - MANUAL_ROUTE
+                  extraction_confidence:
+                    type: number
+                    enum:
+                      - 0
+                required:
+                  - ticketId
+                  - ticket_state
+                  - extraction_method
+                  - extraction_confidence
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/tickets/{ticketId}/delays:
+    post:
+      tags:
+        - tickets
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trainNr:
+                  type: string
+                  minLength: 1
+                date:
+                  type: string
+                  pattern: ^\d{4}-\d{2}-\d{2}$
+                abreisebahnhof:
+                  type: string
+                  minLength: 1
+                zielbahnhof:
+                  type: string
+                  minLength: 1
+              required:
+                - trainNr
+                - date
+                - abreisebahnhof
+                - zielbahnhof
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trainNr:
+                    type: string
+                  date:
+                    type: string
+                    pattern: ^\d{4}-\d{2}-\d{2}$
+                  segments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        segId:
+                          type: string
+                        origin:
+                          type: string
+                        destination:
+                          type: string
+                        delayMinutes:
+                          type: integer
+                          minimum: 0
+                        reason:
+                          type: string
+                        is_cancelled:
+                          type: boolean
+                        abfahrtszeit_plan:
+                          type: string
+                          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                        abfahrtszeit_tatsaechlich:
+                          type: string
+                          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                        ankunftszeit_plan:
+                          type: string
+                          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                        ankunftszeit_tatsaechlich:
+                          type: string
+                          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                      required:
+                        - segId
+                        - origin
+                        - destination
+                        - delayMinutes
+                        - reason
+                        - is_cancelled
+                        - abfahrtszeit_plan
+                        - ankunftszeit_plan
+                  maxDelayMinutes:
+                    type: integer
+                    minimum: 0
+                  any_cancelled:
+                    type: boolean
+                  suggested_antragsart:
+                    type: string
+                    enum: *ref_1
+                  data_quality:
+                    type: string
+                    enum: &ref_10
+                      - FULL
+                      - PARTIAL
+                      - PLAN_ONLY
+                required:
+                  - trainNr
+                  - date
+                  - segments
+                  - maxDelayMinutes
+                  - any_cancelled
+                  - suggested_antragsart
+                  - data_quality
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/tickets/{ticketId}/refund:
+    post:
+      tags:
+        - tickets
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+      responses:
+        '200':
+          description: Refund submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/tickets/{ticketId}/belege:
+    post:
+      tags:
+        - belege
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                  minLength: 1
+                mimeType:
+                  type: string
+                  enum: *ref_8
+                typ:
+                  type: string
+                  enum: &ref_9
+                    - TAXI
+                    - BUS
+                    - HOTEL
+                    - SONSTIGES
+              required:
+                - filename
+                - mimeType
+                - typ
+      responses:
+        '200':
+          description: Presigned POST envelope
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  belegId:
+                    type: string
+                    pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+                  uploadUrl:
+                    type: string
+                    format: uri
+                  s3_key:
+                    type: string
+                    minLength: 1
+                  expiresIn:
+                    type: integer
+                    minimum: 0
+                    exclusiveMinimum: true
+                  fields:
+                    type: object
+                    additionalProperties:
+                      type: string
+                required:
+                  - belegId
+                  - uploadUrl
+                  - s3_key
+                  - expiresIn
+                  - fields
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/tickets/{ticketId}/belege/{belegId}/confirm:
+    post:
+      tags:
+        - belege
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+        - $ref: '#/components/parameters/BelegIdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                s3_key:
+                  type: string
+                  minLength: 1
+                filename:
+                  type: string
+                  minLength: 1
+                mimeType:
+                  type: string
+                  enum: *ref_8
+                typ:
+                  type: string
+                  enum: *ref_9
+                size_bytes:
+                  type: integer
+                  minimum: 0
+                  exclusiveMinimum: true
+                amount:
+                  type: string
+                  pattern: ^-?[0-9]+\.[0-9]{2}$
+              required:
+                - s3_key
+                - filename
+                - mimeType
+                - typ
+                - size_bytes
+                - amount
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  belegId:
+                    type: string
+                    pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+                required:
+                  - belegId
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/tickets/{ticketId}/belege/{belegId}:
+    delete:
+      tags:
+        - belege
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+        - $ref: '#/components/parameters/BelegIdParam'
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/route-templates:
+    get:
+      tags:
+        - route-templates
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListRouteTemplatesResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+    post:
+      tags:
+        - route-templates
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                templateId:
+                  type: string
+                  pattern: ^[0-9A-HJKMNP-TV-Z]{26}$
+                label:
+                  type: string
+                  minLength: 1
+                fromStation:
+                  type: string
+                  minLength: 1
+                toStation:
+                  type: string
+                  minLength: 1
+                fahrkartennummer:
+                  type: string
+                fahrkartenpreis:
+                  type: string
+                zugkategorie_pref:
+                  type: string
+              required:
+                - templateId
+                - label
+                - fromStation
+                - toStation
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteTemplate'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /users/me/route-templates/{templateId}:
+    patch:
+      tags:
+        - route-templates
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateIdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                  minLength: 1
+                fromStation:
+                  type: string
+                  minLength: 1
+                toStation:
+                  type: string
+                  minLength: 1
+                fahrkartennummer:
+                  type: string
+                fahrkartenpreis:
+                  type: string
+                zugkategorie_pref:
+                  type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteTemplate'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+    delete:
+      tags:
+        - route-templates
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateIdParam'
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /admin/stats:
+    get:
+      tags:
+        - admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminStatsResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /admin/users:
+    get:
+      tags:
+        - admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - schema:
+            type: string
+          required: false
+          name: email
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: user_state
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: limit
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: cursor
+          in: query
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListUsersResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /admin/users/{email}:
+    get:
+      tags:
+        - admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EmailParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAdminUserResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+    patch:
+      tags:
+        - admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EmailParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vorname:
+                  type: string
+                  minLength: 1
+                nachname:
+                  type: string
+                  minLength: 1
+                telefon:
+                  type: string
+                  minLength: 1
+                adresse:
+                  type: object
+                  properties:
+                    strasse:
+                      type: string
+                      minLength: 1
+                      maxLength: 200
+                    hausnr:
+                      type: string
+                      minLength: 1
+                      maxLength: 20
+                    plz:
+                      type: string
+                      minLength: 1
+                      maxLength: 20
+                    ort:
+                      type: string
+                      minLength: 1
+                      maxLength: 200
+                    land:
+                      type: string
+                      minLength: 1
+                      maxLength: 80
+                  required:
+                    - strasse
+                    - hausnr
+                    - plz
+                    - ort
+                    - land
+                user_state:
+                  type: string
+                  enum: *ref_6
+                suspended_reason:
+                  type: string
+                  minLength: 1
+              additionalProperties: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAdminUserResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /admin/tickets:
+    get:
+      tags:
+        - admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - schema:
+            type: string
+          required: false
+          name: state
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: email
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: trainNr
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: date
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: from
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: to
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: limit
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: cursor
+          in: query
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminListTicketsResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /admin/tickets/{ticketId}:
+    get:
+      tags:
+        - admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAdminTicketResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+    patch:
+      tags:
+        - admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticket_state:
+                  type: string
+                  enum:
+                    - APPROVED
+                    - REJECTED
+                    - COMPLETED
+                    - INVALID
+                db_paid_at:
+                  type: string
+                  format: date-time
+                admin_note:
+                  type: string
+              additionalProperties: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAdminTicketResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /admin/trains/{trainNr}/{date}/delays:
+    get:
+      tags:
+        - admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TrainNrParam'
+        - $ref: '#/components/parameters/DateParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trainNr:
+                    type: string
+                  date:
+                    type: string
+                    pattern: ^\d{4}-\d{2}-\d{2}$
+                  segments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        segId:
+                          type: string
+                        origin:
+                          type: string
+                        destination:
+                          type: string
+                        delayMinutes:
+                          type: integer
+                          minimum: 0
+                        reason:
+                          type: string
+                        is_cancelled:
+                          type: boolean
+                        abfahrtszeit_plan:
+                          type: string
+                          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                        abfahrtszeit_tatsaechlich:
+                          type: string
+                          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                        ankunftszeit_plan:
+                          type: string
+                          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                        ankunftszeit_tatsaechlich:
+                          type: string
+                          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                      required:
+                        - segId
+                        - origin
+                        - destination
+                        - delayMinutes
+                        - reason
+                        - is_cancelled
+                        - abfahrtszeit_plan
+                        - ankunftszeit_plan
+                  maxDelayMinutes:
+                    type: integer
+                    minimum: 0
+                  any_cancelled:
+                    type: boolean
+                  suggested_antragsart:
+                    type: string
+                    enum: *ref_1
+                  data_quality:
+                    type: string
+                    enum: *ref_10
+                required:
+                  - trainNr
+                  - date
+                  - segments
+                  - maxDelayMinutes
+                  - any_cancelled
+                  - suggested_antragsart
+                  - data_quality
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /admin/sepa/pending-batches:
+    get:
+      tags:
+        - admin
+        - sepa
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPendingBatchesResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /admin/sepa/batches/{batchId}/mark-submitted:
+    post:
+      tags:
+        - admin
+        - sepa
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BatchIdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+              additionalProperties: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkSubmittedResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /admin/tickets/{ticketId}/pain008-rebuild:
+    post:
+      tags:
+        - admin
+        - sepa
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketIdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+              additionalProperties: false
+      responses:
+        '202':
+          description: Rebuild triggered
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /admin/sepa/reports/upload:
+    post:
+      tags:
+        - admin
+        - sepa
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                  minLength: 1
+                content_type:
+                  type: string
+                  enum:
+                    - application/xml
+                    - text/xml
+                size_bytes:
+                  type: integer
+                  minimum: 0
+                  exclusiveMinimum: true
+              required:
+                - filename
+                - content_type
+                - size_bytes
+      responses:
+        '200':
+          description: Presigned POST envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SepaReportUploadResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'

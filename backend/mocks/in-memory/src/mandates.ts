@@ -7,7 +7,7 @@ import type {
 } from "@railback/lib";
 import type { SepaMandateItem } from "@railback/lib";
 
-import { getRow, type MemState, putRow } from "./state.js";
+import { getRow, type MemState, putRow, deleteRow } from "./state.js";
 
 const MS_PER_MONTH = 30 * 24 * 60 * 60 * 1000;
 const MANDATE_TTL_MONTHS = 36;
@@ -81,6 +81,24 @@ export class InMemoryMandateRepo implements MandateRepo {
     return it ? fromItem(it) : null;
   }
 
+  async getByMandateId(mandateId: string): Promise<SepaMandate | null> {
+    // Linear scan across USER# partitions for a matching mandate_id. Skip
+    // anonymised (`USER#sha256:`) partitions — those are the 10y archive rows
+    // and MUST NOT re-enter the live SEPA pipeline (see markExpired /
+    // listExpiringISSUED for the same rule). Real DDB impl adds a GSI on
+    // `mandate_id` in Phase 5; this scan is admin-scale-safe in v1.
+    for (const [pk, bucket] of this.state.rows) {
+      if (!pk.startsWith("USER#")) continue;
+      if (pk.startsWith("USER#sha256:")) continue;
+      for (const [sk, item] of bucket) {
+        if (!sk.endsWith("#MANDATE")) continue;
+        const it = item as SepaMandateItem;
+        if (it.mandate_id === mandateId) return fromItem(it);
+      }
+    }
+    return null;
+  }
+
   async issue(email: string, id: string, mandate: NewMandate): Promise<SepaMandate> {
     const issuedAt = new Date().toISOString();
     const expires = new Date(Date.parse(issuedAt) + MANDATE_TTL_MONTHS * MS_PER_MONTH).toISOString();
@@ -114,12 +132,31 @@ export class InMemoryMandateRepo implements MandateRepo {
   }
 
   async stampPain008Built(email: string, id: string, info: { batchId: string; s3Key: string; builtAt: string }): Promise<void> {
-    await this.update(email, id, (it) => ({
-      ...it,
-      pain008_built_at: info.builtAt,
-      pain008_batch_id: info.batchId,
-      pain008_s3_key: info.s3Key,
-    }));
+    // Conditional write: refuse to overwrite an existing pain008_built_at.
+    // Defends against the double-build race acknowledged in SEPA_PAIN008.md
+    // §7 — two concurrent admin PATCHes can both pass the TOCTOU pre-check
+    // in handler.ts, both render distinct XML batches, and both reach this
+    // call. The first wins; the loser sees ERR_CONFLICT and the caller is
+    // responsible for cleaning up its orphan S3 bytes.
+    // Real DDB impl (Phase 5) MUST use UpdateItem with
+    //   ConditionExpression: attribute_not_exists(pain008_built_at)
+    // and translate ConditionalCheckFailedException → ERR_CONFLICT.
+    await this.update(email, id, (it) => {
+      if (it.pain008_built_at) {
+        throw new AppError(
+          "ERR_CONFLICT",
+          `Mandate for ticket ${id} already has pain008_built_at`,
+          undefined,
+          { field: "mandate.pain008_built_at" },
+        );
+      }
+      return {
+        ...it,
+        pain008_built_at: info.builtAt,
+        pain008_batch_id: info.batchId,
+        pain008_s3_key: info.s3Key,
+      };
+    });
   }
 
   async markSubmitted(email: string, id: string, submittedAt: string): Promise<void> {
@@ -170,9 +207,12 @@ export class InMemoryMandateRepo implements MandateRepo {
     //     AND pain008_submitted_at IS NULL   (admin hasn't bank-uploaded yet)
     // SUBMITTED mandates have already been handed to the bank — they are
     // NOT pending; the sepa-reports Lambda owns their next transition.
+    // Anonymised PKs (`USER#sha256:<hex>`) are 10y-archive rows — never
+    // resurfaced into the live SEPA pipeline.
     const out: SepaMandate[] = [];
     for (const [pk, bucket] of this.state.rows) {
       if (!pk.startsWith("USER#")) continue;
+      if (pk.startsWith("USER#sha256:")) continue;
       for (const [sk, item] of bucket) {
         if (!sk.endsWith("#MANDATE")) continue;
         const it = item as SepaMandateItem;
@@ -189,9 +229,16 @@ export class InMemoryMandateRepo implements MandateRepo {
   }
 
   async listExpiringISSUED(now: string): Promise<SepaMandate[]> {
+    // Anonymised PKs (`USER#sha256:<hex>`) are 10y-archive rows: their
+    // mandate_state at the time of anonymisation is preserved verbatim
+    // (HGB retention overrides DSGVO erasure). They MUST NOT re-enter the
+    // expiry pipeline — markExpired + tickets.patch(service_fee_state)
+    // on an anonymised row would mutate an artefact that is contractually
+    // immutable. Skip the whole prefix.
     const out: SepaMandate[] = [];
     for (const [pk, bucket] of this.state.rows) {
       if (!pk.startsWith("USER#")) continue;
+      if (pk.startsWith("USER#sha256:")) continue;
       for (const [sk, item] of bucket) {
         if (!sk.endsWith("#MANDATE")) continue;
         const it = item as SepaMandateItem;
@@ -202,10 +249,12 @@ export class InMemoryMandateRepo implements MandateRepo {
   }
 
   async listByBatchId(batchId: string): Promise<SepaMandate[]> {
-    // Linear scan — admin-tool scale, batches are small.
+    // Linear scan — admin-tool scale, batches are small. Same anonymised-PK
+    // skip as listPendingBatches/listExpiringISSUED above.
     const out: SepaMandate[] = [];
     for (const [pk, bucket] of this.state.rows) {
       if (!pk.startsWith("USER#")) continue;
+      if (pk.startsWith("USER#sha256:")) continue;
       for (const [sk, item] of bucket) {
         if (!sk.endsWith("#MANDATE")) continue;
         const it = item as SepaMandateItem;
@@ -213,5 +262,42 @@ export class InMemoryMandateRepo implements MandateRepo {
       }
     }
     return out;
+  }
+
+  async anonymiseUserMandates(email: string, anonPk: string): Promise<{ count: number }> {
+    // PII strip-list per DB_SCHEMA.md §"Cascade on user delete" item 4.
+    // The SepaMandateItem interface marks iban_enc/bic_enc/kontoinhaber_snapshot
+    // as REQUIRED — after this call the row legitimately violates that
+    // shape. That's deliberate: anonymisation is the only writer that
+    // produces post-DTO-contract rows, and nothing downstream ever reads
+    // them (PK is the sha256-hash, no live USER lookup matches). Cast to
+    // unknown then SepaMandateItem so the putRow stays type-checked-ish.
+    const PII_FIELDS = [
+      "iban_enc",
+      "bic_enc",
+      "kontoinhaber_snapshot",
+      "user_consent_ip",
+      "user_consent_user_agent",
+    ] as const;
+
+    const norm = keys.normaliseEmail(email);
+    const livePk = keys.userPk(norm);
+    const bucket = this.state.rows.get(livePk);
+    if (!bucket) return { count: 0 };
+
+    const targets: Array<{ sk: string; item: SepaMandateItem }> = [];
+    for (const [sk, item] of bucket) {
+      if (!sk.endsWith("#MANDATE")) continue;
+      targets.push({ sk, item: item as SepaMandateItem });
+    }
+
+    for (const { sk, item } of targets) {
+      const next = { ...(item as unknown as Record<string, unknown>) };
+      next.PK = anonPk;
+      for (const k of PII_FIELDS) delete next[k];
+      deleteRow(this.state, livePk, sk);
+      putRow(this.state, anonPk, sk, next as unknown as SepaMandateItem);
+    }
+    return { count: targets.length };
   }
 }

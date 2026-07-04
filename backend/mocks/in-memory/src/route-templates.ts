@@ -115,4 +115,22 @@ export class InMemoryRouteTemplateRepo implements RouteTemplateRepo {
   async delete(email: string, id: string): Promise<void> {
     deleteRow(this.state, keys.userPk(email), keys.templateSk(id));
   }
+
+  async deleteAllForUser(email: string): Promise<number> {
+    // Linear scan over TEMPLATE# SKs under USER#<email>. Templates have
+    // no S3 blobs (label + station metadata only) so DDB-row delete is
+    // the entire cascade.
+    const norm = keys.normaliseEmail(email);
+    const livePk = keys.userPk(norm);
+    const bucket = this.state.rows.get(livePk);
+    if (!bucket) return 0;
+    const sks: string[] = [];
+    for (const [sk] of bucket) {
+      if (sk.startsWith("TEMPLATE#")) sks.push(sk);
+    }
+    for (const sk of sks) {
+      deleteRow(this.state, livePk, sk);
+    }
+    return sks.length;
+  }
 }

@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.base.json",
+  "include": [
+    "flows/**/*",
+    "contract/**/*",
+    "shared/**/*",
+    "../types/**/*.d.ts"
+  ],
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "."
+  }
+}

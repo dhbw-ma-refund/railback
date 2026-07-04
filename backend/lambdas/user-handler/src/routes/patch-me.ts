@@ -7,6 +7,14 @@
 //   That matches the contract: bank goes through PATCH /users/me/bank;
 //   user_state is admin-only; email is immutable in v1.
 // - Returns the full GET /users/me shape after the update.
+// - If the row has somehow vanished while the token is still valid
+//   (e.g. anonymisation-sweeper fired during the access-token TTL
+//   window), surface ERR_AUTH_EXPIRED so the frontend drops the
+//   tokens and forces re-login — same UX as GET / DELETE /users/me
+//   and same fix as the 2026-07-01 audit finding `patch-me-vanished-row-404`.
+//   Without this check the repo would raise ERR_NOT_FOUND with the
+//   caller's email in the message (info-leak-adjacent) and a 404
+//   status that doesn't tell the frontend to re-auth.
 //
 // Address is whole-object replacement when sent — the zod schema
 // rejects partial address (all five fields required). The userforms
@@ -34,6 +42,14 @@ export async function handlePatchMe(event: ApiGwEvent): Promise<ReturnType<typeo
         undefined,
         { issues: parsed.error.issues },
       );
+    }
+
+    // Symmetric with GET / DELETE /users/me — a vanished row surfaces as
+    // 401 ERR_AUTH_EXPIRED so the frontend re-auths, not 404 with the
+    // caller's email in the message.
+    const existing = await db().users.getByEmail(email);
+    if (!existing) {
+      throw new AppError("ERR_AUTH_EXPIRED", "user account no longer exists");
     }
 
     // Project the wire-shape patch onto the repo's ProfilePatch shape.

@@ -8,6 +8,7 @@
 //   GET    /admin/tickets
 //   GET    /admin/tickets/{ticketId}
 //   PATCH  /admin/tickets/{ticketId}
+//   POST   /admin/tickets/{ticketId}/pain008-rebuild
 //   GET    /admin/trains/{trainNr}/{date}/delays
 //   GET    /admin/sepa/pending-batches
 //   POST   /admin/sepa/batches/{batchId}/mark-submitted
@@ -46,6 +47,7 @@ import { handlePatchTicket } from "./routes/patch-ticket.js";
 import { handleGetTrainDelays } from "./routes/get-train-delays.js";
 import { handleGetPendingBatches } from "./routes/get-pending-batches.js";
 import { handleMarkSubmitted } from "./routes/post-mark-submitted.js";
+import { handlePain008Rebuild } from "./routes/post-pain008-rebuild.js";
 import { handleSepaReportUpload } from "./routes/post-sepa-report-upload.js";
 
 type Route = (event: ApiGwEvent) => Promise<ApiGwResponse>;
@@ -72,6 +74,14 @@ const TEMPLATE_ROUTES: TemplateMatch[] = [
     pattern: /^\/admin\/trains\/([^/]+)\/(\d{4}-\d{2}-\d{2})\/delays$/,
     paramNames: ["trainNr", "date"],
     handler: handleGetTrainDelays,
+  },
+  // Tickets — operator retry for pain008-build must precede the generic
+  // /admin/tickets/{ticketId} GET/PATCH patterns.
+  {
+    method: "POST",
+    pattern: /^\/admin\/tickets\/([^/]+)\/pain008-rebuild$/,
+    paramNames: ["ticketId"],
+    handler: handlePain008Rebuild,
   },
   // Tickets by id
   {

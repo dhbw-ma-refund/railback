@@ -73,6 +73,48 @@ describe("POST /users/me/tickets/{ticketId}/belege/{belegId}/confirm", () => {
     expect(ticket?.belege_count).toBe(1);
   });
 
+  it("idempotent retry does NOT double-bump belege_count", async () => {
+    // Locked by 2026-07-01 audit finding `beleg-confirm-count-drift`:
+    // without the pre-existence check in the handler a re-POST would
+    // overwrite the RECEIPT# row (same PK/SK) AND bump belege_count
+    // again, so N retries could push the count past the 5-cap without
+    // any new belege being added. Sends the same confirm three times
+    // and asserts one receipt + count=1.
+    const db = installTestEnv();
+    await seedAlice(db);
+    const ticketId = await seedReadyTicket(db);
+    const belegId = ulid();
+    const body = {
+      s3_key: `belege/h/${ticketId}/${belegId}.pdf`,
+      filename: "taxi.pdf",
+      mimeType: "application/pdf",
+      typ: "TAXI",
+      size_bytes: 12345,
+      amount: "42.50",
+    };
+    const evt = makeEvent({
+      method: "POST",
+      path: `/users/me/tickets/${ticketId}/belege/${belegId}/confirm`,
+      token: aliceAccessToken(),
+      body,
+      pathParameters: { ticketId, belegId },
+    });
+
+    const res1 = await handlePostBelegeConfirm(evt);
+    const res2 = await handlePostBelegeConfirm(evt);
+    const res3 = await handlePostBelegeConfirm(evt);
+
+    expect(res1.statusCode).toBe(200);
+    expect(res2.statusCode).toBe(200);
+    expect(res3.statusCode).toBe(200);
+    expect(JSON.parse(res2.body).belegId).toBe(belegId);
+
+    const list = await db.blobs.listReceipts(ALICE_EMAIL, ticketId);
+    expect(list).toHaveLength(1);
+    const ticket = await db.tickets.get(ALICE_EMAIL, ticketId);
+    expect(ticket?.belege_count).toBe(1);
+  });
+
   it("ERR_CONFLICT when ticket already submitted", async () => {
     const db = installTestEnv();
     await seedAlice(db);

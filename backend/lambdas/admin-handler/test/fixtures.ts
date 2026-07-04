@@ -190,6 +190,10 @@ export async function seedMandate(
     bic_enc: encryptBic(ALICE_BIC),
     kontoinhaber_snapshot: "Alice Müller",
     user_consent_at: new Date().toISOString(),
+    // Pre-notification stamp lives on the mandate row (≥1d before debit
+    // window). pain008 builder requires it to be set; the /refund issue
+    // path will populate it once SES dispatch lands in Phase 5.
+    vorabankuendigung_sent_at: new Date().toISOString(),
   });
   if (opts.pain008_batch_id && opts.pain008_s3_key && opts.pain008_built_at) {
     await db.mandates.stampPain008Built(email, ticketId, {

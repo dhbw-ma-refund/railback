@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { decryptIban, decryptBic } from "@railback/lib/crypto/iban";
 import { verifyAccessToken, verifyRefreshToken } from "@railback/lib/auth/jwt";
+import { _activeMemState, seedAdmin } from "@railback/mocks-in-memory";
+import { hashPassword } from "@railback/lib/auth/password";
 
 import { installTestEnv, teardownTestEnv } from "./setup.js";
 import { handler } from "../src/handler.js";
@@ -102,6 +104,26 @@ describe("POST /auth/register", () => {
     const dup = await handler(makeEvent(validBody));
     expect(dup.statusCode).toBe(409);
     expect(JSON.parse(dup.body).error.code).toBe("ERR_CONFLICT");
+  });
+
+  // Locked 2026-07-01 per audit finding
+  // `register-no-admin-collision-check`. If an admin row exists for the
+  // same email, register must refuse with ERR_CONFLICT — silently
+  // creating a user row would orphan it (post-login's two-lookup
+  // dispatch is admin-wins, so login would always route to the admin
+  // path and never surface the user row).
+  it("rejects when an admin row already exists for the same email (ERR_CONFLICT)", async () => {
+    installTestEnv();
+    const state = _activeMemState();
+    if (!state) throw new Error("no active mem state — installTestEnv should have created one");
+    const hp = await hashPassword("admin-pw-min-8");
+    // seedAdmin uses the lowercased-normalised email — matches the same
+    // canonical form the register handler feeds to admins.getByEmailForAuth.
+    seedAdmin(state, "maria.mueller@example.de", hp);
+
+    const res = await handler(makeEvent(validBody));
+    expect(res.statusCode).toBe(409);
+    expect(JSON.parse(res.body).error.code).toBe("ERR_CONFLICT");
   });
 
   it("rejects when body is malformed JSON", async () => {

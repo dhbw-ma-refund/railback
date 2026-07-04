@@ -134,6 +134,33 @@ export class InMemoryTicketRepo implements TicketRepo {
     return tickets;
   }
 
+  async enumerateAllTicketIdsForUser(email: string): Promise<string[]> {
+    // Sweep every SK under the user PK, decode the ticketId from each
+    // shape (TICKET#/RAW#/RENDERED#/BELEG#/MANDATE#), and return the
+    // deduped set. Used by the anonymisation-sweeper to discover
+    // stranded blob debris (e.g. from a ticket that was hard-deleted
+    // without its sibling rows).
+    const bucket = this.state.rows.get(keys.userPk(email));
+    if (!bucket) return [];
+    const out = new Set<string>();
+    for (const sk of bucket.keys()) {
+      if (sk.startsWith("TICKET#")) {
+        // TICKET#<id>, TICKET#<id>#MANDATE, TICKET#<id>#BELEG#<belegId>
+        const rest = sk.slice("TICKET#".length);
+        const hashIdx = rest.indexOf("#");
+        const id = hashIdx === -1 ? rest : rest.slice(0, hashIdx);
+        if (id.length > 0) out.add(id);
+      } else if (sk.startsWith("RAW#")) {
+        const id = sk.slice("RAW#".length);
+        if (id.length > 0) out.add(id);
+      } else if (sk.startsWith("RENDERED#")) {
+        const id = sk.slice("RENDERED#".length);
+        if (id.length > 0) out.add(id);
+      }
+    }
+    return [...out].sort();
+  }
+
   async create(input: NewTicket): Promise<Ticket> {
     const now = input.uploadedAt;
     const t: Ticket = {
@@ -305,5 +332,79 @@ export class InMemoryTicketRepo implements TicketRepo {
     }
     matches.sort((a, b) => a.ticketId.localeCompare(b.ticketId));
     return matches;
+  }
+
+  async anonymiseUserTickets(
+    email: string,
+    anonPk: string,
+    nowIso: string,
+  ): Promise<{ ticketIds: string[] }> {
+    // PII strip-list per DB_SCHEMA.md §"Cascade on user delete" item 3.
+    // We delete the keys outright (rather than setting null) so the
+    // anonymised row carries only the columns we explicitly preserve.
+    //
+    // Deliberate hold-backs (NOT in PII_FIELDS):
+    //   - `admin_note`: CLAUDE.md cascade-spec lists this in the keep-set;
+    //     it's free-text admin context against the buchungsrelevante record
+    //     and is retained on purpose. May reference user details — admins
+    //     are coached to keep it operational.
+    //   - `email_provider_id`: SES Message-ID. Could correlate the
+    //     anonymised row back to SES CloudWatch logs (which carry the
+    //     recipient address) for the SES log-retention window. We retain
+    //     it because the bounce/complaint debugging value outweighs the
+    //     thin correlation surface; SES logs themselves age out within the
+    //     SES log-retention TTL well before HGB-retention completes.
+    //   - `email_failed_reason`: short enum-shaped reason string; no PII.
+    const PII_FIELDS = [
+      "vorname_aus_ticket",
+      "nachname_aus_ticket",
+      "fahrt_fahrkartennummer",
+      "antragstellung_ort",
+      "antragstellung_datum",
+      "zusaetzliche_angaben",
+    ] as const;
+
+    // Email-pipeline state fields cleared on anonymisation: the user
+    // profile is gone, so any pending send/retry is dead. Leaving these
+    // populated would let the email-sweeper / watchdog re-pick the row
+    // up on its next tick (cross-Lambda bug — anonymised row with
+    // GSI_EMAIL_PENDING_PK still indexed would be re-sent on a
+    // now-deleted user).
+    const EMAIL_PIPELINE_FIELDS = [
+      "GSI_EMAIL_PENDING_PK",
+      "GSI_EMAIL_PENDING_SK",
+      "email_status",
+      "email_attempts",
+      "email_last_attempt",
+    ] as const;
+
+    const norm = keys.normaliseEmail(email);
+    const livePk = keys.userPk(norm);
+    const bucket = this.state.rows.get(livePk);
+    if (!bucket) return { ticketIds: [] };
+
+    // Snapshot first — we mutate the bucket as we go (deleteRow + putRow at
+    // a new PK), and iterating the live Map while removing entries is
+    // undefined-behaviour-adjacent.
+    const targets: Array<{ sk: string; item: UserTicketItem }> = [];
+    for (const [sk, item] of bucket) {
+      if (!sk.startsWith("TICKET#")) continue;
+      const tid = keys.parseTicketSk(sk);
+      if (!tid) continue; // rejects MANDATE/BELEG sub-rows
+      targets.push({ sk, item: item as UserTicketItem });
+    }
+
+    const ticketIds: string[] = [];
+    for (const { sk, item } of targets) {
+      const next = { ...(item as unknown as Record<string, unknown>) };
+      next.PK = anonPk;
+      next.updated_at = nowIso;
+      for (const k of PII_FIELDS) delete next[k];
+      for (const k of EMAIL_PIPELINE_FIELDS) delete next[k];
+      deleteRow(this.state, livePk, sk);
+      putRow(this.state, anonPk, sk, next);
+      ticketIds.push(item.ticketId);
+    }
+    return { ticketIds };
   }
 }

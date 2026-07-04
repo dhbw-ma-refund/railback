@@ -103,11 +103,20 @@ export async function handlePatchUser(event: ApiGwEvent): Promise<ApiGwResponse>
     // Reject "only user_state but no actual transition" — a body of just
     // {user_state: "ACTIVE"} on an already-ACTIVE user has no effect and
     // is almost certainly a frontend bug.
+    //
+    // suspended_reason is included in the change-set: SUSPENDED→SUSPENDED
+    // with a new reason is a legitimate admin edit (revising the ban
+    // reason without unbanning). The block above at line 84-85 already
+    // writes `patch.suspended_reason` in that case; the guard must
+    // reflect that we're actually mutating a row-level field. Locked
+    // 2026-07-01 per audit finding
+    // `patch-user-suspended-reason-only-rejected`.
     const hasProfileChanges =
       parsed.data.vorname !== undefined ||
       parsed.data.nachname !== undefined ||
       parsed.data.telefon !== undefined ||
-      parsed.data.adresse !== undefined;
+      parsed.data.adresse !== undefined ||
+      patch.suspended_reason !== undefined;
     const hasStateChange = parsed.data.user_state !== undefined && parsed.data.user_state !== user.user_state;
     if (!hasProfileChanges && !hasStateChange) {
       throw new AppError(

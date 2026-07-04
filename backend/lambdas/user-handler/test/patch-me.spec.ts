@@ -161,4 +161,28 @@ describe("PATCH /users/me", () => {
     );
     expect(res.statusCode).toBe(401);
   });
+
+  // Locked 2026-07-01 per audit finding `patch-me-vanished-row-404`.
+  // Symmetric with GET/DELETE /users/me: a token issued before the row
+  // was anonymisation-swept must surface ERR_AUTH_EXPIRED (401), not
+  // ERR_NOT_FOUND (404) with the caller's email in the message.
+  it("ERR_AUTH_EXPIRED (401) when the user row vanished mid-token", async () => {
+    // Alice has a valid token, but the row is not seeded — models the
+    // anonymisation-sweeper hard-deleting the profile inside the
+    // access-token TTL window.
+    installTestEnv();
+    const res = await handler(
+      makeEvent({
+        method: "PATCH",
+        path: "/users/me",
+        token: aliceAccessToken(),
+        body: { telefon: "+49 170 1111111" },
+      }),
+    );
+    expect(res.statusCode).toBe(401);
+    const parsed = JSON.parse(res.body);
+    expect(parsed.error.code).toBe("ERR_AUTH_EXPIRED");
+    // Do NOT leak the caller's email in the message body.
+    expect(parsed.error.message).not.toContain("alice@example.com");
+  });
 });

@@ -36,16 +36,24 @@ Per record (SNS may batch multiple events in one Lambda invocation):
      out-of-order Deliveries arriving after `EMAIL_FAILED` are dropped
      (terminal stays terminal).
    - **`Bounce`** → `ticket_state: EMAIL_FAILED`, `email_status: BOUNCED`,
-     `email_failed_reason: "bounced"`. Overrides `PENDING_DB_PAYMENT`
-     (a forwarding-hop bounce is authoritative — the user effectively did
-     not receive the email). Idempotent on `EMAIL_FAILED`.
-   - **`Complaint`** → `ticket_state: EMAIL_FAILED`, `email_status: BOUNCED`,
+     `email_failed_reason: "bounced"`. **Only if the ticket is still in
+     the email window** (`EMAIL_SENDING` or earlier). A bounce arriving
+     after `PENDING_DB_PAYMENT` / `APPROVED` / `COMPLETED` is a no-op —
+     the state past `EMAIL_SENDING` is committed and no longer belongs
+     to the email pipeline (window-guard fix, 2026-06-26 external
+     review). Idempotent on `EMAIL_FAILED`.
+   - **`Complaint`** → same window-guard as `Bounce`; on match,
+     `ticket_state: EMAIL_FAILED`, `email_status: BOUNCED`,
      `email_failed_reason: "complained"`. Complaints reuse the `BOUNCED`
      enum value (no dedicated `COMPLAINED` value per ARCHITECTURE.md).
 
 Each record runs in its own try/catch so one bad record cannot block the
-rest. Handler ALWAYS resolves successfully — SNS would otherwise retry
-the batch indefinitely, multiplying DDB writes + log noise.
+rest. **Payload-invalid records** (missing header, wrong shape, unknown
+event type) are swallowed with a warn-log — SNS would otherwise retry
+the batch indefinitely without ever succeeding. **Storage-side errors**
+(DDB throttling, network) propagate so SNS retries → DLQ eventually
+surfaces the issue instead of masking it (external-review fix
+2026-06-26). Handler is idempotent so retries are safe.
 
 ## Runtime env
 

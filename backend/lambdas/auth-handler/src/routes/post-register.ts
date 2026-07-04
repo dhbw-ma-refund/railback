@@ -3,6 +3,13 @@
 //   locked 2026-06-21 decision).
 // - Hashes the password with scrypt.
 // - Encrypts iban/bic with AES-256-GCM using RAILBACK_IBAN_KEK.
+// - Rejects if an admin row already exists for the same email (locked
+//   2026-07-01 per audit finding `register-no-admin-collision-check`):
+//   post-login's two-lookup dispatch is admin-wins, so silently
+//   accepting a user-registration for an admin-owned email would
+//   create an orphan row that never receives a login (the login always
+//   dispatches to the admin path). ERR_CONFLICT with the same shape
+//   as the user-duplicate case.
 // - Writes the UserProfile row with user_state=ACTIVE.
 // - Signs an access + refresh token pair, returns them with the user
 //   summary. Role is hardcoded "USER" — admin rows are created
@@ -31,6 +38,18 @@ export async function handleRegister(event: ApiGwEvent): Promise<ReturnType<type
       );
     }
     const input = parsed.data;
+
+    // Admin-collision precheck (see file-header for rationale). Reads
+    // the internal auth view because that's the cheapest existence
+    // check we already need on the login path; the caller never gets
+    // to see it.
+    const adminCollision = await db().admins.getByEmailForAuth(input.email);
+    if (adminCollision) {
+      throw new AppError(
+        "ERR_CONFLICT",
+        "email is already registered",
+      );
+    }
 
     // Encrypt iban/bic up-front; if KEK is missing we want to fail BEFORE
     // we create the user row.

@@ -106,4 +106,21 @@ describe("PATCH /users/me/bank", () => {
     );
     expect(res.statusCode).toBe(401);
   });
+
+  // Locked 2026-07-01 per audit finding `patch-me-vanished-row-404`.
+  it("ERR_AUTH_EXPIRED (401) when the user row vanished mid-token", async () => {
+    installTestEnv();
+    const res = await handler(
+      makeEvent({
+        method: "PATCH",
+        path: "/users/me/bank",
+        token: aliceAccessToken(),
+        body: { iban: NEW_IBAN, bic: NEW_BIC },
+      }),
+    );
+    expect(res.statusCode).toBe(401);
+    const parsed = JSON.parse(res.body);
+    expect(parsed.error.code).toBe("ERR_AUTH_EXPIRED");
+    expect(parsed.error.message).not.toContain("alice@example.com");
+  });
 });

@@ -287,11 +287,13 @@ describe("InMemorySepaReportRepo", () => {
       sender: "Bank",
       mandates_correlated: ["MID_1"],
       received_at: "2026-06-22T10:00:00Z",
+      ttl: 2094631200, // 2036-06-22 approximate, 10y post received_at
     });
     expect(r.ingest_source).toBe("MANUAL_UPLOAD");
 
     const fetched = await db.sepaReports.getByReportId("2026-06-22", "RID_1");
     expect(fetched?.reportId).toBe("RID_1");
+    expect(fetched?.ttl).toBe(2094631200);
     expect(await db.sepaReports.getByReportId("2026-06-22", "MISSING")).toBeNull();
   });
 });

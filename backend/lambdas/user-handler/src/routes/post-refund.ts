@@ -5,13 +5,14 @@
 //   1. Auth + own-ticket lookup (404 if not yours).
 //   2. zod-parse refundRequestSchema.
 //   3. Load the user row (IBAN/BIC live there, not on the request).
-//   4. State guard: only READY or VALIDATING tickets may be submitted.
-//      Anything past READY → 409 ERR_CONFLICT. This is the idempotency
-//      gate — a second submit on an already-EMAIL_SENDING ticket would
-//      double-issue the SEPA mandate, which is unrecoverable.
+//   4. State guard: only READY tickets may be submitted. Anything past
+//      READY → 409 ERR_CONFLICT. This is the idempotency gate — a
+//      second submit on an already-EMAIL_SENDING ticket would double-
+//      issue the SEPA mandate, which is unrecoverable.
 //   5. validateRefundSubmission — business rules (IBAN/BIC on file,
 //      consent literals true, antragsart vs antragsgrund cross-checks,
-//      KOSTEN_ALTERNATIVTRANSPORT requires ≥1 beleg).
+//      KOSTEN_ALTERNATIVTRANSPORT requires ≥1 beleg,
+//      ENTSCHAEDIGUNG_ZEITKARTE requires is_zeitkarte=true).
 //   6. computeFee — locks both erwartete_erstattung AND service_fee_betrag.
 //      These are IMMUTABLE per CLAUDE.md ("Refund amount is computed once
 //      at submit and immutable"). Admin cannot edit them later; only path
@@ -21,30 +22,28 @@
 //      service_fee_betrag at this point, so a later business-model change
 //      to the fee formula does NOT retroactively rewrite already-issued
 //      mandates.
-//      Vorabankuendigung-Versand wird hier laut CLAUDE.md ausgelöst
-//      (≥1 Tag pre-notification ist immer erfüllt weil Admin-Approval
-//      Tage später kommt). Implementation lands together with refund-pdf
-//      + email-sweeper in phase 5.
+//      Vorabankuendigung_sent_at wird hier auf `now` gesetzt — der
+//      User-Klick durch den SEPA-Consent-Wizard IST das regulatorische
+//      Pre-Notification-Event. Die ≥1-Tag-Pre-Notification ist immer
+//      erfüllt weil Admin-Approval Tage später kommt; pain008-generator
+//      validiert das Feld als Pflichtfeld. Die separate SES-Mail
+//      (Phase 5+) ist ein Delivery-Enhancement, NICHT der regulatorische
+//      Anker.
 //   8. Patch the ticket: copy the form payload onto the row, set the
 //      computed amounts, transition ticket_state → EMAIL_SENDING and
 //      email_status → SENDING (sweeper-eligible).
 //   9. Sync-invoke refund-pdf (dynamic-import shim — see invokeRefundPdf
-//      below). No-op until phase 5 lands the module.
+//      below). Missing module is a deploy bug, propagated as 500.
 //
-// PUNT — KOSTEN_ALTERNATIVTRANSPORT: compute-fee needs a belegeSumme but
-// the Receipt DTO carries no amount field in v1 (open question, see
-// CLAUDE.md "Open / Service-fee + Erstattungsbetrag-Formel"). For this
-// PR we accept a `belegeSumme` only if the frontend stuffs it into
-// `zusaetzliche_angaben` as plaintext — which we do NOT parse. The
-// short-term contract: KOSTEN_ALTERNATIVTRANSPORT submissions return
-// 400 ERR_VALIDATION ("belege sum not yet captured"). When phase 5
-// lands a beleg-amount field, drop this guard and pass it through to
-// computeFee.
+// KOSTEN_ALTERNATIVTRANSPORT belegeSumme (locked 2026-06-24): every
+// beleg-confirm captures its EUR amount, so the backend derives
+// belegeSumme deterministically at submit time from the sum of
+// receipt amounts. No user-entered field, no PUNT.
 //
 // Phase 5 hooks in this file:
-//   - SES Vorabankuendigung dispatch on mandate.issue
-//   - refund-pdf invoke is already wired via invokeRefundPdf below; it
-//     no-ops in phase 2.3 because the module is not installed yet.
+//   - SES Vorabankuendigung-Mail dispatch on mandate.issue (delivery-only;
+//     the regulatory timestamp is already anchored at consent-time, see
+//     step 7 above).
 
 import { AppError } from "@railback/lib/errors";
 import { db } from "@railback/lib/storage";
@@ -61,43 +60,24 @@ import { errorResponse, okJson } from "../response.js";
 import { requireUserCaller } from "../auth-context.js";
 
 /**
- * Dynamic-import-shim for the refund-pdf Lambda. Since phase 2.5 the
- * package is in the workspace and the import resolves normally. The
- * try/catch is still needed for two narrow cases:
- *   1. `npm run test --workspace lambdas/user-handler` without installing
- *      the refund-pdf workspace (dev convenience — the test would never
- *      reach the email flow on the happy path).
- *   2. Hot-reload / partial-tree runs where the workspace dep isn't
- *      symlinked yet.
+ * Sync-invoke shim for the refund-pdf Lambda. Mirrors
+ * admin-handler/pain008-invoke.ts (2026-06-29 codex P2#3 fix): a bare
+ * dynamic import that lets any error — including ERR_MODULE_NOT_FOUND
+ * for our own specifier — propagate as 5xx.
  *
- * Only ERR_MODULE_NOT_FOUND for the literal `@railback/refund-pdf`
- * specifier is swallowed. Anything else — a syntax error in the module,
- * a transitive missing dep, a thrown error from renderAndSend itself —
- * propagates as 5xx. Eating those would leave the ticket stuck in
- * EMAIL_SENDING with no rendered PDF, which the sweeper cannot recover
- * from (the sweeper resends an already-persisted PDF; it does not
- * render).
+ * `@railback/refund-pdf` is a runtime dependency (package.json
+ * `dependencies`) since the 2026-07-01 audit fix, so a real Lambda
+ * deploy bundles it. A missing import at runtime is a deploy bug and
+ * we surface it, not silently skip: swallowing would leave the ticket
+ * stuck in EMAIL_SENDING with no rendered PDF, and the sweeper can't
+ * recover (it resends already-persisted PDFs; it does not render).
  *
  * Phase 6 (RAILBACK_STORAGE=ddb, cross-Lambda AWS Invoke):
  *   - Branch on env and use @aws-sdk/client-lambda InvokeCommand instead.
  */
 async function invokeRefundPdf(args: { email: string; ticketId: string }): Promise<void> {
-  let mod: { renderAndSend?: (args: { email: string; ticketId: string }) => Promise<void> };
-  try {
-    mod = await import("@railback/refund-pdf");
-  } catch (err) {
-    // Narrow: only swallow "module not found for our own specifier".
-    // Node's ESM loader sets err.code === "ERR_MODULE_NOT_FOUND" and the
-    // message contains the specifier. Anything else (compile failure
-    // inside the loaded graph, missing transitive dep) re-throws.
-    const e = err as NodeJS.ErrnoException & { code?: string };
-    const isOwnSpecifierMissing =
-      e?.code === "ERR_MODULE_NOT_FOUND"
-      && typeof e.message === "string"
-      && e.message.includes("@railback/refund-pdf");
-    if (!isOwnSpecifierMissing) throw err;
-    return;
-  }
+  const mod: { renderAndSend?: (args: { email: string; ticketId: string }) => Promise<void> } =
+    await import("@railback/refund-pdf");
   if (typeof mod.renderAndSend === "function") {
     await mod.renderAndSend(args);
   }
@@ -274,10 +254,16 @@ export async function handlePostRefund(event: ApiGwEvent): Promise<ApiGwResponse
           user_consent_at: now,
           ...(sourceIp !== undefined ? { user_consent_ip: sourceIp } : {}),
           ...(userAgent !== undefined ? { user_consent_user_agent: userAgent } : {}),
-          // Phase 5: vorabankuendigung_sent_at set when SES dispatch lands.
-          // Per CLAUDE.md, the pre-notification email goes out at mandate-issue
-          // time (NOT at pain.008-generation) to keep the ≥1-day window
-          // satisfied. Implementation deferred together with SES wiring.
+          // vorabankuendigung_sent_at is anchored to mandate-issue time
+          // (= now). Per CLAUDE.md the user clicking through the SEPA-
+          // consent wizard IS the regulatory pre-notification event; the
+          // ≥1-Tag-Window ist immer eingehalten weil Admin-Approval Tage
+          // später kommt und pain008-generator dieses Feld als Pflichtfeld
+          // validiert. Die zusätzliche SES-Mail (Phase 5+) ist ein
+          // Delivery-Enhancement, NICHT der regulatorische Anker — sie
+          // darf den Mandate-Issue nicht gaten und auch das Feld nicht
+          // erst später setzen.
+          vorabankuendigung_sent_at: now,
         });
       }
     }

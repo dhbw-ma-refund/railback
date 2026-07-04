@@ -41,16 +41,25 @@
      `email_attempts++`. Ticket stays in `EMAIL_SENDING` awaiting the
      SNS-driven `email-webhook` Lambda.
    - non-2xx transient → `email_status = FAILED_TRANSIENT`,
-     `email_attempts++`, `email_failed_reason = <SES error name>`.
-     `email-sweeper` picks it up on the next 5-min cron tick.
+     `email_attempts++`, `email_failed_reason = null`. The SES error
+     name lives in the structured log line (`refund-pdf.ses.transient`)
+     only — DB_SCHEMA's `email_failed_reason` enum has no free-text SES
+     name; setting a value that isn't in the enum would break
+     downstream projections. `email-sweeper` picks it up on the next
+     5-min cron tick and retries.
    - non-2xx permanent (`MessageRejected`,
      `MailFromDomainNotVerifiedException`,
      `ConfigurationSetDoesNotExistException`, etc.) →
-     `ticket_state = EMAIL_FAILED`, `email_status = FAILED`. Terminal.
+     `ticket_state = EMAIL_FAILED`, `email_status = FAILED`,
+     `email_failed_reason = "max_retries"`. Terminal. SES error name
+     again only in the log line.
 
 `renderAndSend` never throws on SES failures — those are normal retry
-paths. It only throws on render/persist errors (which leave the ticket
-inconsistent and surface as a 5xx to user-handler).
+paths. On render/persist errors it rolls the ticket state back to `READY`
++ clears the submit-time email/timestamp fields (audit-fix 2026-07-01
+adds this transition to `DB_SCHEMA.md` as `EMAIL_SENDING → READY` per
+`render-fail-rollback-unplanned`) and re-throws as 5xx so the user's
+wizard can retry from a clean slate.
 
 ## Runtime env
 

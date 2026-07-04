@@ -19,6 +19,12 @@ registerBackend("memory", buildMemoryDb);
 
 export const TEST_JWT_SECRET = "test-secret-please-change";
 export const TEST_KEK_B64 = Buffer.alloc(32, 0x42).toString("base64");
+// SEPA env vars — needed by pain008-generator (sync-invoked from
+// patch-ticket on * → APPROVED).
+export const TEST_SEPA_KONTOINHABER = "RailBack UG (haftungsbeschränkt)";
+export const TEST_SEPA_IBAN_OWN = "DE89370400440532013000";
+export const TEST_SEPA_BIC_OWN = "COBADEFFXXX";
+export const TEST_SEPA_GLAEUBIGER_ID = "DE98ZZZ09999999999";
 
 export function installTestEnv(): ReturnType<typeof db> {
   vi.stubEnv("RAILBACK_STORAGE", "memory");
@@ -28,6 +34,10 @@ export function installTestEnv(): ReturnType<typeof db> {
   vi.stubEnv("RAILBACK_IBAN_KEK", TEST_KEK_B64);
   vi.stubEnv("RAILBACK_S3_BUCKET", "railback-storage-test");
   vi.stubEnv("RAILBACK_AWS_REGION", "eu-central-1");
+  vi.stubEnv("RAILBACK_SEPA_KONTOINHABER", TEST_SEPA_KONTOINHABER);
+  vi.stubEnv("RAILBACK_SEPA_IBAN_OWN", TEST_SEPA_IBAN_OWN);
+  vi.stubEnv("RAILBACK_SEPA_BIC_OWN", TEST_SEPA_BIC_OWN);
+  vi.stubEnv("RAILBACK_SEPA_GLAEUBIGER_ID", TEST_SEPA_GLAEUBIGER_ID);
   // Fake credentials so the AWS SDK signer doesn't try to hit the
   // EC2 metadata endpoint or shared-credentials file during presign.
   // The signing math is local — these don't need to be real to produce

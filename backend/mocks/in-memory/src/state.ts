@@ -9,21 +9,39 @@ export interface MemBlob {
   uploadedAt: string;
 }
 
+/**
+ * Presigned-POST content-length-range policy. Registered by
+ * presignRawUploadPost / presignReceiptPost at issue-time and enforced by
+ * putBytes on upload. Mirrors S3's server-side enforcement of the
+ * `content-length-range` policy condition (see @railback/lib/storage/s3
+ * presigned-post.ts) — the production S3 rejects out-of-range uploads with
+ * 400 before the bytes ever land; the mock has to do it in-process.
+ * Keyed by S3 key. Absent for server-side direct writes (rendered PDFs,
+ * pain.008 XML) which don't go through the presign flow.
+ */
+export interface PresignPolicy {
+  min: number;
+  max: number;
+}
+
 export interface MemState {
   rows: Map<string, Map<string, unknown>>;
   blobs: Map<string, Map<string, MemBlob>>;
+  presignPolicies: Map<string, PresignPolicy>;
 }
 
 export function makeState(): MemState {
   return {
     rows: new Map(),
     blobs: new Map(),
+    presignPolicies: new Map(),
   };
 }
 
 export function clearState(s: MemState): void {
   s.rows.clear();
   s.blobs.clear();
+  s.presignPolicies.clear();
 }
 
 export function putRow(s: MemState, pk: string, sk: string, item: unknown): void {
