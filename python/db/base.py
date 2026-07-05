@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import logging
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
@@ -12,15 +13,15 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
-class Result:
-    def is_ok(self) -> bool:
-        raise NotImplementedError
+class Result(ABC):
+    @abstractmethod
+    def is_ok(self) -> bool: ...
 
-    def is_err(self) -> bool:
-        raise NotImplementedError
+    @abstractmethod
+    def is_err(self) -> bool: ...
 
-    def unwrap(self):
-        raise NotImplementedError
+    @abstractmethod
+    def unwrap(self): ...
 
 
 @dataclass(frozen=True)
@@ -150,6 +151,6 @@ class BaseConnector:
     @safe
     def _batch_delete(self, keys: list[tuple[str, str]]) -> Result:
         with self._t.batch_writer() as batch:
-            for pk, sk in keys:
+            for pk, sk in dict.fromkeys(keys):
                 batch.delete_item(Key={"pk": pk, "sk": sk})
         return Ok(None)

@@ -91,3 +91,18 @@ class TestUserConnector:
             assert f"EMAIL#{e}" in gsi_sks
         for e in emails:
             db.user._delete(f"USER#{e}", "PROFILE")
+
+    def test_get_for_admin_strips_sensitive_fields(self, db):
+        e = email("adminget")
+        db.user.put(item(e, iban_enc="ENC_IBAN_001", bic_enc="ENC_BIC_001"))
+        r = db.user.get_for_admin(e)
+        assert r.is_ok()
+        data = r.unwrap()
+        assert "iban_enc" not in data
+        assert "bic_enc" not in data
+        assert data["vorname"] == "Test"
+        assert db.user.get(e).unwrap()["iban_enc"] == "ENC_IBAN_001"
+        db.user._delete(f"USER#{e}", "PROFILE")
+
+    def test_get_for_admin_not_found_returns_none(self, db):
+        assert db.user.get_for_admin("ghost.u001.admin@it.de").unwrap() is None

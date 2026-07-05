@@ -54,3 +54,10 @@ class TestSepaMandateConnector:
         row = db.mandate.get(E, "T_SM_CONF").unwrap()
         assert row["pain008_batch_id"] == "BATCH_A"
         db.mandate._delete(f"USER#{E}", "TICKET#T_SM_CONF#MANDATE")
+
+    def test_stamp_pain008_built_on_ghost_mandate_returns_err(self, db):
+        from db.base import ConflictError
+        r = db.mandate.stamp_pain008_built("ghost.sm001@it.de", "T_GHOST_STAMP", "BATCH_X", "s3.xml", "2026-07-05T00:00:00Z")
+        assert r.is_err()
+        assert isinstance(r.error, ConflictError)
+        assert db.mandate.get("ghost.sm001@it.de", "T_GHOST_STAMP").unwrap() is None

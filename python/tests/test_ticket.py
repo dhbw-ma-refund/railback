@@ -97,7 +97,23 @@ class TestTicketConnector:
         for tid in tids:
             db.ticket._delete(f"USER#{e}", f"TICKET#{tid}")
 
-    def test_get_by_train_empty(self, db):
+    def test_list_for_user_limit_counts_plain_tickets_only(self, db):
+        e = email("lfulmix")
+        tids = [f"T_LFULMIX{i}" for i in range(4)]
+        for tid in tids:
+            db.ticket.put(ticket(e, tid))
+            db.receipt.put({"pk": f"USER#{e}", "sk": f"TICKET#{tid}#BELEG#B1", "typ": "TAXI", "uploaded_at": NOW})
+        r = db.ticket.list_for_user(e, limit=2)
+        assert r.is_ok()
+        items = r.unwrap()
+        assert len(items) == 2
+        for i in items:
+            assert "#" not in i["sk"][len("TICKET#"):]
+        for tid in tids:
+            db.ticket._delete(f"USER#{e}", f"TICKET#{tid}")
+            db.receipt._delete(f"USER#{e}", f"TICKET#{tid}#BELEG#B1")
+
+
         r = db.ticket.get_by_train("IC 9999", "2099-01-01")
         assert r.is_ok()
         assert r.unwrap() == []

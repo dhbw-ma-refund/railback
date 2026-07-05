@@ -5,7 +5,7 @@ import os
 import boto3
 from boto3.dynamodb.conditions import Key
 
-from db.base import BaseConnector, ConflictError, Ok, Result, safe
+from db.base import BaseConnector, ConflictError, Ok, Result
 
 TABLE_NAME = os.environ.get("RAILBACK_DDB_TABLE", "RailBack")
 REGION = "eu-north-1"
@@ -92,11 +92,11 @@ class TicketConnector(BaseConnector):
     def list_for_user(self, email: str, limit: int | None = None) -> Result:
         result = self._query(
             KeyConditionExpression=Key("pk").eq(f"USER#{email}") & Key("sk").begins_with("TICKET#"),
-            **({"Limit": limit} if limit is not None else {}),
         )
         if result.is_err():
             return result
-        return Ok([i for i in result.unwrap() if _is_plain_ticket_sk(i["sk"])])
+        items = [i for i in result.unwrap() if _is_plain_ticket_sk(i["sk"])]
+        return Ok(items[:limit] if limit is not None else items)
 
     def get_by_train(self, train_nr: str, date: str, limit: int | None = None) -> Result:
         return self._query(
@@ -209,7 +209,7 @@ class SepaMandateConnector(BaseConnector):
         return self._update_if(
             f"USER#{email}", f"TICKET#{ticket_id}#MANDATE",
             {"pain008_built_at": built_at, "pain008_batch_id": batch_id, "pain008_s3_key": s3_key},
-            "attribute_not_exists(pain008_built_at)",
+            "attribute_exists(pk) AND attribute_not_exists(pain008_built_at)",
         )
 
 
@@ -254,7 +254,7 @@ class TrainSegmentDelayConnector(BaseConnector):
     def route_lookup(self, origin_eva: int, date: str, from_time: str, to_time: str, limit: int | None = None) -> Result:
         return self._query(
             IndexName="gsi1",
-            KeyConditionExpression=Key("gsi1_pk").eq(f"STATION#{origin_eva}#{date}") & Key("gsi1_sk").between(from_time, to_time + "~"),
+            KeyConditionExpression=Key("gsi1_pk").eq(f"STATION#{origin_eva}#{date}") & Key("gsi1_sk").between(from_time, to_time + "￿"),
             **({"Limit": limit} if limit is not None else {}),
         )
 
@@ -299,7 +299,6 @@ class RailBackConnector:
         self.train_delay = TrainSegmentDelayConnector(self._table)
         self.route_template = RouteTemplateConnector(self._table)
 
-    @safe
     def delete_user(self, email: str) -> Result:
         all_items = self.user._query(KeyConditionExpression=Key("pk").eq(f"USER#{email}"))
         if all_items.is_err():
@@ -313,7 +312,6 @@ class RailBackConnector:
                 keys.append((f"TICKET#{ticket_id}", "OWNER"))
         return self.user._batch_delete(keys)
 
-    @safe
     def delete_ticket(self, email: str, ticket_id: str) -> Result:
         children = self.ticket._query(
             KeyConditionExpression=Key("pk").eq(f"USER#{email}") & Key("sk").begins_with(f"TICKET#{ticket_id}#")

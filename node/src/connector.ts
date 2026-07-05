@@ -60,10 +60,10 @@ export class TicketConnector extends BaseConnector {
     const r = await this._query({
       KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
       ExpressionAttributeValues: { ":pk": `USER#${email}`, ":prefix": "TICKET#" },
-      ...(limit !== undefined ? { Limit: limit } : {}),
     });
     if (r.isErr()) return r;
-    return new Ok(r.value.filter((i) => isPlainTicketSk(i["sk"] as string)));
+    const items = r.value.filter((i) => isPlainTicketSk(i["sk"] as string));
+    return new Ok(limit !== undefined ? items.slice(0, limit) : items);
   }
   getByTrain(trainNr: string, date: string, limit?: number) {
     return this._query({ IndexName: "gsi1", KeyConditionExpression: "gsi1_pk = :v", ExpressionAttributeValues: { ":v": `TRAIN#${trainNr}#${date}` }, ...(limit !== undefined ? { Limit: limit } : {}) });
@@ -162,7 +162,7 @@ export class SepaMandateConnector extends BaseConnector {
     return this._updateIf(
       `USER#${email}`, `TICKET#${ticketId}#MANDATE`,
       { pain008_built_at: builtAt, pain008_batch_id: batchId, pain008_s3_key: s3Key },
-      "attribute_not_exists(pain008_built_at)",
+      "attribute_exists(pk) AND attribute_not_exists(pain008_built_at)",
     );
   }
 }
@@ -203,7 +203,7 @@ export class TrainSegmentDelayConnector extends BaseConnector {
     return this._query({
       IndexName: "gsi1",
       KeyConditionExpression: "gsi1_pk = :pk AND gsi1_sk BETWEEN :from AND :to",
-      ExpressionAttributeValues: { ":pk": `STATION#${originEva}#${date}`, ":from": fromTime, ":to": toTime + "~" },
+      ExpressionAttributeValues: { ":pk": `STATION#${originEva}#${date}`, ":from": fromTime, ":to": toTime + "￿" },
       ...(limit !== undefined ? { Limit: limit } : {}),
     });
   }
