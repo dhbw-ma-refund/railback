@@ -12,6 +12,7 @@ import { Table, type TableColumn } from '../ui/Table';
 import { TicketStateBadge } from '../ui/TicketStateBadge';
 import { FilterBar } from '../ui/FilterBar';
 import { Pagination } from '../ui/Pagination';
+import { useToast } from '../ui/Toast';
 import '../admin.css';
 
 const PAGE_LIMIT = 50;
@@ -40,6 +41,7 @@ function parseState(raw: string | null): '' | TicketState {
 
 export function TicketsListPage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [params, setParams] = useSearchParams();
 
   const [emailInput, setEmailInput] = useState(params.get('email') ?? '');
@@ -117,6 +119,7 @@ export function TicketsListPage() {
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [forbidden, setForbidden] = useState(false);
 
   const resetKey = useMemo(
     () => `${activeEmail}|${activeTrain}|${state}|${date}`,
@@ -143,6 +146,7 @@ export function TicketsListPage() {
     const controller = new AbortController();
     setLoading(true);
     setError(null);
+    setForbidden(false);
     ticketsApi
       .listTickets(
         {
@@ -162,7 +166,20 @@ export function TicketsListPage() {
       })
       .catch((err: unknown) => {
         if (controller.signal.aborted) return;
-        setError(err instanceof ApiError ? err.message : 'Tickets konnten nicht geladen werden.');
+        if (err instanceof ApiError) {
+          if (err.status === 403) {
+            setForbidden(true);
+            return;
+          }
+          if (err.status >= 500) {
+            toast.show('Serverfehler beim Laden der Tickets. Bitte erneut versuchen.');
+            setError(err.message);
+            return;
+          }
+          setError(err.message);
+          return;
+        }
+        setError('Tickets konnten nicht geladen werden.');
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
@@ -218,22 +235,42 @@ export function TicketsListPage() {
         </div>
       </FilterBar>
 
-      <Table
-        columns={COLUMNS}
-        rows={rows}
-        rowKey={(t) => t.ticketId}
-        onRowClick={(t) => navigate(`/admin-panel/tickets/${encodeURIComponent(t.ticketId)}`)}
-        loading={loading}
-        error={error}
-        emptyMessage="Keine Tickets gefunden."
-      />
-
-      <Pagination
-        hasPrev={pager.hasPrev}
-        hasNext={pager.hasNext}
-        onPrev={pager.goPrev}
-        onNext={pager.goNext}
-      />
+      {forbidden ? (
+        <div
+          role="alert"
+          style={{
+            padding: '32px 16px',
+            textAlign: 'center',
+            color: 'var(--color-error-red)',
+          }}
+        >
+          Keine Berechtigung, diese Tickets zu sehen.
+        </div>
+      ) : (
+        <>
+          <Table
+            columns={COLUMNS}
+            rows={rows}
+            rowKey={(t) => t.ticketId}
+            onRowClick={(t) =>
+              navigate(`/admin-panel/tickets/${encodeURIComponent(t.ticketId)}`)
+            }
+            loading={loading}
+            error={error}
+            emptyMessage={
+              hasActiveFilters
+                ? 'Keine Tickets passen zu diesen Filtern.'
+                : 'Noch keine Tickets vorhanden.'
+            }
+          />
+          <Pagination
+            hasPrev={pager.hasPrev}
+            hasNext={pager.hasNext}
+            onPrev={pager.goPrev}
+            onNext={pager.goNext}
+          />
+        </>
+      )}
     </div>
   );
 }
