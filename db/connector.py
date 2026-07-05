@@ -11,6 +11,12 @@ TABLE_NAME = os.environ.get("RAILBACK_DDB_TABLE", "RailBack")
 REGION = "eu-north-1"
 ENDPOINT_URL = os.environ.get("DYNAMODB_ENDPOINT_URL", None)
 
+_ADMIN_STRIPPED_FIELDS = frozenset({"iban_enc", "bic_enc"})
+
+
+def _is_plain_ticket_sk(sk: str) -> bool:
+    return sk.startswith("TICKET#") and "#" not in sk[len("TICKET#"):]
+
 
 def _table_resource(table=None):
     if table is not None:
@@ -31,6 +37,15 @@ def _table_resource(table=None):
 class UserConnector(BaseConnector):
     def get(self, email: str) -> Result:
         return self._get(f"USER#{email}", "PROFILE")
+
+    def get_for_admin(self, email: str) -> Result:
+        result = self._get(f"USER#{email}", "PROFILE")
+        if result.is_err():
+            return result
+        item = result.unwrap()
+        if item:
+            item = {k: v for k, v in item.items() if k not in _ADMIN_STRIPPED_FIELDS}
+        return Ok(item)
 
     def put(self, item: dict) -> Result:
         return self._put(item)
@@ -80,7 +95,7 @@ class TicketConnector(BaseConnector):
         )
         if result.is_err():
             return result
-        return Ok([i for i in result.unwrap() if "#BELEG#" not in i["sk"] and not i["sk"].endswith("#MANDATE")])
+        return Ok([i for i in result.unwrap() if _is_plain_ticket_sk(i["sk"])])
 
     def get_by_train(self, train_nr: str, date: str) -> Result:
         return self._query(
