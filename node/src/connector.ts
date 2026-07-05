@@ -4,7 +4,8 @@ import { BaseConnector, ConflictError, Ok, Result, createClient } from "./base.j
 const ADMIN_STRIPPED = new Set(["iban_enc", "bic_enc"]);
 
 function isPlainTicketSk(sk: string): boolean {
-  return sk.startsWith("TICKET#") && !sk.slice("TICKET#".length).includes("#");
+  const tail = sk.slice("TICKET#".length);
+  return sk.startsWith("TICKET#") && tail !== "" && !tail.includes("#");
 }
 
 // ---------------------------------------------------------------------------
@@ -266,7 +267,7 @@ export class RailBackConnector {
     const keys: { pk: string; sk: string }[] = r.value.map((i) => ({ pk: i["pk"] as string, sk: i["sk"] as string }));
     r.value.forEach((i) => {
       const sk = i["sk"] as string;
-      if (sk.startsWith("TICKET#") && sk.split("#").length === 2) {
+      if (isPlainTicketSk(sk)) {
         keys.push({ pk: `TICKET#${sk.slice("TICKET#".length)}`, sk: "OWNER" });
       }
     });

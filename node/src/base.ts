@@ -83,7 +83,7 @@ export class BaseConnector {
     updates: Record<string, unknown>,
     condition: string,
   ): Promise<Result<null>> {
-    if (Object.keys(updates).length === 0) return new Ok(null);
+    if (Object.keys(updates).length === 0) throw new Error("_updateIf requires non-empty updates");
     const { expr, names, values } = buildSetExpr(updates);
     try {
       await this._t.send(new UpdateCommand({
@@ -116,16 +116,20 @@ export class BaseConnector {
     return safe("_query", async () => {
       const items: Record<string, unknown>[] = [];
       const limit = typeof params["Limit"] === "number" ? params["Limit"] : undefined;
+      let pageParams = { ...params };
       let lastKey: Record<string, unknown> | undefined;
       do {
         const resp = await this._t.send(new QueryCommand({
           TableName: tableName(),
-          ...params,
+          ...pageParams,
           ...(lastKey ? { ExclusiveStartKey: lastKey } : {}),
         }));
         items.push(...((resp.Items as Record<string, unknown>[]) ?? []));
         lastKey = resp.LastEvaluatedKey as Record<string, unknown> | undefined;
         if (limit !== undefined && items.length >= limit) return items.slice(0, limit);
+        if (lastKey && limit !== undefined) {
+          pageParams = { ...pageParams, Limit: limit - items.length };
+        }
       } while (lastKey);
       return items;
     });
@@ -133,7 +137,14 @@ export class BaseConnector {
 
   _batchDelete(keys: { pk: string; sk: string }[]): Promise<Result<null>> {
     return safe("_batchDelete", async () => {
-      const requests = keys.map((k) => ({ DeleteRequest: { Key: { pk: k.pk, sk: k.sk } } }));
+      const seen = new Set<string>();
+      const unique = keys.filter((k) => {
+        const key = `${k.pk}\0${k.sk}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      const requests = unique.map((k) => ({ DeleteRequest: { Key: { pk: k.pk, sk: k.sk } } }));
       for (let i = 0; i < requests.length; i += 25) {
         await this._t.send(new BatchWriteCommand({
           RequestItems: { [tableName()]: requests.slice(i, i + 25) },
