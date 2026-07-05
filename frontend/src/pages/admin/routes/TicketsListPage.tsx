@@ -7,6 +7,7 @@ import { TICKET_STATES } from '../services/types/ticket';
 import { fmtDate, fmtDateTime } from '../services/format/date';
 import { useDebouncedValue } from '../services/hooks/useDebouncedValue';
 import { useCursorPagination } from '../services/hooks/useCursorPagination';
+import { useRememberListUrl } from '../services/hooks/useRememberListUrl';
 import { Input } from '../ui-library';
 import { Table, type TableColumn } from '../ui/Table';
 import { TicketStateBadge } from '../ui/TicketStateBadge';
@@ -42,6 +43,7 @@ function parseState(raw: string | null): '' | TicketState {
 export function TicketsListPage() {
   const navigate = useNavigate();
   const toast = useToast();
+  useRememberListUrl();
   const [params, setParams] = useSearchParams();
 
   const [emailInput, setEmailInput] = useState(params.get('email') ?? '');

@@ -1,4 +1,5 @@
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { useAdminGoBack } from '../services/hooks/useAdminGoBack';
 import '../admin.css';
 
 /**
@@ -7,7 +8,7 @@ import '../admin.css';
  * from ticket detail resolves to a defined page instead of a 404.
  */
 export function DelayDrilldownPage() {
-  const navigate = useNavigate();
+  const goBack = useAdminGoBack('/admin-panel/tickets');
   const [params] = useSearchParams();
   const trainNr = params.get('trainNr');
   const datum = params.get('datum');
@@ -24,7 +25,7 @@ export function DelayDrilldownPage() {
           minHeight: 44,
           padding: '8px 0',
         }}
-        onClick={() => navigate(-1)}
+        onClick={goBack}
       >
         ← Zurück
       </button>

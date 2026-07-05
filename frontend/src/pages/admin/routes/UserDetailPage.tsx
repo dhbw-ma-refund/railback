@@ -1,14 +1,15 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { ApiError } from '../services/api/errors';
 import { usersApi } from '../services/api/users';
 import type { User } from '../services/types/user';
 import { fmtDate, fmtDateTime } from '../services/format/date';
 import { fmtEUR } from '../services/format/money';
+import { useAdminGoBack } from '../services/hooks/useAdminGoBack';
 import { UserStateBadge } from '../ui/UserStateBadge';
 import './DetailPage.css';
 
-function Field({ label, value }: { label: string; value: React.ReactNode }) {
+function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="rb-detail__field">
       <span className="rb-detail__label">{label}</span>
@@ -19,7 +20,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 
 export function UserDetailPage() {
   const { email } = useParams<{ email: string }>();
-  const navigate = useNavigate();
+  const goBack = useAdminGoBack('/admin-panel/users');
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +62,7 @@ export function UserDetailPage() {
   if (notFound) {
     return (
       <div className="rb-detail">
-        <button className="rb-detail__back" onClick={() => navigate(-1)}>
+        <button className="rb-detail__back" onClick={goBack}>
           ← Zurück
         </button>
         <h1 className="rb-detail__title">User nicht gefunden</h1>
@@ -73,7 +74,7 @@ export function UserDetailPage() {
   if (error) {
     return (
       <div className="rb-detail">
-        <button className="rb-detail__back" onClick={() => navigate(-1)}>
+        <button className="rb-detail__back" onClick={goBack}>
           ← Zurück
         </button>
         <div className="rb-detail__error" role="alert">
@@ -89,7 +90,7 @@ export function UserDetailPage() {
 
   return (
     <div className="rb-detail">
-      <button className="rb-detail__back" onClick={() => navigate(-1)}>
+      <button className="rb-detail__back" onClick={goBack}>
         ← Zurück
       </button>
       <h1 className="rb-detail__title">

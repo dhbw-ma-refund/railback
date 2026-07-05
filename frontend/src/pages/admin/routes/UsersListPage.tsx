@@ -6,6 +6,7 @@ import type { User, UserState } from '../services/types/user';
 import { fmtDate } from '../services/format/date';
 import { useDebouncedValue } from '../services/hooks/useDebouncedValue';
 import { useCursorPagination } from '../services/hooks/useCursorPagination';
+import { useRememberListUrl } from '../services/hooks/useRememberListUrl';
 import { Input } from '../ui-library';
 import { Table, type TableColumn } from '../ui/Table';
 import { UserStateBadge } from '../ui/UserStateBadge';
@@ -41,6 +42,7 @@ function parseState(raw: string | null): '' | UserState {
 }
 
 export function UsersListPage() {
+  useRememberListUrl();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
 
