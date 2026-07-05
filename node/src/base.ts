@@ -115,6 +115,7 @@ export class BaseConnector {
   _query(params: Record<string, unknown>): Promise<Result<Record<string, unknown>[]>> {
     return safe("_query", async () => {
       const items: Record<string, unknown>[] = [];
+      const limit = typeof params["Limit"] === "number" ? params["Limit"] : undefined;
       let lastKey: Record<string, unknown> | undefined;
       do {
         const resp = await this._t.send(new QueryCommand({
@@ -124,7 +125,8 @@ export class BaseConnector {
         }));
         items.push(...((resp.Items as Record<string, unknown>[]) ?? []));
         lastKey = resp.LastEvaluatedKey as Record<string, unknown> | undefined;
-      } while (lastKey && !("Limit" in params));
+        if (limit !== undefined && items.length >= limit) return items.slice(0, limit);
+      } while (lastKey);
       return items;
     });
   }

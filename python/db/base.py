@@ -106,7 +106,7 @@ class BaseConnector:
 
     def _update_if(self, pk: str, sk: str, updates: dict, condition: str) -> Result:
         if not updates:
-            return Ok(None)
+            raise ValueError("_update_if requires non-empty updates")
         set_parts, names, values = [], {}, {}
         for i, (k, v) in enumerate(updates.items()):
             ph_n, ph_v = f"#f{i}", f":v{i}"
@@ -139,11 +139,14 @@ class BaseConnector:
     @safe
     def _query(self, **kwargs) -> Result:
         items = []
+        limit = kwargs.get("Limit")
         while True:
             resp = self._t.query(**kwargs)
             items.extend(resp.get("Items", []))
             last = resp.get("LastEvaluatedKey")
-            if not last or "Limit" in kwargs:
+            if limit is not None and len(items) >= limit:
+                return Ok(items[:limit])
+            if not last:
                 break
             kwargs["ExclusiveStartKey"] = last
         return Ok(items)

@@ -307,9 +307,8 @@ class RailBackConnector:
         keys = [(item["pk"], item["sk"]) for item in items]
         for item in items:
             sk = item["sk"]
-            if sk.startswith("TICKET#") and sk.count("#") == 1:
-                ticket_id = sk.removeprefix("TICKET#")
-                keys.append((f"TICKET#{ticket_id}", "OWNER"))
+            if _is_plain_ticket_sk(sk):
+                keys.append((f"TICKET#{sk[len('TICKET#'):]}", "OWNER"))
         return self.user._batch_delete(keys)
 
     def delete_ticket(self, email: str, ticket_id: str) -> Result:

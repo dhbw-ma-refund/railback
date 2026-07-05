@@ -113,7 +113,7 @@ class TestTicketConnector:
             db.ticket._delete(f"USER#{e}", f"TICKET#{tid}")
             db.receipt._delete(f"USER#{e}", f"TICKET#{tid}#BELEG#B1")
 
-
+    def test_get_by_train_empty(self, db):
         r = db.ticket.get_by_train("IC 9999", "2099-01-01")
         assert r.is_ok()
         assert r.unwrap() == []
