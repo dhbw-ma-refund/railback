@@ -28,7 +28,10 @@
 .hero {
   position: relative;
   overflow: hidden;
-  padding: clamp(48px, 8vh, 88px) 0 clamp(48px, 8vh, 96px);
+  min-height: calc(100vh - 112px);
+  padding: clamp(32px, 5vh, 56px) 0 clamp(36px, 6vh, 64px);
+  display: flex;
+  align-items: center;
 }
 
 .hero__bg {
@@ -44,8 +47,8 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
-  gap: clamp(48px, 7vw, 104px);
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 480px);
+  gap: clamp(56px, 7vw, 112px);
   align-items: center;
 }
 
@@ -192,7 +195,7 @@
 }
 
 .hero-photo {
-  width: min(390px, calc(100vw - 48px));
+  width: min(460px, calc(100vw - 48px));
   aspect-ratio: 1 / 1;
   border-radius: 32px;
   overflow: hidden;
@@ -218,6 +221,7 @@
 
 @media (max-width: 980px) and (min-width: 768px) {
   .hero {
+    min-height: calc(100vh - 84px);
     padding: 44px 0 56px;
   }
 
@@ -244,7 +248,7 @@
   }
 
   .hero-photo {
-    width: min(420px, calc(100vw - 48px));
+    width: min(430px, calc(100vw - 48px));
   }
 
   .phone {
@@ -270,8 +274,8 @@
 
 .phone {
   position: relative;
-  width: min(300px, calc(100vw - 48px));
-  height: 612px;
+  width: min(330px, calc(100vw - 48px));
+  height: 674px;
   border-radius: 44px;
   background: #0b1a2b;
   padding: 12px;
