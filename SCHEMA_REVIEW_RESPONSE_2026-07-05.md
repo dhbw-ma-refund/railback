@@ -156,10 +156,6 @@ conditional write support and implement accordingly.
 The table is in `eu-north-1`. It exists, it is tested, and we are not
 provisioning a new table. The table stays where it is.
 
-If the backend Lambdas run in `eu-central-1`, the ~20ms cross-region latency
-is a known tradeoff. If that is unacceptable, the Lambdas move to `eu-north-1`.
-The table does not move.
-
 ---
 
 ## §9 Small stuff
