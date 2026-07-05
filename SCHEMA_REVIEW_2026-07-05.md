@@ -112,7 +112,6 @@ If lowercase wins instead, backend side has to rewrite `keys.ts` and
 every `Item` interface in `items.ts`.
 
 ---
-
 ## 3. GSI3 (station route-lookup) — schema decision needed
 
 **What the DB layer does:** `TrainSegmentDelayConnector.route_lookup`
