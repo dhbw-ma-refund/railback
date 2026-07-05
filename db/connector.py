@@ -114,11 +114,12 @@ class TicketConnector(BaseConnector):
         items = result.unwrap()
         return Ok(items[0] if items else None)
 
-    def list_email_pending(self) -> Result:
+    def list_email_pending(self, limit: int) -> Result:
         return self._query(
             IndexName="gsi_email_pending",
             KeyConditionExpression=Key("gsi_email_pending_pk").eq("EMAIL_PENDING"),
             ScanIndexForward=True,
+            Limit=limit,
         )
 
 
@@ -242,7 +243,7 @@ class TrainSegmentDelayConnector(BaseConnector):
     def route_lookup(self, origin_eva: int, date: str, from_time: str, to_time: str) -> Result:
         return self._query(
             IndexName="gsi1",
-            KeyConditionExpression=Key("gsi1_pk").eq(f"STATION#{origin_eva}#{date}") & Key("gsi1_sk").between(from_time, to_time),
+            KeyConditionExpression=Key("gsi1_pk").eq(f"STATION#{origin_eva}#{date}") & Key("gsi1_sk").between(from_time, to_time + "~"),
         )
 
 

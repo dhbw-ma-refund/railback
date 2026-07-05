@@ -151,7 +151,7 @@ class TestTicketConnector:
         i["gsi_email_pending_sk"] = ts
         i["ticket_state"] = "EMAIL_SENDING"
         db.ticket.put(i)
-        r = db.ticket.list_email_pending()
+        r = db.ticket.list_email_pending(limit=25)
         assert r.is_ok()
         assert any(i["sk"] == f"TICKET#{tid}" for i in r.unwrap())
         db.ticket._delete(f"USER#{e}", f"TICKET#{tid}")
@@ -169,7 +169,7 @@ class TestTicketConnector:
             i["gsi_email_pending_sk"] = ts
             i["ticket_state"] = "EMAIL_SENDING"
             db.ticket.put(i)
-        r = db.ticket.list_email_pending()
+        r = db.ticket.list_email_pending(limit=25)
         assert r.is_ok()
         pending = [i for i in r.unwrap() if i["sk"] in {f"TICKET#{tid}" for tid, _ in pairs}]
         timestamps = [i["gsi_email_pending_sk"] for i in pending]

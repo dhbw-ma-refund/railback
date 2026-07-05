@@ -7,7 +7,7 @@ def item(train_nr, date, seg_id, **extra):
             "origin_eva": 8000001, "destination_eva": 8000002,
             "departure_time": "08:00", "arrival_time": "09:00",
             "delay_minutes": 0, "recorded_at": NOW,
-            "gsi1_pk": f"STATION#8000001#{date}", "gsi1_sk": "08:00",
+            "gsi1_pk": f"STATION#8000001#{date}", "gsi1_sk": f"08:00#{train_nr}",
             **extra}
 
 
@@ -69,17 +69,17 @@ class TestTrainSegmentDelayConnector:
 
     def test_route_lookup_returns_segments_in_time_range(self, db):
         db.train_delay.put(item("ICE8", "2026-03-01", f"{NS}_RL_A",
-                                gsi1_pk="STATION#8000001#2026-03-01", gsi1_sk="08:00"))
+                                gsi1_pk="STATION#8000001#2026-03-01", gsi1_sk="08:00#ICE8"))
         db.train_delay.put(item("ICE8", "2026-03-01", f"{NS}_RL_B",
-                                gsi1_pk="STATION#8000001#2026-03-01", gsi1_sk="09:00"))
+                                gsi1_pk="STATION#8000001#2026-03-01", gsi1_sk="09:00#ICE8"))
         db.train_delay.put(item("ICE8", "2026-03-01", f"{NS}_RL_C",
-                                gsi1_pk="STATION#8000001#2026-03-01", gsi1_sk="14:00"))
+                                gsi1_pk="STATION#8000001#2026-03-01", gsi1_sk="14:00#ICE8"))
         r = db.train_delay.route_lookup(8000001, "2026-03-01", "07:00", "10:00")
         assert r.is_ok()
         sks = [i["gsi1_sk"] for i in r.unwrap()]
-        assert "08:00" in sks
-        assert "09:00" in sks
-        assert "14:00" not in sks
+        assert "08:00#ICE8" in sks
+        assert "09:00#ICE8" in sks
+        assert "14:00#ICE8" not in sks
         for seg in [f"{NS}_RL_A", f"{NS}_RL_B", f"{NS}_RL_C"]:
             db.train_delay._delete("TRAIN#ICE8#2026-03-01", f"SEG#{seg}")
 
