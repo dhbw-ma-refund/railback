@@ -138,29 +138,29 @@
 .burger span {
   position: absolute;
   left: 50%;
+  top: 50%;
   width: 28px;
   height: 3px;
   border-radius: 999px;
   background: var(--color-deep-trust-blue);
-  transform: translateX(-50%);
-  transition: top var(--motion-menu) var(--motion-ease), transform var(--motion-menu) var(--motion-ease), opacity var(--motion-fast) var(--motion-ease);
+  transform: translate(-50%, -50%);
+  transition: transform var(--motion-menu) var(--motion-ease), opacity var(--motion-fast) var(--motion-ease);
 }
 
 .burger span:nth-child(1) {
-  top: 17px;
+  transform: translate(-50%, calc(-50% - 10px));
 }
 
 .burger span:nth-child(2) {
-  top: 27px;
+  transform: translate(-50%, -50%);
 }
 
 .burger span:nth-child(3) {
-  top: 37px;
+  transform: translate(-50%, calc(-50% + 10px));
 }
 
 .burger[aria-expanded="true"] span:nth-child(1) {
-  top: 27px;
-  transform: translateX(-50%) rotate(45deg);
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .burger[aria-expanded="true"] span:nth-child(2) {
@@ -168,8 +168,7 @@
 }
 
 .burger[aria-expanded="true"] span:nth-child(3) {
-  top: 27px;
-  transform: translateX(-50%) rotate(-45deg);
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 @media (max-width: 980px) and (min-width: 768px) {
@@ -225,7 +224,7 @@
 @media (max-width: 767px) {
   .hdr {
     padding: 20px var(--spacing-2) 8px;
-    background: #eaf1f8;
+    background: var(--color-warm-off-white);
     border-bottom: 0;
     backdrop-filter: none;
   }
@@ -261,7 +260,7 @@
     height: 52px;
     flex: 0 0 52px;
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.55);
+    background: #fff;
     border-color: rgba(9, 67, 137, 0.12);
     box-shadow: none;
   }
@@ -269,25 +268,5 @@
   .burger span {
     width: 25px;
     height: 3px;
-  }
-
-  .burger span:nth-child(1) {
-    top: 16px;
-  }
-
-  .burger span:nth-child(2) {
-    top: 25px;
-  }
-
-  .burger span:nth-child(3) {
-    top: 34px;
-  }
-
-  .burger[aria-expanded="true"] span:nth-child(1) {
-    top: 25px;
-  }
-
-  .burger[aria-expanded="true"] span:nth-child(3) {
-    top: 25px;
   }
 }

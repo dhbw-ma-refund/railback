@@ -106,7 +106,7 @@ const translations = {
     },
     footer: {
       tagline: 'From Delay to Pay.',
-      copyright: '© 2026 RailBack GmbH · Alle Rechte vorbehalten.',
+      copyright: '© 2026 Elaspix UG · Alle Rechte vorbehalten.',
     },
   },
   en: {
@@ -194,7 +194,7 @@ const translations = {
     },
     footer: {
       tagline: 'From Delay to Pay.',
-      copyright: '© 2026 RailBack GmbH · All rights reserved.',
+      copyright: '© 2026 Elaspix UG · All rights reserved.',
     },
   },
 };
