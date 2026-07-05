@@ -2,24 +2,28 @@
 @import '@shared/styles/typography.css';
 
 .pricing-page {
-  min-height: 100vh;
+  height: 100vh;
   background: var(--color-warm-off-white);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .pricing-main {
   flex: 1;
+  min-height: 0;
+  display: flex;
 }
 
 .pricing-hero {
-  min-height: clamp(560px, calc(100vh - 190px), 760px);
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 440px);
   align-items: center;
   gap: clamp(32px, 6vw, 72px);
-  padding-top: clamp(40px, 7vh, 80px);
-  padding-bottom: clamp(48px, 8vh, 92px);
+  padding-top: clamp(24px, 4vh, 48px);
+  padding-bottom: clamp(24px, 4vh, 48px);
 }
 
 .pricing-hero__copy {
@@ -130,9 +134,20 @@
 }
 
 @media (max-width: 767px) {
+  .pricing-page {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .pricing-main {
+    display: block;
+  }
+
   .pricing-hero {
     min-height: auto;
     grid-template-columns: 1fr;
     padding-top: var(--spacing-4);
+    padding-bottom: var(--spacing-4);
   }
 }
