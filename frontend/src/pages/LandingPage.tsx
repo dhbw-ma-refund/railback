@@ -98,7 +98,7 @@ export const LandingPage = () => {
             <div className="hero-photo-col">
               <div className="hero-photo">
                 <img
-                  src="/shared/assets/home-hero-passenger.png"
+                  src="/shared/assets/home-hero-passenger-2.png"
                   alt="Zufriedene Bahnreisende prüft ihre Entschädigung am Smartphone"
                 />
               </div>
