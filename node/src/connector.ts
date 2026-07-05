@@ -26,8 +26,8 @@ export class UserConnector extends BaseConnector {
   update(email: string, updates: Record<string, unknown>) {
     return this._updateFields(`USER#${email}`, "PROFILE", updates);
   }
-  listAll() {
-    return this._query({ IndexName: "gsi1", KeyConditionExpression: "gsi1_pk = :v", ExpressionAttributeValues: { ":v": "USER" } });
+  listAll(limit?: number) {
+    return this._query({ IndexName: "gsi1", KeyConditionExpression: "gsi1_pk = :v", ExpressionAttributeValues: { ":v": "USER" }, ...(limit !== undefined ? { Limit: limit } : {}) });
   }
 }
 
@@ -41,8 +41,8 @@ export class AdminConnector extends BaseConnector {
   update(email: string, updates: Record<string, unknown>) {
     return this._updateFields(`ADMIN#${email}`, "PROFILE", updates);
   }
-  listAll() {
-    return this._query({ IndexName: "gsi1", KeyConditionExpression: "gsi1_pk = :v", ExpressionAttributeValues: { ":v": "ADMIN" } });
+  listAll(limit?: number) {
+    return this._query({ IndexName: "gsi1", KeyConditionExpression: "gsi1_pk = :v", ExpressionAttributeValues: { ":v": "ADMIN" }, ...(limit !== undefined ? { Limit: limit } : {}) });
   }
 }
 
@@ -56,16 +56,17 @@ export class TicketConnector extends BaseConnector {
   update(email: string, ticketId: string, updates: Record<string, unknown>) {
     return this._updateFields(`USER#${email}`, `TICKET#${ticketId}`, updates);
   }
-  async listForUser(email: string): Promise<Result<Record<string, unknown>[]>> {
+  async listForUser(email: string, limit?: number): Promise<Result<Record<string, unknown>[]>> {
     const r = await this._query({
       KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
       ExpressionAttributeValues: { ":pk": `USER#${email}`, ":prefix": "TICKET#" },
+      ...(limit !== undefined ? { Limit: limit } : {}),
     });
     if (r.isErr()) return r;
     return new Ok(r.value.filter((i) => isPlainTicketSk(i["sk"] as string)));
   }
-  getByTrain(trainNr: string, date: string) {
-    return this._query({ IndexName: "gsi1", KeyConditionExpression: "gsi1_pk = :v", ExpressionAttributeValues: { ":v": `TRAIN#${trainNr}#${date}` } });
+  getByTrain(trainNr: string, date: string, limit?: number) {
+    return this._query({ IndexName: "gsi1", KeyConditionExpression: "gsi1_pk = :v", ExpressionAttributeValues: { ":v": `TRAIN#${trainNr}#${date}` }, ...(limit !== undefined ? { Limit: limit } : {}) });
   }
   async checkBarcodeDuplicate(barcodeUid: string): Promise<Result<Record<string, unknown> | null>> {
     const r = await this._query({
@@ -136,10 +137,11 @@ export class OriginalReceiptConnector extends BaseConnector {
   update(email: string, ticketId: string, belegId: string, updates: Record<string, unknown>) {
     return this._updateFields(`USER#${email}`, `TICKET#${ticketId}#BELEG#${belegId}`, updates);
   }
-  listForTicket(email: string, ticketId: string) {
+  listForTicket(email: string, ticketId: string, limit?: number) {
     return this._query({
       KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
       ExpressionAttributeValues: { ":pk": `USER#${email}`, ":prefix": `TICKET#${ticketId}#BELEG#` },
+      ...(limit !== undefined ? { Limit: limit } : {}),
     });
   }
 }
@@ -157,7 +159,7 @@ export class SepaMandateConnector extends BaseConnector {
     return this._updateFields(`USER#${email}`, `TICKET#${ticketId}#MANDATE`, updates);
   }
   stampPain008Built(email: string, ticketId: string, batchId: string, s3Key: string, builtAt: string) {
-    return this._updateConditional(
+    return this._updateIf(
       `USER#${email}`, `TICKET#${ticketId}#MANDATE`,
       { pain008_built_at: builtAt, pain008_batch_id: batchId, pain008_s3_key: s3Key },
       "attribute_not_exists(pain008_built_at)",
@@ -175,8 +177,8 @@ export class SepaReportConnector extends BaseConnector {
   update(date: string, reportId: string, updates: Record<string, unknown>) {
     return this._updateFields(`SEPA#REPORT#${date}`, `REPORT#${reportId}`, updates);
   }
-  listByDate(date: string) {
-    return this._query({ KeyConditionExpression: "pk = :v", ExpressionAttributeValues: { ":v": `SEPA#REPORT#${date}` } });
+  listByDate(date: string, limit?: number) {
+    return this._query({ KeyConditionExpression: "pk = :v", ExpressionAttributeValues: { ":v": `SEPA#REPORT#${date}` }, ...(limit !== undefined ? { Limit: limit } : {}) });
   }
 }
 
@@ -190,17 +192,19 @@ export class TrainSegmentDelayConnector extends BaseConnector {
   update(trainNr: string, date: string, segId: string, updates: Record<string, unknown>) {
     return this._updateFields(`TRAIN#${trainNr}#${date}`, `SEG#${segId}`, updates);
   }
-  listForTrain(trainNr: string, date: string) {
+  listForTrain(trainNr: string, date: string, limit?: number) {
     return this._query({
       KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
       ExpressionAttributeValues: { ":pk": `TRAIN#${trainNr}#${date}`, ":prefix": "SEG#" },
+      ...(limit !== undefined ? { Limit: limit } : {}),
     });
   }
-  routeLookup(originEva: number, date: string, fromTime: string, toTime: string) {
+  routeLookup(originEva: number, date: string, fromTime: string, toTime: string, limit?: number) {
     return this._query({
       IndexName: "gsi1",
       KeyConditionExpression: "gsi1_pk = :pk AND gsi1_sk BETWEEN :from AND :to",
       ExpressionAttributeValues: { ":pk": `STATION#${originEva}#${date}`, ":from": fromTime, ":to": toTime + "~" },
+      ...(limit !== undefined ? { Limit: limit } : {}),
     });
   }
 }
@@ -215,10 +219,11 @@ export class RouteTemplateConnector extends BaseConnector {
   update(email: string, templateId: string, updates: Record<string, unknown>) {
     return this._updateFields(`USER#${email}`, `TEMPLATE#${templateId}`, updates);
   }
-  listForUser(email: string) {
+  listForUser(email: string, limit?: number) {
     return this._query({
       KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
       ExpressionAttributeValues: { ":pk": `USER#${email}`, ":prefix": "TEMPLATE#" },
+      ...(limit !== undefined ? { Limit: limit } : {}),
     });
   }
 }

@@ -53,8 +53,8 @@ class UserConnector(BaseConnector):
     def update(self, email: str, updates: dict) -> Result:
         return self._update_fields(f"USER#{email}", "PROFILE", updates)
 
-    def list_all(self) -> Result:
-        return self._query(IndexName="gsi1", KeyConditionExpression=Key("gsi1_pk").eq("USER"))
+    def list_all(self, limit: int | None = None) -> Result:
+        return self._query(IndexName="gsi1", KeyConditionExpression=Key("gsi1_pk").eq("USER"), **({"Limit": limit} if limit is not None else {}))
 
 
 # ---------------------------------------------------------------------------
@@ -71,8 +71,8 @@ class AdminConnector(BaseConnector):
     def update(self, email: str, updates: dict) -> Result:
         return self._update_fields(f"ADMIN#{email}", "PROFILE", updates)
 
-    def list_all(self) -> Result:
-        return self._query(IndexName="gsi1", KeyConditionExpression=Key("gsi1_pk").eq("ADMIN"))
+    def list_all(self, limit: int | None = None) -> Result:
+        return self._query(IndexName="gsi1", KeyConditionExpression=Key("gsi1_pk").eq("ADMIN"), **({"Limit": limit} if limit is not None else {}))
 
 
 # ---------------------------------------------------------------------------
@@ -89,18 +89,20 @@ class TicketConnector(BaseConnector):
     def update(self, email: str, ticket_id: str, updates: dict) -> Result:
         return self._update_fields(f"USER#{email}", f"TICKET#{ticket_id}", updates)
 
-    def list_for_user(self, email: str) -> Result:
+    def list_for_user(self, email: str, limit: int | None = None) -> Result:
         result = self._query(
             KeyConditionExpression=Key("pk").eq(f"USER#{email}") & Key("sk").begins_with("TICKET#"),
+            **({"Limit": limit} if limit is not None else {}),
         )
         if result.is_err():
             return result
         return Ok([i for i in result.unwrap() if _is_plain_ticket_sk(i["sk"])])
 
-    def get_by_train(self, train_nr: str, date: str) -> Result:
+    def get_by_train(self, train_nr: str, date: str, limit: int | None = None) -> Result:
         return self._query(
             IndexName="gsi1",
             KeyConditionExpression=Key("gsi1_pk").eq(f"TRAIN#{train_nr}#{date}"),
+            **({"Limit": limit} if limit is not None else {}),
         )
 
     def check_barcode_duplicate(self, barcode_uid: str) -> Result:
@@ -182,9 +184,10 @@ class OriginalReceiptConnector(BaseConnector):
     def update(self, email: str, ticket_id: str, beleg_id: str, updates: dict) -> Result:
         return self._update_fields(f"USER#{email}", f"TICKET#{ticket_id}#BELEG#{beleg_id}", updates)
 
-    def list_for_ticket(self, email: str, ticket_id: str) -> Result:
+    def list_for_ticket(self, email: str, ticket_id: str, limit: int | None = None) -> Result:
         return self._query(
             KeyConditionExpression=Key("pk").eq(f"USER#{email}") & Key("sk").begins_with(f"TICKET#{ticket_id}#BELEG#"),
+            **({"Limit": limit} if limit is not None else {}),
         )
 
 
@@ -203,7 +206,7 @@ class SepaMandateConnector(BaseConnector):
         return self._update_fields(f"USER#{email}", f"TICKET#{ticket_id}#MANDATE", updates)
 
     def stamp_pain008_built(self, email: str, ticket_id: str, batch_id: str, s3_key: str, built_at: str) -> Result:
-        return self._update_conditional(
+        return self._update_if(
             f"USER#{email}", f"TICKET#{ticket_id}#MANDATE",
             {"pain008_built_at": built_at, "pain008_batch_id": batch_id, "pain008_s3_key": s3_key},
             "attribute_not_exists(pain008_built_at)",
@@ -224,8 +227,8 @@ class SepaReportConnector(BaseConnector):
     def update(self, date: str, report_id: str, updates: dict) -> Result:
         return self._update_fields(f"SEPA#REPORT#{date}", f"REPORT#{report_id}", updates)
 
-    def list_by_date(self, date: str) -> Result:
-        return self._query(KeyConditionExpression=Key("pk").eq(f"SEPA#REPORT#{date}"))
+    def list_by_date(self, date: str, limit: int | None = None) -> Result:
+        return self._query(KeyConditionExpression=Key("pk").eq(f"SEPA#REPORT#{date}"), **({"Limit": limit} if limit is not None else {}))
 
 
 # ---------------------------------------------------------------------------
@@ -242,15 +245,17 @@ class TrainSegmentDelayConnector(BaseConnector):
     def update(self, train_nr: str, date: str, seg_id: str, updates: dict) -> Result:
         return self._update_fields(f"TRAIN#{train_nr}#{date}", f"SEG#{seg_id}", updates)
 
-    def list_for_train(self, train_nr: str, date: str) -> Result:
+    def list_for_train(self, train_nr: str, date: str, limit: int | None = None) -> Result:
         return self._query(
             KeyConditionExpression=Key("pk").eq(f"TRAIN#{train_nr}#{date}") & Key("sk").begins_with("SEG#"),
+            **({"Limit": limit} if limit is not None else {}),
         )
 
-    def route_lookup(self, origin_eva: int, date: str, from_time: str, to_time: str) -> Result:
+    def route_lookup(self, origin_eva: int, date: str, from_time: str, to_time: str, limit: int | None = None) -> Result:
         return self._query(
             IndexName="gsi1",
             KeyConditionExpression=Key("gsi1_pk").eq(f"STATION#{origin_eva}#{date}") & Key("gsi1_sk").between(from_time, to_time + "~"),
+            **({"Limit": limit} if limit is not None else {}),
         )
 
 
@@ -268,9 +273,10 @@ class RouteTemplateConnector(BaseConnector):
     def update(self, email: str, template_id: str, updates: dict) -> Result:
         return self._update_fields(f"USER#{email}", f"TEMPLATE#{template_id}", updates)
 
-    def list_for_user(self, email: str) -> Result:
+    def list_for_user(self, email: str, limit: int | None = None) -> Result:
         return self._query(
             KeyConditionExpression=Key("pk").eq(f"USER#{email}") & Key("sk").begins_with("TEMPLATE#"),
+            **({"Limit": limit} if limit is not None else {}),
         )
 
 

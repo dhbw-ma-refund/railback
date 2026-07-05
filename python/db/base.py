@@ -103,7 +103,7 @@ class BaseConnector:
         )
         return Ok(None)
 
-    def _update_conditional(self, pk: str, sk: str, updates: dict, condition: str) -> Result:
+    def _update_if(self, pk: str, sk: str, updates: dict, condition: str) -> Result:
         if not updates:
             return Ok(None)
         set_parts, names, values = [], {}, {}
@@ -124,10 +124,10 @@ class BaseConnector:
         except ClientError as exc:
             if exc.response["Error"]["Code"] == "ConditionalCheckFailedException":
                 return Err(ConflictError(f"condition failed on ({pk}, {sk})"))
-            logger.warning(f"_update_conditional — {exc.response['Error']['Code']}: {exc.response['Error']['Message']}")
+            logger.warning(f"_update_if — {exc.response['Error']['Code']}: {exc.response['Error']['Message']}")
             return Err(exc)
         except Exception as exc:
-            logger.error(f"_update_conditional — unexpected: {exc}")
+            logger.error(f"_update_if — unexpected: {exc}")
             return Err(exc)
 
     @safe
@@ -142,7 +142,7 @@ class BaseConnector:
             resp = self._t.query(**kwargs)
             items.extend(resp.get("Items", []))
             last = resp.get("LastEvaluatedKey")
-            if not last:
+            if not last or "Limit" in kwargs:
                 break
             kwargs["ExclusiveStartKey"] = last
         return Ok(items)

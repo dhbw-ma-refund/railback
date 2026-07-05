@@ -78,7 +78,7 @@ export class BaseConnector {
     });
   }
 
-  async _updateConditional(
+  async _updateIf(
     pk: string, sk: string,
     updates: Record<string, unknown>,
     condition: string,
@@ -100,7 +100,7 @@ export class BaseConnector {
         return new Err(new ConflictError(`condition failed on (${pk}, ${sk})`));
       }
       const e = err instanceof Error ? err : new Error(String(err));
-      console.warn(`_updateConditional — ${e.message}`);
+      console.warn(`_updateIf — ${e.message}`);
       return new Err(e);
     }
   }
@@ -124,7 +124,7 @@ export class BaseConnector {
         }));
         items.push(...((resp.Items as Record<string, unknown>[]) ?? []));
         lastKey = resp.LastEvaluatedKey as Record<string, unknown> | undefined;
-      } while (lastKey);
+      } while (lastKey && !("Limit" in params));
       return items;
     });
   }
