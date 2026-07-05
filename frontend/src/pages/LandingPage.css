@@ -5,7 +5,7 @@
 /* Landing page specific styles */
 .landing-page {
   min-height: 100vh;
-  background: #eaf1f8;
+  background: var(--color-warm-off-white);
   display: flex;
   flex-direction: column;
 }
@@ -36,7 +36,8 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: #eaf1f8;
+  /* background: #eaf1f8; */
+  background: var(--color-warm-off-white);
 }
 
 .hero__grid {
@@ -472,7 +473,8 @@
 
 .eligibility {
   padding: clamp(48px, 7vh, 82px) 0 clamp(56px, 8vh, 96px);
-  background: #eaf1f8;
+  /* background: #eaf1f8; */
+  background: var(--color-warm-off-white);
   border-top: 0;
 }
 
@@ -581,7 +583,8 @@
     text-align: center;
     display: flex;
     align-items: flex-start;
-    background: #eaf1f8;
+    /* background: #eaf1f8; */
+    background: var(--color-warm-off-white);
   }
 
   .hero__bg {
