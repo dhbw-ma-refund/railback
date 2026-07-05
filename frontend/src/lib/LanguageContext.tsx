@@ -35,7 +35,7 @@ const translations = {
     },
     hero: {
       claim: 'From Delay to Pay',
-      title: 'Deine Bahnverspätung kostet dich Zeit. Hol dir wenigstens dein Geld zurück.',
+      title: 'Deine Bahnverspätung kostet dich Zeit.\nHol dir wenigstens dein Geld zurück.',
       mobileTitle: 'Bahnverspätung? Wir helfen bei der Entschädigung!',
       sub: 'Du musst dich nicht durch Formulare kämpfen. RailBack prüft deine Reise, zeigt dir deinen möglichen Anspruch und führt dich bis zur Auszahlung.',
       mobileSub: 'Ticket hochladen, Verspätung prüfen und Entschädigung erhalten.',

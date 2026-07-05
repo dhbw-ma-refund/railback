@@ -50,10 +50,6 @@ export const LandingPage = () => {
     navigate('/user');
   };
 
-  const handleEligibilityScroll = () => {
-    document.getElementById('eligibility')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
   return (
     <div className="landing-page landing-page--default">
       <Header />
@@ -81,9 +77,6 @@ export const LandingPage = () => {
                   <span style={{ fontSize: '18px', fontWeight: 'bold' }}>€</span>
                   <span className="hero__cta-label hero__cta-label--desktop">{t.hero.cta1}</span>
                   <span className="hero__cta-label hero__cta-label--mobile">{t.hero.mobileCta}</span>
-                </Button>
-                <Button variant="secondary" size="large" onClick={handleEligibilityScroll}>
-                  {t.hero.cta2}
                 </Button>
               </div>
               <div className="hero__tag">
