@@ -5,7 +5,7 @@ import os
 import boto3
 from boto3.dynamodb.conditions import Key
 
-from db.base import BaseConnector, Ok, Result, safe
+from db.base import BaseConnector, ConflictError, Ok, Result, safe
 
 TABLE_NAME = os.environ.get("RAILBACK_DDB_TABLE", "RailBack")
 REGION = "eu-north-1"
@@ -201,6 +201,13 @@ class SepaMandateConnector(BaseConnector):
 
     def update(self, email: str, ticket_id: str, updates: dict) -> Result:
         return self._update_fields(f"USER#{email}", f"TICKET#{ticket_id}#MANDATE", updates)
+
+    def stamp_pain008_built(self, email: str, ticket_id: str, batch_id: str, s3_key: str, built_at: str) -> Result:
+        return self._update_conditional(
+            f"USER#{email}", f"TICKET#{ticket_id}#MANDATE",
+            {"pain008_built_at": built_at, "pain008_batch_id": batch_id, "pain008_s3_key": s3_key},
+            "attribute_not_exists(pain008_built_at)",
+        )
 
 
 # ---------------------------------------------------------------------------

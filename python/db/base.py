@@ -51,6 +51,10 @@ class Err(Result):
         raise self.error
 
 
+class ConflictError(Exception):
+    pass
+
+
 def safe(method):
     @functools.wraps(method)
     def wrapper(*args, **kwargs):
@@ -98,6 +102,33 @@ class BaseConnector:
             ExpressionAttributeValues=values,
         )
         return Ok(None)
+
+    def _update_conditional(self, pk: str, sk: str, updates: dict, condition: str) -> Result:
+        if not updates:
+            return Ok(None)
+        set_parts, names, values = [], {}, {}
+        for i, (k, v) in enumerate(updates.items()):
+            ph_n, ph_v = f"#f{i}", f":v{i}"
+            set_parts.append(f"{ph_n} = {ph_v}")
+            names[ph_n] = k
+            values[ph_v] = v
+        try:
+            self._t.update_item(
+                Key={"pk": pk, "sk": sk},
+                UpdateExpression="SET " + ", ".join(set_parts),
+                ConditionExpression=condition,
+                ExpressionAttributeNames=names,
+                ExpressionAttributeValues=values,
+            )
+            return Ok(None)
+        except ClientError as exc:
+            if exc.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                return Err(ConflictError(f"condition failed on ({pk}, {sk})"))
+            logger.warning(f"_update_conditional — {exc.response['Error']['Code']}: {exc.response['Error']['Message']}")
+            return Err(exc)
+        except Exception as exc:
+            logger.error(f"_update_conditional — unexpected: {exc}")
+            return Err(exc)
 
     @safe
     def _delete(self, pk: str, sk: str) -> Result:
