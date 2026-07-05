@@ -9,7 +9,7 @@ def user_item(email):
 def ticket_item(email, tid, **extra):
     return {"pk": f"USER#{email}", "sk": f"TICKET#{tid}",
             "train_nr": "ICE1", "travel_date": "2026-01-01",
-            "gsi1_pk": "TRAIN#ICE1#2026-01-01", "gsi1_sk": f"EMAIL#{email}",
+            "gsi1_pk": "TRAIN#ICE1#2026-01-01", "gsi1_sk": f"TICKET#{tid}",
             **extra}
 
 

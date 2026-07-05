@@ -71,3 +71,9 @@ class TestSafeDecorator:
             raise RuntimeError("boom")
         with pytest.raises(RuntimeError):
             fn().unwrap()
+
+
+class TestUpdateIf:
+    def test_empty_updates_raises(self, db):
+        with pytest.raises(ValueError):
+            db.mandate._update_if("USER#x@y.z", "TICKET#T#MANDATE", {}, "attribute_exists(pk)")

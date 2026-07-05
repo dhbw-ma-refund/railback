@@ -24,3 +24,7 @@ class TestConnectionErrors:
     def test_delete_returns_err_on_bad_connection(self, bad_db):
         r = bad_db.user._delete(f"USER#{E}", "PROFILE")
         assert r.is_err()
+
+    def test_stamp_pain008_built_returns_err_on_bad_connection(self, bad_db):
+        r = bad_db.mandate.stamp_pain008_built(E, "T_CE", "B", "s3.xml", "2026-01-01T00:00:00Z")
+        assert r.is_err()

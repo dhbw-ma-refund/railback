@@ -149,6 +149,8 @@ class BaseConnector:
             if not last:
                 break
             kwargs["ExclusiveStartKey"] = last
+            if limit is not None:
+                kwargs["Limit"] = limit - len(items)
         return Ok(items)
 
     @safe

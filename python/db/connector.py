@@ -15,7 +15,8 @@ _ADMIN_STRIPPED_FIELDS = frozenset({"iban_enc", "bic_enc"})
 
 
 def _is_plain_ticket_sk(sk: str) -> bool:
-    return sk.startswith("TICKET#") and "#" not in sk[len("TICKET#"):]
+    tail = sk[len("TICKET#"):]
+    return sk.startswith("TICKET#") and tail != "" and "#" not in tail
 
 
 def _table_resource(table=None):
