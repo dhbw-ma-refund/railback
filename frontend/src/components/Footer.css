@@ -34,7 +34,7 @@
 }
 
 .footer__logo {
-  font-family: 'Figtree', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-family-primary);
   font-weight: 800;
   font-size: 20px;
   line-height: 24px;
@@ -60,7 +60,7 @@
   text-decoration: none;
   font-size: 15px;
   font-weight: 500;
-  transition: color 0.2s;
+  transition: color var(--motion-fast) var(--motion-ease);
 }
 
 .footer__links a:hover {

@@ -23,6 +23,8 @@ const LEGAL_CONTENT: Record<
       managers: ReactNode;
       seatTitle: string;
       seat: string;
+      bankTitle: string;
+      bank: ReactNode;
       vatTitle: string;
       vat: string;
       contentTitle: string;
@@ -61,29 +63,37 @@ const LEGAL_CONTENT: Record<
       provider: 'Anbieterkennzeichnung',
       company: (
         <>
-          RailBack GmbH<br />
-          Musterstraße 1a<br />
-          D-68163 Mannheim<br />
-          Tel.: +49 261 89428<br />
+          Elaspix UG<br />
+          Schliffkopfstraße 25<br />
+          68163 Mannheim<br />
+          Fon: 0621 586 799 21<br />
+          Mobil: 0176 226 945 84<br />
           E-Mail: support@railback.de
         </>
       ),
       management: 'Geschäftsführung',
       managers: (
         <>
-          Dr. Vorname Nachname<br />
-          Dr. Vorname Nachname
+          Dr. Tobias Günther
         </>
       ),
       seatTitle: 'Sitz der Gesellschaft',
-      seat: 'Mannheim, eingetragen beim Amtsgericht Mannheim unter HRB XXXX.',
+      seat: 'Mannheim, eingetragen beim Amtsgericht Mannheim unter HRB 705891.',
+      bankTitle: 'Bankverbindung',
+      bank: (
+        <>
+          Deutsche Bank Mannheim<br />
+          BIC: DEUTDEDBMAN<br />
+          IBAN: DE68 6707 0024 0019 5917 00
+        </>
+      ),
       vatTitle: 'Umsatzsteuer-Identifikationsnummer',
-      vat: 'gemäß § 27 a Umsatzsteuergesetz: MusterUmsatzID',
+      vat: 'gemäß § 27 a Umsatzsteuergesetz: DE263390229',
       contentTitle: 'Verantwortlich für den Inhalt',
-      content: 'Dr. Vorname Nachname (Anschrift wie oben)',
+      content: 'Dr. Tobias Günther (Anschrift wie oben)',
       copyrightTitle: 'Urheberrecht',
       copyright: [
-        'Die durch RailBack erstellten Inhalte und Werke auf dieser Seite unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung der RailBack GmbH.',
+        'Die durch RailBack erstellten Inhalte und Werke auf dieser Seite unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung der Elaspix UG.',
         'Downloads und Kopien dieser Seite sind nur für den privaten, nicht kommerziellen Gebrauch gestattet. Soweit die Inhalte auf dieser Seite nicht von RailBack erstellt wurden, werden die Urheberrechte Dritter beachtet.',
       ],
       disputeTitle: 'Streitschlichtung',
@@ -95,7 +105,7 @@ const LEGAL_CONTENT: Record<
       termsTitle: 'I. Allgemeine Geschäftsbedingungen von RailBack',
       validityTitle: '§ 1 Geltung',
       validity: [
-        'Diese Allgemeinen Geschäftsbedingungen enthalten die zwischen der RailBack GmbH, Musterstraße 1a, 68163 Mannheim (nachfolgend „RailBack“) und dem jeweiligen Nutzer (nachfolgend „Nutzer“) geltenden Bedingungen für die Nutzung der RailBack-Dienste zur Geltendmachung von Fahrgastrechten.',
+        'Diese Allgemeinen Geschäftsbedingungen enthalten die zwischen der Elaspix UG, Schliffkopfstraße 25, 68163 Mannheim (nachfolgend „RailBack“) und dem jeweiligen Nutzer (nachfolgend „Nutzer“) geltenden Bedingungen für die Nutzung der RailBack-Dienste zur Geltendmachung von Fahrgastrechten.',
         'Änderungen dieser Allgemeinen Geschäftsbedingungen werden dem Nutzer rechtzeitig in Textform mitgeteilt. Sie gelten als genehmigt, wenn der Nutzer nicht innerhalb von sechs Wochen nach Mitteilung widerspricht.',
       ],
       definitionsTitle: '§ 2 Definitionen',
@@ -129,29 +139,37 @@ const LEGAL_CONTENT: Record<
       provider: 'Provider identification',
       company: (
         <>
-          RailBack GmbH<br />
-          Musterstraße 1a<br />
-          D-68163 Mannheim<br />
-          Phone: +49 261 89428<br />
+          Elaspix UG<br />
+          Schliffkopfstraße 25<br />
+          68163 Mannheim<br />
+          Phone: +49 621 586 799 21<br />
+          Mobile: +49 176 226 945 84<br />
           Email: support@railback.de
         </>
       ),
       management: 'Management',
       managers: (
         <>
-          Dr. First Name Last Name<br />
-          Dr. First Name Last Name
+          Dr. Tobias Günther
         </>
       ),
       seatTitle: 'Registered office',
-      seat: 'Mannheim, registered with the Local Court of Mannheim under HRB XXXX.',
+      seat: 'Mannheim, registered with the Local Court of Mannheim under HRB 705891.',
+      bankTitle: 'Bank details',
+      bank: (
+        <>
+          Deutsche Bank Mannheim<br />
+          BIC: DEUTDEDBMAN<br />
+          IBAN: DE68 6707 0024 0019 5917 00
+        </>
+      ),
       vatTitle: 'VAT identification number',
-      vat: 'pursuant to Section 27a German VAT Act: SampleVATID',
+      vat: 'pursuant to Section 27a German VAT Act: DE263390229',
       contentTitle: 'Responsible for content',
-      content: 'Dr. First Name Last Name (address as above)',
+      content: 'Dr. Tobias Günther (address as above)',
       copyrightTitle: 'Copyright',
       copyright: [
-        'The content and works created by RailBack on this website are subject to German copyright law. Reproduction, editing, distribution and any kind of use beyond the limits of copyright require the written consent of RailBack GmbH.',
+        'The content and works created by RailBack on this website are subject to German copyright law. Reproduction, editing, distribution and any kind of use beyond the limits of copyright require the written consent of Elaspix UG.',
         'Downloads and copies of this website are permitted for private, non-commercial use only. Where content on this website was not created by RailBack, third-party copyrights are respected.',
       ],
       disputeTitle: 'Dispute resolution',
@@ -163,7 +181,7 @@ const LEGAL_CONTENT: Record<
       termsTitle: 'I. General Terms and Conditions of RailBack',
       validityTitle: 'Section 1 Scope',
       validity: [
-        'These General Terms and Conditions set out the terms applicable between RailBack GmbH, Musterstraße 1a, 68163 Mannheim (hereinafter "RailBack") and the respective user (hereinafter "User") for the use of RailBack services for asserting passenger rights.',
+        'These General Terms and Conditions set out the terms applicable between Elaspix UG, Schliffkopfstraße 25, 68163 Mannheim (hereinafter "RailBack") and the respective user (hereinafter "User") for the use of RailBack services for asserting passenger rights.',
         'Changes to these General Terms and Conditions will be communicated to the User in text form in good time. They are deemed approved if the User does not object within six weeks after notification.',
       ],
       definitionsTitle: 'Section 2 Definitions',
@@ -215,6 +233,9 @@ const ImpressumContent = ({ lang }: { lang: Language }) => {
 
       <h2>{copy.seatTitle}</h2>
       <p className="legal-card__meta">{copy.seat}</p>
+
+      <h2>{copy.bankTitle}</h2>
+      <p className="legal-card__meta">{copy.bank}</p>
 
       <h2>{copy.vatTitle}</h2>
       <p className="legal-card__meta">{copy.vat}</p>

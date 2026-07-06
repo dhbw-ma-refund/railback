@@ -49,6 +49,13 @@ const Icon = ({
         <line x1="12" y1="8" x2="12" y2="8.01" />
       </svg>
     ),
+    card: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="6" width="18" height="12" rx="3" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+        <line x1="7" y1="15" x2="10" y2="15" />
+      </svg>
+    ),
     support: (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="9" />
@@ -124,22 +131,23 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
             {loggedIn ? t.menu.logout : t.menu.login}
           </button>
           <button className="menu__close" onClick={onClose} aria-label="Zurück">
-            <Icon name="close" size={18} color="#fff" />
+            <Icon name="close" size={18} />
           </button>
         </div>
         <div className="menu__list">
-          <button className="menu__item" onClick={() => goTo('/user')}>
-            <Icon name="user" size={21} className="ic" />
-            <span>{t.menu.account}</span>
+          <button className="menu__item menu__item--primary" onClick={() => goTo('/user')}>
+            <span>{t.hero.cta1}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
           <button className="menu__item" onClick={() => goTo('/faq')}>
-            <Icon name="info" size={21} className="ic" />
             <span>{t.menu.faq}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
+          <button className="menu__item" onClick={() => goTo('/preise')}>
+            <span>{t.menu.prices}</span>
+            <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
+          </button>
           <a className="menu__item" href="mailto:support@railback.de?subject=Support-Anfrage%20RailBack">
-            <Icon name="support" size={21} className="ic" />
             <span>{t.menu.support}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </a>
@@ -159,12 +167,10 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
           </div>
           <div className="menu__divider"></div>
           <button className="menu__item" onClick={() => goTo('/rechtliches')}>
-            <Icon name="legal" size={21} className="ic" />
             <span>{t.menu.legal}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
           <button className="menu__item" onClick={() => goTo('/impressum')}>
-            <Icon name="info" size={21} className="ic" />
             <span>{t.menu.imprint}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
