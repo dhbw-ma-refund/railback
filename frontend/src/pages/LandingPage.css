@@ -86,7 +86,7 @@
 .hero__proof li {
   color: var(--color-deep-trust-blue);
   font-size: clamp(20px, 1.65vw, 24px);
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1.35;
 }
 
