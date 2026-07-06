@@ -1,20 +1,13 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { ToastContext, type ToastCtx, type ToastTone } from './ToastContext';
 import './Toast.css';
-
-export type ToastTone = 'error' | 'warn' | 'info';
 
 interface Toast {
   id: number;
   message: string;
   tone: ToastTone;
 }
-
-interface ToastCtx {
-  show: (message: string, tone?: ToastTone) => void;
-}
-
-const Ctx = createContext<ToastCtx | null>(null);
 
 const DISMISS_MS = 4500;
 
@@ -38,7 +31,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const value = useMemo<ToastCtx>(() => ({ show }), [show]);
 
   return (
-    <Ctx.Provider value={value}>
+    <ToastContext.Provider value={value}>
       {children}
       <div className="rb-toast-viewport" role="status" aria-live="polite">
         {toasts.map((t) => (
@@ -47,12 +40,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           </div>
         ))}
       </div>
-    </Ctx.Provider>
+    </ToastContext.Provider>
   );
-}
-
-export function useToast(): ToastCtx {
-  const value = useContext(Ctx);
-  if (!value) throw new Error('useToast must be used inside <ToastProvider>');
-  return value;
 }

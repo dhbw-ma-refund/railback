@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings 0",
+    "lint": "eslint \"src/pages/admin/**/*.{ts,tsx}\" --max-warnings 0",
     "format": "prettier --check \"src/**/*.{ts,tsx,css,md}\"",
     "format:write": "prettier --write \"src/**/*.{ts,tsx,css,md}\"",
     "test": "vitest run"

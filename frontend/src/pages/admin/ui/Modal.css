@@ -1,0 +1,47 @@
+.rb-modal-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 67, 137, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500;
+  padding: 24px;
+}
+
+.rb-modal {
+  background: var(--color-warm-off-white);
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 320px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  font-family: var(--font-family-primary);
+  color: var(--color-text-primary);
+}
+
+.rb-modal__title {
+  margin: 0 0 12px 0;
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-semibold);
+}
+
+.rb-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+@media (max-width: 767px) {
+  .rb-modal-scrim {
+    padding: 0;
+  }
+  .rb-modal {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    border-radius: 0;
+  }
+}

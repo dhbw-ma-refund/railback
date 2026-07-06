@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAdminGoBack } from '../services/hooks/useAdminGoBack';
 import { ApiError } from '../services/api/errors';
 import { ticketsApi } from '../services/api/tickets';
@@ -7,6 +7,8 @@ import type { Ticket } from '../services/types/ticket';
 import { fmtDate, fmtDateTime } from '../services/format/date';
 import { fmtEUR } from '../services/format/money';
 import { TicketStateBadge } from '../ui/TicketStateBadge';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui-library';
 import './DetailPage.css';
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
@@ -21,6 +23,8 @@ function Field({ label, value }: { label: string; value: ReactNode }) {
 export function TicketDetailPage() {
   const { ticketId } = useParams<{ ticketId: string }>();
   const goBack = useAdminGoBack('/admin-panel/tickets');
+  const navigate = useNavigate();
+  const [stateDialogOpen, setStateDialogOpen] = useState(false);
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -87,6 +91,37 @@ export function TicketDetailPage() {
         ← Zurück
       </button>
       <h1 className="rb-detail__title">Ticket {ticket.ticketId}</h1>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '12px 0' }}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => setStateDialogOpen(true)}
+        >
+          State ändern
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            const q = new URLSearchParams();
+            if (ticket.fahrt_zugnummer_plan) q.set('trainNr', ticket.fahrt_zugnummer_plan);
+            if (ticket.fahrt_abreisedatum) q.set('datum', ticket.fahrt_abreisedatum);
+            navigate(
+              `/admin-panel/tickets/${encodeURIComponent(ticket.ticketId)}/delays?${q.toString()}`,
+            );
+          }}
+        >
+          Verspätungen anzeigen
+        </Button>
+      </div>
+
+      <Modal
+        open={stateDialogOpen}
+        onClose={() => setStateDialogOpen(false)}
+        title="Ticket-State überschreiben"
+      >
+        <p>Kommt in WP #477. Aktueller State: {ticket.ticket_state}.</p>
+      </Modal>
 
       <section className="rb-detail__section">
         <h2 className="rb-detail__section-title">Reisende:r</h2>

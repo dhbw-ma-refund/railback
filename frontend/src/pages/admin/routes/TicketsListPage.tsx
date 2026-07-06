@@ -13,7 +13,7 @@ import { Table, type TableColumn } from '../ui/Table';
 import { TicketStateBadge } from '../ui/TicketStateBadge';
 import { FilterBar } from '../ui/FilterBar';
 import { Pagination } from '../ui/Pagination';
-import { useToast } from '../ui/Toast';
+import { useToast } from '../ui/useToast';
 import '../admin.css';
 
 const PAGE_LIMIT = 50;
