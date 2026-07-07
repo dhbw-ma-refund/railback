@@ -50,6 +50,7 @@ export interface SepaMandate {
 
 export interface UserRepo {
   getByEmail(email: string): Promise<User | null>;
+  getByEmailForAuth(email: string): Promise<UserAuthLookup | null>;
   getByEmailAdminView(email: string): Promise<UserAdminView | null>;
   put(item: Record<string, unknown>): Promise<void>;
   update(email: string, updates: Record<string, unknown>): Promise<void>;

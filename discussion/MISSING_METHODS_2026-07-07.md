@@ -7,17 +7,7 @@ it lands. Filing here so the DB team can prioritise.
 
 Signatures follow the `Db` interface in `node/src/types.ts`.
 
----
-
-## UserRepo
-
-```typescript
-getByEmailForAuth(email: string): Promise<UserAuthLookup | null>
-```
-
-Returns `{ email, hashedPassword, userState }` — the auth-only projection.
-Needed by `auth-handler` before any other Lambda gets wired up. Highest
-priority.
+~~`getByEmailForAuth` — implemented 2026-07-07.~~
 
 ---
 

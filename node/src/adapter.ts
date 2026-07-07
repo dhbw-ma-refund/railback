@@ -1,7 +1,7 @@
 import type { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { RailBackConnector, ConflictError } from "./connector.js";
 import type {
-  User, UserAdminView, Admin, Ticket, SepaMandate,
+  User, UserAdminView, UserAuthLookup, Admin, Ticket, SepaMandate,
   UserRepo, AdminRepo, TicketRepo, MandateRepo, Db,
 } from "./types.js";
 
@@ -60,6 +60,16 @@ class UserRepoImpl implements UserRepo {
   async getByEmail(email: string): Promise<User | null> {
     const raw = (await this.c.user.get(email)).unwrap();
     return raw === null ? null : mapUser(raw);
+  }
+
+  async getByEmailForAuth(email: string): Promise<UserAuthLookup | null> {
+    const raw = (await this.c.user.getForAuth(email)).unwrap();
+    if (raw === null) return null;
+    return {
+      email: raw["email"] as string,
+      hashedPassword: raw["hashed_password"] as string,
+      userState: raw["user_state"] as string,
+    };
   }
 
   async getByEmailAdminView(email: string): Promise<UserAdminView | null> {

@@ -23,6 +23,13 @@ export class UserConnector extends BaseConnector {
       return new Ok(stripped);
     });
   }
+  getForAuth(email: string): Promise<Result<Record<string, unknown> | null>> {
+    return this._get(`USER#${email}`, "PROFILE").then((r) => {
+      if (r.isErr() || r.value === null) return r;
+      const { hashed_password, user_state } = r.value;
+      return new Ok({ email, hashed_password, user_state });
+    });
+  }
   put(item: Record<string, unknown>) { return this._put(item); }
   update(email: string, updates: Record<string, unknown>) {
     return this._updateFields(`USER#${email}`, "PROFILE", updates);
