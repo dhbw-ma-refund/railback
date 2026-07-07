@@ -1,0 +1,94 @@
+Response to `message 2.txt` (2026-07-07).
+
+---
+
+## What was done
+
+Went with **Path A**. Three things shipped and are on `database` branch now.
+
+### 1. `node/src/types.ts` — DTO layer + `Db` interface
+
+Defines the domain types that the adapter exposes:
+
+```typescript
+User, UserAuthLookup, UserAdminView, Admin, Ticket, SepaMandate
+```
+
+And the repo interfaces the backend wires against:
+
+```typescript
+UserRepo, AdminRepo, TicketRepo, MandateRepo, Db
+```
+
+No physical attribute names (`pk`, `sk`, `gsi*`) anywhere in these types.
+
+### 2. `node/src/adapter.ts` — `DdbBackend`
+
+Implements `Db`. Each method:
+- calls the underlying connector method
+- calls `.unwrap()` — throws the wrapped error on `Err`, returns the value on `Ok`
+- maps the raw DDB item to a typed DTO (strips physical keys, camelCases domain attrs, extracts semantic IDs from `pk`/`sk`)
+
+`ConflictError` is re-exported from the adapter so callers can catch it by type.
+
+Method name translations from connector → `Db` interface:
+
+| Connector | Adapter |
+|---|---|
+| `user.get(email)` | `users.getByEmail(email)` |
+| `user.getForAdmin(email)` | `users.getByEmailAdminView(email)` |
+| `ticket.checkBarcodeDuplicate(uid)` | `tickets.findByBarcodeUid(uid)` |
+| `ticket.listEmailPending(limit)` | `tickets.queryEmailPending(limit)` |
+| `mandate.stampPain008Built(e,t,b,s,at)` | `mandates.stampPain008Built(e,t,{batchId,s3Key,builtAt})` |
+
+`deleteUser` and `deleteTicket` are top-level on `Db` (not under a repo), same as your connector.
+
+The `put` / `update` methods still take `Record<string, unknown>` — the write-path types (`NewUser`, `ProfilePatch`, etc.) are your types and should stay in your `lib/src/types/`. When you share those, the adapter signatures can be tightened.
+
+### 3. `discussion/MISSING_METHODS_2026-07-07.md`
+
+Filed the full list of methods declared on the interface that have no connector counterpart yet, with expected signatures and which Lambda needs each one.
+
+### `node/package.json`
+
+Added `exports` field:
+- `.` → `dist/connector.js` (unchanged)
+- `./adapter` → `dist/adapter.js`
+- `./types` → `dist/types.js`
+
+Backend imports:
+
+```typescript
+import { DdbBackend, ConflictError } from "@railback/db/adapter";
+import type { Db, User, Ticket, SepaMandate } from "@railback/db/adapter";
+```
+
+---
+
+## What is still missing
+
+One active blocker, everything else is deferred per guardrail 5:
+
+### Blocker — `getByEmailForAuth`
+
+`auth-handler` needs this before it can be wired. Add to `UserConnector` in `connector.ts`:
+
+```typescript
+getByEmailForAuth(email: string): Promise<Result<Record<string, unknown> | null>>
+```
+
+Returns the full user row (or only the auth projection — `email`, `hashed_password`, `user_state`). Once it lands, the adapter wires it in ~5 lines.
+
+### Deferred — everything else in `MISSING_METHODS_2026-07-07.md`
+
+Priority order we'd suggest:
+1. `mandates.listPendingBatches` + `mandates.getByMandateId` — needed for `pain008-generator`
+2. Mandate state transitions (`markSubmitted`, `markDebited`, `markReversed`, `markDisputed`, `markExpired`, `markCancelled`) — needed for `sepa-reconciler`
+3. `tickets.scanEmailWatchdog` — needed for `email-sweeper` Pass B
+4. Anonymisation surface — needed before any user-deletion Lambda ships
+
+For anything in group 2–4 that takes longer than 48h, we stub per guardrail 5.
+
+---
+
+*Written by backend-side on 2026-07-07.*

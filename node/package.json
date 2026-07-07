@@ -4,6 +4,20 @@
   "description": "DynamoDB connector layer for RailBack",
   "main": "dist/connector.js",
   "types": "dist/connector.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/connector.js",
+      "types": "./dist/connector.d.ts"
+    },
+    "./adapter": {
+      "import": "./dist/adapter.js",
+      "types": "./dist/adapter.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types.js",
+      "types": "./dist/types.d.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "test": "node --experimental-vm-modules node_modules/.bin/jest"
