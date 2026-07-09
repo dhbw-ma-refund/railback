@@ -3,7 +3,7 @@ name: Build and Deploy Frontend to Strato
 on:
   push:
     branches:
-      - landingpage
+      # - landingpage
       - frontend
   workflow_dispatch:
 
