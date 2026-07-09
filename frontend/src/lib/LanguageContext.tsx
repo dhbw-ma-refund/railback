@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 
-type Language = 'de' | 'en';
+export type Language = 'de' | 'en';
 
 interface LanguageContextType {
   lang: Language;
@@ -27,6 +28,7 @@ const translations = {
       account: 'Konto',
       profile: 'Profil',
       faq: 'FAQ',
+      prices: 'Preise',
       support: 'Support',
       legal: 'Rechtliches',
       imprint: 'Impressum',
@@ -34,15 +36,63 @@ const translations = {
     },
     hero: {
       claim: 'From Delay to Pay',
-      title: 'Bahnverspätung? Wir helfen bei der Entschädigung!',
-      sub: 'Lade dein Ticket hoch, lass die Verspätung prüfen und erhalte eine klare Übersicht über mögliche Entschädigungen. Kein Antrag wird ohne deine Freigabe versendet.',
-      cta1: 'Anspruch prüfen',
-      cta2: 'FAQ',
+      title: 'Bahnverspätung?\nHol dir dein Geld zurück!',
+      mobileTitle: 'Bahnverspätung?\nHol dir dein Geld zurück!',
+      sub: 'Du musst dich nicht durch Formulare kämpfen. RailBack prüft deine Reise, zeigt dir deinen möglichen Anspruch und führt dich bis zur Auszahlung.',
+      mobileSub: 'Ticket hochladen, Verspätung prüfen und Entschädigung erhalten.',
+      cta1: 'Lass dich entschädigen!',
+      mobileCta: 'Jetzt Anspruch prüfen',
+      cta2: 'Wann bekomme ich Geld?',
       tag: ['EINFACH.', 'DIGITAL.', 'STRESSFREI.'],
+      proof: [
+        'Lade dein Ticket hoch',
+        'Die Verspätung wird geprüft',
+        'Erhalte deine Entschädigung',
+      ],
       trust: [
         'Kein Antrag ohne deine Freigabe',
         'Antrag in unter 60 Sekunden',
         'DSGVO-konform aus Mannheim',
+      ],
+      phone: {
+        greeting: 'Hallo Tobias!',
+        overview: 'Hier ist dein Reiseüberblick.',
+        route: 'München → Berlin',
+        meta: '24.06.2026 • ICE 1232',
+        amount: '24,50 €',
+        amountLabel: 'Erwartete Entschädigung',
+        delay: 'Verspätung erkannt · 78 Min',
+        ticketChecked: 'Ticket geprüft',
+        claimCalculated: 'Anspruch berechnet',
+        refundPossible: 'Erstattung möglich',
+        refundBasis: 'Basierend auf Ticketpreis und erkannter Verspätung.',
+      },
+    },
+    eligibility: {
+      eyebrow: 'Wann ist Entschädigung möglich?',
+      title: 'Wenn die Bahn dich warten lässt, muss es nicht bei Ärger bleiben.',
+      lead: 'Die Höhe hängt von Verspätung, Ticketpreis und Reisesituation ab. RailBack zeigt dir vor dem Antrag, was realistisch möglich ist.',
+      items: [
+        {
+          amount: '25%',
+          title: 'Ab 60 Minuten am Ziel',
+          text: 'Bei vielen Bahnreisen kann ab einer Stunde Verspätung ein Teil des Ticketpreises erstattet werden.',
+        },
+        {
+          amount: '50%',
+          title: 'Ab 120 Minuten am Ziel',
+          text: 'Bei sehr langen Verzögerungen kann der Anspruch deutlich höher ausfallen.',
+        },
+        {
+          amount: 'Prüfung',
+          title: 'Ausfall oder Anschluss verpasst',
+          text: 'Auch Zugausfälle und verpasste Anschlüsse können relevant sein. Wir prüfen die konkrete Reise.',
+        },
+        {
+          amount: 'Klarheit',
+          title: 'Vorher wissen, ob es sich lohnt',
+          text: 'Du siehst den möglichen Betrag und die Bedingungen, bevor ein Antrag rausgeht.',
+        },
       ],
     },
     faq: {
@@ -57,7 +107,7 @@ const translations = {
     },
     footer: {
       tagline: 'From Delay to Pay.',
-      copyright: '© 2026 RailBack GmbH · Alle Rechte vorbehalten.',
+      copyright: '© 2026 Elaspix UG · Alle Rechte vorbehalten.',
     },
     auth: {
       login: {
@@ -244,6 +294,7 @@ const translations = {
       account: 'Account',
       profile: 'Profile',
       faq: 'FAQ',
+      prices: 'Pricing',
       support: 'Support',
       legal: 'Legal',
       imprint: 'Imprint',
@@ -251,15 +302,63 @@ const translations = {
     },
     hero: {
       claim: 'From Delay to Pay',
-      title: 'Train Delayed? We Help with Your Compensation!',
-      sub: 'Upload your ticket, have the delay checked and get a clear overview of possible compensations. No claim is sent without your approval.',
-      cta1: 'Check claim',
-      cta2: 'FAQ',
+      title: 'Train delayed?\nGet your money back!',
+      mobileTitle: 'Train delayed?\nGet your money back!',
+      sub: 'Skip the paperwork maze. RailBack checks your trip, shows your possible claim and guides you through to payout.',
+      mobileSub: 'Upload ticket, check delay and receive compensation.',
+      cta1: 'Get compensated!',
+      mobileCta: 'Check claim now',
+      cta2: 'When do I get money?',
       tag: ['SIMPLE.', 'DIGITAL.', 'STRESS-FREE.'],
+      proof: [
+        'Upload your ticket',
+        'The delay is checked',
+        'Receive your compensation',
+      ],
       trust: [
         'No claim without your approval',
         'Claim in under 60 seconds',
         'GDPR-compliant from Mannheim',
+      ],
+      phone: {
+        greeting: 'Hello Tobias!',
+        overview: 'Here is your trip overview.',
+        route: 'Munich → Berlin',
+        meta: '24 Jun 2026 • ICE 1232',
+        amount: '€24.50',
+        amountLabel: 'Expected compensation',
+        delay: 'Delay detected · 78 min',
+        ticketChecked: 'Ticket checked',
+        claimCalculated: 'Claim calculated',
+        refundPossible: 'Refund possible',
+        refundBasis: 'Based on ticket price and detected delay.',
+      },
+    },
+    eligibility: {
+      eyebrow: 'When is compensation possible?',
+      title: 'If the railway makes you wait, frustration does not have to be the end of it.',
+      lead: 'The amount depends on delay, ticket price and trip situation. RailBack shows what is realistically possible before you file.',
+      items: [
+        {
+          amount: '25%',
+          title: 'From 60 minutes at arrival',
+          text: 'For many train journeys, a one-hour delay can qualify for a partial ticket refund.',
+        },
+        {
+          amount: '50%',
+          title: 'From 120 minutes at arrival',
+          text: 'Very long delays can lead to a significantly higher claim.',
+        },
+        {
+          amount: 'Check',
+          title: 'Cancellation or missed connection',
+          text: 'Cancelled trains and missed connections can also matter. We check your specific journey.',
+        },
+        {
+          amount: 'Clarity',
+          title: 'Know before you proceed',
+          text: 'You see the possible amount and conditions before any claim is submitted.',
+        },
       ],
     },
     faq: {
@@ -274,7 +373,7 @@ const translations = {
     },
     footer: {
       tagline: 'From Delay to Pay.',
-      copyright: '© 2026 RailBack GmbH · All rights reserved.',
+      copyright: '© 2026 Elaspix UG · All rights reserved.',
     },
     auth: {
       login: {
@@ -456,12 +555,24 @@ const translations = {
   },
 };
 
+const isLanguage = (value: string | null): value is Language => value === 'de' || value === 'en';
+
+const getInitialLanguage = (): Language => {
+  const savedLanguage = window.localStorage.getItem('rb_lang');
+  return isLanguage(savedLanguage) ? savedLanguage : 'de';
+};
+
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [lang, setLang] = useState<Language>('de');
+  const [lang, setLangState] = useState<Language>(getInitialLanguage);
+
+  useEffect(() => {
+    window.localStorage.setItem('rb_lang', lang);
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   const value = {
     lang,
-    setLang,
+    setLang: setLangState,
     t: translations[lang],
   };
 

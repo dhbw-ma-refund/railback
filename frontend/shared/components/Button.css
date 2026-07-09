@@ -8,7 +8,7 @@
   font-weight: var(--font-weight-semibold);
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
   display: inline-flex;
   align-items: center;
   justify-content: center;

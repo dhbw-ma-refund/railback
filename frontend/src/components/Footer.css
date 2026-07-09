@@ -2,7 +2,6 @@
   background: var(--color-soft-beige);
   border-top: 1px solid rgba(9, 67, 137, 0.08);
   padding: var(--spacing-4) 0;
-  margin-top: var(--spacing-4);
 }
 
 .footer__content {
@@ -17,23 +16,28 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  align-items: center;
 }
 
 .footer__logo-wrapper {
   display: flex;
   align-items: center;
-  gap: var(--spacing-1);
+  gap: 8px;
+  min-height: 32px;
 }
 
 .footer__logo-img {
-  height: 32px;
-  width: auto;
+  width: 34px;
+  height: 24px;
+  object-fit: contain;
+  flex: none;
 }
 
 .footer__logo {
-  font-family: 'Figtree', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-family-primary);
   font-weight: 800;
   font-size: 20px;
+  line-height: 24px;
   color: var(--color-deep-trust-blue);
   letter-spacing: -0.01em;
 }
@@ -56,7 +60,7 @@
   text-decoration: none;
   font-size: 15px;
   font-weight: 500;
-  transition: color 0.2s;
+  transition: color var(--motion-fast) var(--motion-ease);
 }
 
 .footer__links a:hover {

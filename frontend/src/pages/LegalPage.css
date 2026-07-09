@@ -1,0 +1,118 @@
+@import '@shared/styles/tokens.css';
+@import '@shared/styles/typography.css';
+
+.legal-page {
+  min-height: 100vh;
+  background: var(--color-warm-off-white);
+  display: flex;
+  flex-direction: column;
+}
+
+.legal-main {
+  flex: 1;
+}
+
+.legal-page__content {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--spacing-4) 0;
+}
+
+.legal-page__head {
+  margin-bottom: var(--spacing-3);
+  padding-top: var(--spacing-2);
+}
+
+.legal-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.legal-card {
+  width: 100%;
+  background: #fff;
+  border: 1px solid rgba(9, 67, 137, 0.09);
+  border-radius: var(--radius-card);
+  padding: clamp(24px, 4vw, 44px);
+  box-shadow: var(--shadow-default);
+}
+
+.legal-card h1 {
+  color: var(--color-deep-trust-blue);
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.15;
+  margin: 0 0 var(--spacing-4);
+}
+
+.legal-card h2 {
+  color: var(--color-deep-trust-blue);
+  font-size: 22px;
+  line-height: 1.25;
+  margin: 30px 0 10px;
+}
+
+.legal-card h2:first-of-type {
+  margin-top: 0;
+}
+
+.legal-card h3 {
+  color: var(--color-deep-trust-blue);
+  font-size: 16.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 20px 0 6px;
+}
+
+.legal-card p {
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+.legal-card address {
+  color: var(--color-text-primary);
+  font-style: normal;
+  line-height: 1.7;
+}
+
+.legal-card__meta {
+  color: var(--color-muted-gray-blue);
+  font-size: 14px;
+}
+
+.legal-card .legal-card__version {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--color-muted-gray-blue);
+  background: var(--color-soft-beige);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+@media (max-width: 767px) {
+  .legal-page__content {
+    padding: var(--spacing-2) 0;
+  }
+
+  .legal-page__head {
+    margin-bottom: var(--spacing-2);
+  }
+
+  .legal-page__back {
+    height: 44px;
+    min-height: 44px;
+    padding: 0 16px 0 12px;
+    background: transparent;
+  }
+
+  .legal-card {
+    border-radius: 10px;
+  }
+
+  .legal-card h2 {
+    font-size: 20px;
+  }
+}

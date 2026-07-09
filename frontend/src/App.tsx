@@ -3,12 +3,15 @@ import { LanguageProvider } from './lib/LanguageContext';
 import { AuthProvider } from './lib/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LandingPage } from './pages/LandingPage';
+import { CampaignLandingPage1 } from './pages/CampaignLandingPage1';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ClaimDetailPage } from './pages/ClaimDetailPage';
 import { FAQPage } from './pages/FAQPage';
+import { LegalPage } from './pages/LegalPage';
+import { PricingPage } from './pages/PricingPage';
 import { WizardProvider } from './pages/wizard/WizardContext';
 import { EntryStep } from './pages/wizard/EntryStep';
 import { UploadStep } from './pages/wizard/UploadStep';
@@ -48,9 +51,13 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/campaign-landing-page-1" element={<CampaignLandingPage1 />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/faq" element={<FAQPage />} />
+            <Route path="/preise" element={<PricingPage />} />
+            <Route path="/impressum" element={<LegalPage type="impressum" />} />
+            <Route path="/rechtliches" element={<LegalPage type="rechtliches" />} />
             <Route
               path="/profile"
               element={

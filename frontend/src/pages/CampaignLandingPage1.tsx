@@ -3,10 +3,8 @@ import { Button } from '@shared/components';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { useLanguage } from '../lib/LanguageContext';
-import { useAuth } from '../lib/AuthContext';
 import './LandingPage.css';
 import railbackLogo from '../../shared/assets/railback-logo.png';
-import homeHeroPassenger from '../../shared/assets/home-hero-passenger-2.png';
 
 // Simple Icon component for landing page
 const Icon = ({ name, size = 20, color }: { name: string; size?: number; color?: string }) => {
@@ -45,21 +43,16 @@ const Icon = ({ name, size = 20, color }: { name: string; size?: number; color?:
   return icons[name] || null;
 };
 
-export const LandingPage = () => {
+export const CampaignLandingPage1 = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { isAuthenticated } = useAuth();
 
   const handleCheckClaim = () => {
-    if (isAuthenticated) {
-      navigate('/user');
-    } else {
-      navigate('/login');
-    }
+    navigate('/user');
   };
 
   return (
-    <div className="landing-page landing-page--default">
+    <div className="landing-page landing-page--campaign">
       <Header />
       <section className="hero">
         <div className="hero__bg"></div>
@@ -103,12 +96,49 @@ export const LandingPage = () => {
                 ))}
               </div>
             </div>
-            <div className="hero-photo-col">
-              <div className="hero-photo">
-                <img
-                  src={homeHeroPassenger}
-                  alt="Zufriedene Bahnreisende prüft ihre Entschädigung am Smartphone"
-                />
+            <div className="phone-col">
+              <div className="phone">
+                <div className="phone__notch"></div>
+                <div className="phone__screen">
+                  <div className="phone__status">
+                    <span>9:41</span>
+                    <span className="sig">100%</span>
+                  </div>
+                  <div className="phone__body">
+                    <p className="phone__hi">{t.hero.phone.greeting}</p>
+                    <p>{t.hero.phone.overview}</p>
+                    <div className="tripcard">
+                      <div className="tripcard__route">
+                        {t.hero.phone.route}
+                      </div>
+                      <div className="tripcard__meta">{t.hero.phone.meta}</div>
+                      <div className="tripcard__amt">{t.hero.phone.amount}</div>
+                      <div className="tripcard__amtlabel">{t.hero.phone.amountLabel}</div>
+                      <div className="chip-delay">
+                        <Icon name="check" size={14} />
+                        {t.hero.phone.delay}
+                      </div>
+                    </div>
+                    <div className="minicard">
+                      <div className="badge-ic">
+                        <Icon name="checkCircle" size={18} color="var(--color-landing-green-ink)" />
+                      </div>
+                      <div>
+                        <div className="minicard__title">{t.hero.phone.ticketChecked}</div>
+                        <div className="minicard__sub">{t.hero.phone.claimCalculated}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="floating-badge">
+                <div className="infocard">
+                  <div className="infocard__badge">25%</div>
+                  <div className="infocard__copy">
+                    <div className="infocard__title">{t.hero.phone.refundPossible}</div>
+                    <div className="infocard__sub">{t.hero.phone.refundBasis}</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

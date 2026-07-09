@@ -7,7 +7,7 @@
   backdrop-filter: blur(2px);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s;
+  transition: opacity 260ms ease;
 }
 
 .scrim.open {
@@ -15,7 +15,7 @@
   pointer-events: auto;
 }
 
-/* Drawer panel. Radius uses --radius-card, shadow uses the soft brand default. */
+/* Drawer panel. Radius uses --radius-card, tuned shadow for the light-header look. */
 .menu {
   position: fixed;
   z-index: 50;
@@ -25,18 +25,21 @@
   background: #fff;
   border-radius: var(--radius-card);
   overflow: hidden;
-  box-shadow: var(--shadow-hover);
-  border: 1px solid rgba(9, 67, 137, 0.08);
+  box-shadow: 0 18px 46px rgba(9, 67, 137, 0.18);
+  border: 1px solid rgba(9, 67, 137, 0.10);
   transform-origin: top right;
-  transform: scale(0.96) translateY(-6px);
+  transform: translate3d(18px, -8px, 0) scale(0.98);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 180ms ease,
+    transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, opacity;
 }
 
 .menu.open {
   opacity: 1;
-  transform: scale(1) translateY(0);
+  transform: translate3d(0, 0, 0) scale(1);
   pointer-events: auto;
 }
 
@@ -44,9 +47,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-2) var(--spacing-3);
-  background: var(--color-deep-trust-blue);
-  color: #fff;
+  padding: 18px 20px;
+  background: #eaf1f8;
+  color: var(--color-deep-trust-blue);
+  border-bottom: 1px solid rgba(9, 67, 137, 0.08);
 }
 
 .menu__auth {
@@ -58,62 +62,78 @@
   cursor: pointer;
   background: none;
   border: 0;
-  color: #fff;
+  color: var(--color-deep-trust-blue);
   padding: 0;
   min-height: var(--touch-target-min);
 }
 
-/* Full 44 px close button (brand §10.2). */
+/* Close button — matches the light header. */
 .menu__close {
-  background: rgba(255, 255, 255, 0.16);
+  background: #fff;
   border: 0;
-  color: #fff;
-  width: var(--touch-target-min);
-  height: var(--touch-target-min);
-  border-radius: var(--radius-input);
+  color: var(--color-deep-trust-blue);
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   cursor: pointer;
   display: grid;
   place-items: center;
 }
 
 .menu__close:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(9, 67, 137, 0.08);
 }
 
 .menu__list {
-  padding: var(--spacing-1);
+  background: #fff;
+  border-radius: 0 0 20px 20px;
+  padding: 8px;
 }
 
 .menu__item {
   display: flex;
   align-items: center;
-  gap: var(--spacing-2);
+  gap: 12px;
   width: 100%;
-  padding: var(--spacing-2);
+  padding: 16px 16px;
   border: 0;
   background: none;
   cursor: pointer;
   border-radius: var(--radius-input);
   text-align: left;
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-medium);
+  font-size: 17px;
+  font-weight: 650;
   color: var(--color-text-primary);
   text-decoration: none;
-  transition: background 0.14s;
-  min-height: var(--touch-target-min);
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    background var(--motion-fast) var(--motion-ease),
+    opacity 180ms ease,
+    transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .menu__item:hover {
   background: var(--color-warm-off-white);
 }
 
-.menu__item .ic {
-  color: var(--color-deep-trust-blue);
-  flex: none;
+.menu__item--primary {
+  color: #fff;
+  background: var(--color-deep-trust-blue);
+  font-weight: 800;
 }
 
-.menu__item svg:last-child {
+.menu__item--primary:hover {
+  background: var(--color-button-pressed);
+}
+
+.menu__item--primary .menu__arrow svg {
+  stroke: #fff;
+}
+
+.menu__item .menu__arrow {
   margin-left: auto;
+  display: inline-flex;
 }
 
 .menu__item.active {
@@ -125,14 +145,25 @@
 .menu__divider {
   height: 1px;
   background: rgba(9, 67, 137, 0.08);
-  margin: var(--spacing-1) var(--spacing-2);
+  margin: 6px 12px;
+  opacity: 0;
+  transform: scaleX(0.94);
+  transform-origin: center;
+  transition:
+    opacity 180ms ease,
+    transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* Language selector chips */
 .lang-row {
   display: flex;
-  gap: var(--spacing-1);
-  padding: var(--spacing-1) var(--spacing-2) var(--spacing-2);
+  gap: 8px;
+  padding: 6px 14px 14px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 180ms ease,
+    transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .lang-chip {
@@ -145,7 +176,10 @@
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-caption);
   color: var(--color-muted-gray-blue);
-  transition: all 0.14s;
+  transition:
+    background var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease);
   min-height: var(--touch-target-min);
 }
 
@@ -159,6 +193,41 @@
   color: #fff;
 }
 
+.menu.open .menu__item,
+.menu.open .lang-row,
+.menu.open .menu__divider {
+  opacity: 1;
+  transform: translateY(0) scaleX(1);
+}
+
+.menu.open .menu__item:nth-child(1) {
+  transition-delay: 30ms;
+}
+
+.menu.open .menu__item:nth-child(2) {
+  transition-delay: 50ms;
+}
+
+.menu.open .menu__item:nth-child(3) {
+  transition-delay: 70ms;
+}
+
+.menu.open .menu__item:nth-child(4) {
+  transition-delay: 90ms;
+}
+
+.menu.open .lang-row {
+  transition-delay: 110ms;
+}
+
+.menu.open .menu__divider {
+  transition-delay: 120ms;
+}
+
+.menu.open .menu__divider ~ .menu__item {
+  transition-delay: 130ms;
+}
+
 /* Mobile Responsive */
 @media (max-width: 767px) {
   .menu {
@@ -166,5 +235,11 @@
     right: var(--spacing-1);
     width: calc(100vw - var(--spacing-2));
     max-width: 100%;
+    transform-origin: top center;
+    transform: translate3d(0, -12px, 0) scale(0.985);
+  }
+
+  .menu.open {
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }

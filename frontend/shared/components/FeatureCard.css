@@ -1,7 +1,7 @@
 .feature-card {
   padding: var(--spacing-3);
   text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease);
 }
 
 .feature-card:hover {
