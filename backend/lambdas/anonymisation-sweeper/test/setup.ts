@@ -17,6 +17,10 @@ export function installTestEnv(): ReturnType<typeof db> {
   vi.stubEnv("RAILBACK_STORAGE", "memory");
   vi.stubEnv("RAILBACK_IBAN_KEK", TEST_KEK_B64);
   vi.stubEnv("RAILBACK_AWS_REGION", "eu-central-1");
+  // The existing cascade/handler tests assert the destructive path (rows
+  // anonymised + deleted), so arm the sweeper by default. Dry-run behaviour
+  // is covered explicitly in cascade.spec.ts by overriding this.
+  vi.stubEnv("RAILBACK_ANONYMISATION_DRY_RUN", "false");
   resetKekCache();
   resetDbCache();
   return db();

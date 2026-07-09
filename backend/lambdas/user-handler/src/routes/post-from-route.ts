@@ -17,11 +17,11 @@
 // - templateId is accepted but currently not persisted on the ticket
 //   (RouteTemplate is its own DDB row, the link is informational).
 //   Forwarded to the repo in case it grows persistence later.
-// - Companion TicketOwner row is written via ticketOwners.put — the
-//   admin-handler / email-webhook / extractor flows look up the owning
-//   email by ticketId via that mapping (locked 2026-06-20). For the
-//   in-memory backend this is two distinct writes; the DDB backend
-//   should later promote it to a TransactWriteItems.
+// - Companion TicketOwner row is written atomically inside
+//   tickets.createFromRoute — DDB adapter uses TransactWriteItems, the
+//   in-memory backend mirrors the contract. The admin-handler /
+//   email-webhook / extractor flows look up the owning email by ticketId
+//   via that mapping (locked 2026-06-20).
 
 import {
   fromRouteRequestSchema,
@@ -91,13 +91,13 @@ export async function handlePostFromRoute(
     }
 
     // Cross-user ownership-hijack defence: if a TicketOwner row already
-    // exists for this ticketId, refuse. The in-memory ticketOwners.put
-    // is an unconditional putRow — without this check, UserB could submit
-    // an id known to belong to UserA and overwrite the mapping, breaking
-    // every admin / webhook / extractor reverse-lookup that trusts the
-    // mapping row (CLAUDE.md 2026-06-20). The DDB backend will later
-    // enforce this via TransactWriteItems + attribute_not_exists; until
-    // then the application-side check closes the hole.
+    // exists for this ticketId under a different email, refuse.
+    // tickets.createFromRoute atomically writes both the ticket and the
+    // owner row (mirroring DDB's TransactWriteItems with
+    // attribute_not_exists), so a bare create call would fail with
+    // ERR_CONFLICT here anyway — but returning the hijack-shaped 409
+    // (with existing_ticket_id) up-front gives the frontend a clearer
+    // error surface.
     const ownerLock = await dbi.ticketOwners.get(ticketId);
     if (ownerLock && ownerLock.email !== email) {
       throw new AppError(
@@ -127,10 +127,9 @@ export async function handlePostFromRoute(
       newRoute.templateId = parsed.data.templateId;
     }
 
-    // Owner-mapping row goes FIRST. If it fails we don't end up with an
-    // orphan ticket whose reverse-lookups can't find an email. The
-    // mapping is the cheaper write of the two.
-    await dbi.ticketOwners.put(ticketId, email);
+    // Ticket + TicketOwner mapping row are written atomically inside
+    // createFromRoute (DDB: TransactWriteItems w/ attribute_not_exists;
+    // in-memory: mirrored precondition check + double putRow).
     await dbi.tickets.createFromRoute(newRoute);
 
     const response: FromRouteResponse = {

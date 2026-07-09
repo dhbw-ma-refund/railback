@@ -17,9 +17,9 @@
 // fail loud at first render than to silently produce a half-filled form
 // that the user posts to DB.
 
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { AppError } from "@railback/lib/errors";
 import {
@@ -31,15 +31,27 @@ import { log } from "@railback/lib/http/logging";
 import type { Ticket, User } from "@railback/lib/types/dto";
 import { PDFDocument } from "pdf-lib";
 
-// Resolve the bundled template relative to this module file. The compiled
-// Lambda zip ships `assets/` next to `src/` at the package root, so we walk
-// one level up from this file.
-const TEMPLATE_PATH = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "..",
-  "assets",
-  "reimbursement-form_de.pdf",
-);
+// Resolve the bundled template. The CJS Lambda bundle (esbuild --format=cjs)
+// cannot use `import.meta.url` — esbuild compiles it to an empty object, so
+// `fileURLToPath(import.meta.url)` throws at module load and every cold-start
+// dies before the handler runs. `__dirname` is CJS-native and esbuild also
+// populates it in the bundle, so we anchor on it instead. The bundle layout
+// (index.js + assets/ at package root) and the vitest source layout (this file
+// under src/, assets/ one level up) put `assets/` at a different depth, so we
+// walk a few parent levels and pick whichever exists — layout-agnostic.
+const TEMPLATE_FILE = "reimbursement-form_de.pdf";
+
+function resolveTemplatePath(): string {
+  const fallback = path.resolve(__dirname, "assets", TEMPLATE_FILE);
+  const candidates = [
+    fallback, // bundle: index.js next to assets/
+    path.resolve(__dirname, "..", "assets", TEMPLATE_FILE), // source: src/ -> package root
+    path.resolve(__dirname, "..", "..", "assets", TEMPLATE_FILE), // dist/src/ safety net
+  ];
+  return candidates.find((p) => existsSync(p)) ?? fallback;
+}
+
+const TEMPLATE_PATH = resolveTemplatePath();
 
 let templateBytesCache: Uint8Array | undefined;
 let templateValidated = false;

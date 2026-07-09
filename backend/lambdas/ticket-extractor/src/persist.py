@@ -63,8 +63,8 @@ def _gsi1_for_train(zugnummer_plan: Any, abreisedatum: Any, ticket_id: str) -> O
     if not isinstance(zugnummer_plan, str) or not isinstance(abreisedatum, str):
         return None
     return {
-        "GSI1_PK": f"TRAIN#{zugnummer_plan}#{abreisedatum}",
-        "GSI1_SK": f"TICKET#{ticket_id}",
+        "gsi1_pk": f"TRAIN#{zugnummer_plan}#{abreisedatum}",
+        "gsi1_sk": f"TICKET#{ticket_id}",
     }
 
 
@@ -103,13 +103,13 @@ def _result_to_fields(
     remove_fields: list[str] = []
     barcode_uid = dumped.get("barcode_uid")
     if method == "BARCODE" and barcode_uid:
-        fields["GSI2_PK"] = BARCODE_GSI2_PK
-        fields["GSI2_SK"] = barcode_gsi2_sk(barcode_uid)
+        fields["gsi2_pk"] = BARCODE_GSI2_PK
+        fields["gsi2_sk"] = barcode_gsi2_sk(barcode_uid)
     else:
         # Defensive REMOVE — clear any stale GSI2 keys from a prior
         # BARCODE-classified replay. Cheap when absent (REMOVE is a no-op
         # on missing attrs).
-        remove_fields.extend(["GSI2_PK", "GSI2_SK"])
+        remove_fields.extend(["gsi2_pk", "gsi2_sk"])
 
     # GSI1 train-by-date keys for admin lookups (DB_SCHEMA.md L136-137).
     gsi1 = _gsi1_for_train(
@@ -265,7 +265,7 @@ def fail_result(
         email,
         ticket_id,
         fields,
-        remove_fields=["GSI2_PK", "GSI2_SK"],
+        remove_fields=["gsi2_pk", "gsi2_sk"],
         appends=appends,
         condition_required=True,
         extra_condition="attribute_not_exists(#extraction_status) OR #extraction_status = :processing",

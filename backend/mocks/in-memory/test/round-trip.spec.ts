@@ -34,7 +34,7 @@ function newTicket(email = "ada@example.com", id = "TKT_A"): NewTicket {
 }
 
 describe("InMemoryUserRepo", () => {
-  it("create + getByEmail + updateProfile + list + scheduleDeletion", async () => {
+  it("create + getByEmail + updateProfile + listAdminView + scheduleDeletion", async () => {
     const db = buildMemoryDb();
     const u = await db.users.create(newUser());
     expect(u.user_state).toBe("ACTIVE");
@@ -46,15 +46,17 @@ describe("InMemoryUserRepo", () => {
     expect(patched.telefon).toBe("+49 30 9999");
 
     await db.users.create(newUser("bob@example.com"));
-    const page = await db.users.list({ emailPrefix: "ada", limit: 10 });
+    const page = await db.users.listAdminView({ emailPrefix: "ada", limit: 10 });
     expect(page.items).toHaveLength(1);
     expect(page.items[0]?.email).toBe("ada@example.com");
 
     await db.users.scheduleDeletion("ada@example.com");
-    const sched = await db.users.list({ state: "DELETION_SCHEDULED", limit: 10 });
+    const sched = await db.users.listAdminView({ state: "DELETION_SCHEDULED", limit: 10 });
     expect(sched.items).toHaveLength(1);
     expect(sched.items[0]?.user_state).toBe("DELETION_SCHEDULED");
-    expect(sched.items[0]?.ttl).toBeGreaterThan(Math.floor(Date.now() / 1000));
+    // ttl is stripped from UserAdminView; verify persisted state via getByEmail.
+    const raw = await db.users.getByEmail("ada@example.com");
+    expect(raw?.ttl).toBeGreaterThan(Math.floor(Date.now() / 1000));
   });
 
   it("create rejects duplicate email with ERR_CONFLICT", async () => {
@@ -63,15 +65,15 @@ describe("InMemoryUserRepo", () => {
     await expect(db.users.create(newUser())).rejects.toMatchObject({ code: "ERR_CONFLICT" });
   });
 
-  it("list paginates via base64 cursor", async () => {
+  it("listAdminView paginates via base64 cursor", async () => {
     const db = buildMemoryDb();
     for (const e of ["a@x.de", "b@x.de", "c@x.de", "d@x.de"]) {
       await db.users.create(newUser(e));
     }
-    const p1 = await db.users.list({ limit: 2 });
+    const p1 = await db.users.listAdminView({ limit: 2 });
     expect(p1.items.map((u) => u.email)).toEqual(["a@x.de", "b@x.de"]);
     expect(p1.nextCursor).toBeDefined();
-    const p2 = await db.users.list({ limit: 2, cursor: p1.nextCursor as string });
+    const p2 = await db.users.listAdminView({ limit: 2, cursor: p1.nextCursor as string });
     expect(p2.items.map((u) => u.email)).toEqual(["c@x.de", "d@x.de"]);
   });
 });

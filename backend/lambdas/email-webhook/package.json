@@ -1,0 +1,20 @@
+{
+  "name": "@railback/email-webhook",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@railback/db": "*",
+    "@railback/lib": "*"
+  },
+  "devDependencies": {
+    "@railback/mocks-in-memory": "*"
+  }
+}

@@ -79,9 +79,14 @@ wizard can retry from a clean slate.
 ## Assets
 
 - `assets/reimbursement-form_de.pdf` (~265 KB) — bundled in the Lambda zip.
-  Loaded once per cold-start via `node:fs/promises.readFile`. Resolved
-  relative to `import.meta.url`, so the zip layout must keep `assets/`
-  next to `src/` at the package root.
+  Loaded once per cold-start via `node:fs/promises.readFile`. Resolved via
+  `__dirname` (CJS-native — the `--format=cjs` bundle cannot use
+  `import.meta.url`; esbuild compiles it to `{}`, which would throw at module
+  load and kill every cold-start). `fill-eu-form.ts` walks a couple of parent
+  levels from `__dirname` and picks whichever `assets/` exists, so it works
+  both under vitest (source layout, `src/`) and in the zip (`index.js` next to
+  `assets/` at package root). The zip layout must keep `assets/` next to the
+  bundled `index.js`.
 
 ## Local dev
 

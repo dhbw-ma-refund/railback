@@ -72,8 +72,8 @@ def get_ticket_owner(
 
     response = table.get_item(
         Key={
-            "PK": ticket_owner_pk(ticketId),
-            "SK": TICKET_OWNER_SK,
+            "pk": ticket_owner_pk(ticketId),
+            "sk": TICKET_OWNER_SK,
         }
     )
     return response.get("Item")
@@ -140,8 +140,8 @@ def update_ticket_extraction(
 
     set_clauses: list[str] = []
     expr_names: dict[str, str] = {
-        "#PK": "PK",
-        "#SK": "SK",
+        "#PK": "pk",
+        "#SK": "sk",
     }
     expr_values: dict[str, Any] = {}
 
@@ -180,8 +180,8 @@ def update_ticket_extraction(
 
     kwargs: dict[str, Any] = {
         "Key": {
-            "PK": user_pk(email),
-            "SK": ticket_sk(ticketId),
+            "pk": user_pk(email),
+            "sk": ticket_sk(ticketId),
         },
         "UpdateExpression": update_expression,
         "ExpressionAttributeNames": expr_names,

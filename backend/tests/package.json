@@ -1,0 +1,25 @@
+{
+  "name": "@railback/tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@railback/lib": "*",
+    "@railback/mocks-in-memory": "*",
+    "@railback/lambdas-auth-handler": "*",
+    "@railback/lambdas-user-handler": "*",
+    "@railback/lambdas-admin-handler": "*",
+    "@railback/refund-pdf": "*",
+    "@railback/email-sweeper": "*",
+    "@railback/email-webhook": "*",
+    "@railback/anonymisation-sweeper": "*",
+    "@railback/pain008-generator": "*",
+    "@railback/sepa-reports": "*",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "js-yaml": "^4.1.0",
+    "vitest": "*"
+  }
+}

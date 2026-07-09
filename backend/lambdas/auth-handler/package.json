@@ -1,0 +1,18 @@
+{
+  "name": "@railback/lambdas-auth-handler",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/handler.ts",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@railback/db": "*",
+    "@railback/lib": "*",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@railback/mocks-in-memory": "*"
+  }
+}

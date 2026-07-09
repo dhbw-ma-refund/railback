@@ -1,3 +1,8 @@
+// Storage bootstrap (side-effect): registers the "ddb" backend so db()
+// resolves under RAILBACK_STORAGE=ddb at cold start. Must precede any db()
+// call. Memory-mode is registered by the vitest setup files instead.
+import "@railback/lib/storage/bootstrap";
+
 // anonymisation-sweeper entrypoint — EventBridge cron, rate(1 day).
 //
 // Two independent passes per invocation:

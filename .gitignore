@@ -67,6 +67,21 @@ wheels/
 share/python-wheels/
 *.egg-info/
 .installed.cfg
+
+# The Python "lib/" ignore above (packaging boilerplate) was swallowing the
+# backend's core TypeScript library at backend/lib/. It is NOT a build dir —
+# it holds the Db interface, storage adapters, DTOs, schemas and tests.
+# Keep it tracked; re-ignore only its build artifacts.
+!backend/lib/
+!backend/lib/**
+backend/lib/dist/
+backend/lib/node_modules/
+backend/lib/**/*.tsbuildinfo
+
+# Lambda build output (scripts/build-lambdas.sh) — reproducible, never tracked.
+backend/dist-lambdas/
+backend/lambdas/ticket-extractor/.build/
+backend/lambdas/ticket-extractor/.venv-build/
 *.egg
 MANIFEST
 
@@ -169,8 +184,9 @@ cython_debug/
 
 # JavaScript
 node_modules/
-package-lock.json
-package.json
+# NOTE: package.json / package-lock.json must be tracked — this is an npm
+# workspaces project and those files ARE the dependency graph. (They were
+# ignored here by mistake alongside the Python boilerplate above.)
 
 # Claude Code local settings
 **/settings.local.json

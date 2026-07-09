@@ -460,4 +460,41 @@ describe("runCascadePass", () => {
     expect(countRowsUnderPk(userPk(normaliseEmail(scheduled)))).toBe(0);
     expect(countRowsUnderPk(userPk(normaliseEmail(orphan)))).toBe(0);
   });
+
+  it("dry-run: counts would-be work but mutates nothing", async () => {
+    const { email } = await seedUserScheduledForDeletion({ email: "dryrun@example.com" });
+    const { ticketId } = await seedTicketWithBlobs({ email, belegeCount: 2 });
+    await seedMandate({ email, ticketId, seedAuditTrail: true });
+    await seedRouteTemplate(email);
+
+    const liveBefore = countRowsUnderPk(userPk(normaliseEmail(email)));
+    const anon = anonPkFor(email);
+
+    const result = await runCascadePass({ now: NOW, dryRun: true });
+
+    // Would-be counts: 1 ticket, 1 template, 4 blobs (raw+rendered+2 belege).
+    expect(result.cascaded_users).toBe(1);
+    expect(result.anonymised_tickets).toBe(1);
+    expect(result.deleted_templates).toBe(1);
+    expect(result.deleted_blobs).toBe(4);
+
+    // NOTHING mutated: live PK row-count unchanged, profile still present,
+    // no anonymised PK created, blobs still there.
+    expect(countRowsUnderPk(userPk(normaliseEmail(email)))).toBe(liveBefore);
+    expect(getRawRow(userPk(normaliseEmail(email)), USER_PROFILE_SK)).not.toBeNull();
+    expect(getRawRow(userPk(normaliseEmail(email)), ticketSk(ticketId))).not.toBeNull();
+    expect(countRowsUnderPk(anon)).toBe(0);
+    expect(await db().blobs.getRawUpload(email, ticketId)).not.toBeNull();
+  });
+
+  it("dry-run respects RAILBACK_ANONYMISATION_DRY_RUN=true when no arg passed", async () => {
+    vi.stubEnv("RAILBACK_ANONYMISATION_DRY_RUN", "true");
+    const { email } = await seedUserScheduledForDeletion({ email: "dryrun-env@example.com" });
+    await seedTicketWithBlobs({ email });
+
+    const before = countRowsUnderPk(userPk(normaliseEmail(email)));
+    await runCascadePass({ now: NOW });
+    // env-driven dry-run: live rows untouched.
+    expect(countRowsUnderPk(userPk(normaliseEmail(email)))).toBe(before);
+  });
 });

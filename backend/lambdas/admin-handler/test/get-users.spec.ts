@@ -4,6 +4,8 @@ import { installTestEnv, teardownTestEnv } from "./setup.js";
 import { handler } from "../src/handler.js";
 import {
   ALICE_EMAIL,
+  ALICE_IBAN,
+  ALICE_BIC,
   BOB_EMAIL,
   adminAccessToken,
   aliceAccessToken,
@@ -43,8 +45,9 @@ describe("GET /admin/users", () => {
     const alice = body.items.find((u: { email: string }) => u.email === ALICE_EMAIL);
     expect(alice.ticket_count).toBe(1);
     expect(alice.total_refunded).toBe("29.90");
-    // No iban/bic anywhere.
-    expect(JSON.stringify(body)).not.toMatch(/iban|bic/i);
+    // Reversed 2026-07-07: admin sees plaintext iban/bic on the user view.
+    expect(alice.iban).toBe(ALICE_IBAN);
+    expect(alice.bic).toBe(ALICE_BIC);
   });
 
   it("filters by email prefix", async () => {

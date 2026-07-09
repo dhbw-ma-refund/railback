@@ -13,8 +13,10 @@
 // silently skip. Silently swallowing it would let admin APPROVE tickets
 // with zero pain008 XML ever built, losing SEPA-audit data without trace.
 //
-// Phase 6 (RAILBACK_STORAGE=ddb, cross-Lambda AWS Invoke):
-//   - Branch on env and use @aws-sdk/client-lambda InvokeCommand instead.
+// Deploy shape (locked 2026-07-09, "merge into caller"): pain008-generator is
+// NOT a standalone AWS function. It is bundled INTO admin-handler by esbuild
+// via this in-process dynamic import (see scripts/build-lambdas.sh), so the
+// call stays in-process on AWS too — no cross-Lambda Invoke, no invoke IAM.
 
 export async function invokePain008Generator(args: {
   email: string;

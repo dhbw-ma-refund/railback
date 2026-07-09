@@ -18,9 +18,9 @@ const ALICE_HASH = emailHash(ALICE_EMAIL);
 
 // Mirrors what POST /upload writes: TicketOwner + UserTicket(VALIDATING).
 // All upload-confirm tests assume /upload has run first, since the row
-// creation moved upstream as of 2026-06-24.
+// creation moved upstream as of 2026-06-24. Since tickets.create() writes
+// both rows atomically, one call is enough.
 async function prepareUploadedTicket(db: Db, email: string, ticketId: string): Promise<void> {
-  await db.ticketOwners.put(ticketId, email);
   await db.tickets.create({
     email,
     ticketId,

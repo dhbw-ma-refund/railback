@@ -83,12 +83,12 @@ def ddb_table(ddb_resource: Any) -> Any:
     table = ddb_resource.create_table(
         TableName=table_name,
         KeySchema=[
-            {"AttributeName": "PK", "KeyType": "HASH"},
-            {"AttributeName": "SK", "KeyType": "RANGE"},
+            {"AttributeName": "pk", "KeyType": "HASH"},
+            {"AttributeName": "sk", "KeyType": "RANGE"},
         ],
         AttributeDefinitions=[
-            {"AttributeName": "PK", "AttributeType": "S"},
-            {"AttributeName": "SK", "AttributeType": "S"},
+            {"AttributeName": "pk", "AttributeType": "S"},
+            {"AttributeName": "sk", "AttributeType": "S"},
         ],
         BillingMode="PAY_PER_REQUEST",
     )
@@ -149,11 +149,11 @@ def email_fingerprint() -> Any:
 
 
 def seed_ticket_owner(table: Any, ticket_id: str, email: str) -> None:
-    """Write a minimal TicketOwner row (PK=TICKET#<id>, SK=OWNER)."""
+    """Write a minimal TicketOwner row (pk=TICKET#<id>, sk=OWNER)."""
     table.put_item(
         Item={
-            "PK": f"TICKET#{ticket_id}",
-            "SK": "OWNER",
+            "pk": f"TICKET#{ticket_id}",
+            "sk": "OWNER",
             "email": email.strip().lower(),
             "ticketId": ticket_id,
             "created_at": "2026-06-29T00:00:00+00:00",
@@ -165,8 +165,8 @@ def seed_user_ticket(table: Any, email: str, ticket_id: str) -> None:
     """Write a minimal UserTicket row so UpdateItem's `attribute_exists` guard passes."""
     table.put_item(
         Item={
-            "PK": f"USER#{email.strip().lower()}",
-            "SK": f"TICKET#{ticket_id}",
+            "pk": f"USER#{email.strip().lower()}",
+            "sk": f"TICKET#{ticket_id}",
             "ticketId": ticket_id,
             "ticket_state": "VALIDATING",
             "extraction_status": "PROCESSING",

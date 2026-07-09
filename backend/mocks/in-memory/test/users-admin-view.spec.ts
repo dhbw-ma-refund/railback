@@ -1,11 +1,11 @@
-// Repo-layer privacy boundary: getByEmailAdminView() / listAdminView()
-// MUST strip `iban_enc`, `bic_enc`, `ttl` before handing the row to
-// admin-handler. This is the defense-in-depth layer underneath the
-// admin-handler projection — if the projection ever regresses, the
-// ciphertext still doesn't reach the Lambda.
+// Repo-layer admin-view shape. Since the 2026-07-07 reversal (DECISIONS.md
+// "IBAN/BIC visible to admin in plaintext"), getByEmailAdminView() /
+// listAdminView() CARRY the encrypted `iban_enc` / `bic_enc` through to
+// admin-handler, which decrypts them to plaintext. The view still drops the
+// DDB-internal `ttl` attribute (never a domain concept). This mirrors the DDB
+// adapter's mapUserAdminView — memory + adapter must agree.
 //
-// CLAUDE.md "Privacy / admin visibility"; DB_SCHEMA.md "Encryption
-// layout"; IMPLEMENTATION_PLAN.md Phase 2.4 admin-handler note.
+// CLAUDE.md "Privacy / admin visibility"; DB_SCHEMA.md "Encryption layout".
 
 import { describe, expect, it } from "vitest";
 
@@ -24,8 +24,8 @@ const ALICE = {
   agb_akzeptiert: true,
 };
 
-describe("UserRepo admin-view: iban_enc / bic_enc / ttl never leak", () => {
-  it("getByEmailAdminView() drops bank ciphertext + ttl", async () => {
+describe("UserRepo admin-view: carries iban_enc/bic_enc, drops ttl + hashed_password", () => {
+  it("getByEmailAdminView() carries bank ciphertext, drops ttl", async () => {
     const db = buildMemoryDb();
     await db.users.create(ALICE);
     // also seed a TTL (simulates DELETION_SCHEDULED user mid-flight)
@@ -36,18 +36,20 @@ describe("UserRepo admin-view: iban_enc / bic_enc / ttl never leak", () => {
 
     const view = await db.users.getByEmailAdminView(ALICE.email);
     expect(view).not.toBeNull();
-    // Bank ciphertext + TTL must be absent from the view.
-    expect(view).not.toHaveProperty("iban_enc");
-    expect(view).not.toHaveProperty("bic_enc");
+    // Reversed 2026-07-07: bank ciphertext flows through to admin-handler.
+    expect(view?.iban_enc).toBe("BANK_CIPHERTEXT_SECRET");
+    expect(view?.bic_enc).toBe("BIC_CIPHERTEXT_SECRET");
+    // TTL + auth artefact must NOT appear on the view.
     expect(view).not.toHaveProperty("ttl");
-    // Same row, regular accessor still carries them.
+    expect(view).not.toHaveProperty("hashed_password");
+    // Same row, regular accessor still carries the ciphertext.
     const full = await db.users.getByEmail(ALICE.email);
     expect(full?.iban_enc).toBe("BANK_CIPHERTEXT_SECRET");
     expect(full?.bic_enc).toBe("BIC_CIPHERTEXT_SECRET");
     expect(typeof full?.ttl).toBe("number");
   });
 
-  it("listAdminView() drops bank ciphertext + ttl on every row", async () => {
+  it("listAdminView() carries bank ciphertext, drops ttl on every row", async () => {
     const db = buildMemoryDb();
     await db.users.create(ALICE);
     await db.users.create({ ...ALICE, email: "bob@example.com", vorname: "Bob" });
@@ -55,9 +57,10 @@ describe("UserRepo admin-view: iban_enc / bic_enc / ttl never leak", () => {
     const page = await db.users.listAdminView({ limit: 50 });
     expect(page.items).toHaveLength(2);
     for (const v of page.items) {
-      expect(v).not.toHaveProperty("iban_enc");
-      expect(v).not.toHaveProperty("bic_enc");
+      expect(v.iban_enc).toBe("BANK_CIPHERTEXT_SECRET");
+      expect(v.bic_enc).toBe("BIC_CIPHERTEXT_SECRET");
       expect(v).not.toHaveProperty("ttl");
+      expect(v).not.toHaveProperty("hashed_password");
     }
   });
 

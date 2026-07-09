@@ -59,7 +59,7 @@ def _safe_error(exc: BaseException) -> str:
     """Render an exception for logging without leaking sensitive request data.
 
     `repr(exc)` on a botocore `ClientError` can embed the full request
-    structure (which includes the DDB `Key={"PK": "USER#<email>", ...}`).
+    structure (which includes the DDB `Key={"pk": "USER#<email>", ...}`).
     On the post-owner-lookup paths we strip down to `<ClassName>: <code>`
     for ClientError, otherwise `<ClassName>: <str(exc)>` truncated to a
     bounded length. The traceback is recovered via the logger's

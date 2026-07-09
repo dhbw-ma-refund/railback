@@ -1,6 +1,6 @@
 // Admin-side projections — single source of truth for what /admin/*
-// responses carry. Centralised so the "iban/bic never leak to admin"
-// guarantee is one-import reviewable.
+// responses carry. Centralised so the visibility rules are one-import
+// reviewable.
 //
 // Shapes match API_CONTRACT_ADMINFORMS.md verbatim. Optional fields
 // per the schemas in @railback/lib/schemas/admin: a field that is
@@ -8,10 +8,17 @@
 // `.optional()` strips it from the JSON output; frontend treats
 // missing === null.
 //
-// NEVER add iban / bic / iban_enc / bic_enc / hashed_password to any
-// of these views. The schemas in admin.ts don't have them either —
-// keep both layers honest.
+// IBAN/BIC: as of the 2026-07-07 reversal (DECISIONS.md "IBAN/BIC visible
+// to admin in plaintext"), the USER views (userSummary / userDetailView)
+// DO carry plaintext `iban`/`bic`, decrypted here from iban_enc/bic_enc.
+// TICKET and SEPA-mandate views still must NOT leak iban/bic —
+// hashed_password never appears anywhere.
 
+import {
+  DecryptionFailedError,
+  decryptBic,
+  decryptIban,
+} from "@railback/lib/crypto/iban";
 import type {
   AdminRecentTicketEntry,
   AdminStatsResponse,
@@ -27,6 +34,22 @@ import type {
   Ticket,
   UserAdminView,
 } from "@railback/lib/types/dto";
+
+// Degrade a decrypt failure (corrupted blob / GCM mismatch) to null so the
+// admin still sees the rest of the user; let KEK-config errors (AppError)
+// propagate to a 500. Mirrors user-handler/src/projections.ts#safeDecrypt.
+function safeDecrypt(
+  enc: string | undefined,
+  fn: (enc: string) => string,
+): string | null {
+  if (enc === undefined) return null;
+  try {
+    return fn(enc);
+  } catch (err) {
+    if (err instanceof DecryptionFailedError) return null;
+    throw err;
+  }
+}
 
 // --- Stats ---------------------------------------------------------------
 
@@ -84,6 +107,9 @@ export function userSummary(u: UserAdminView, derived: UserSummaryDerived): Admi
     created_at: u.created_at,
     ticket_count: derived.ticketCount,
     total_refunded: derived.totalRefunded,
+    // Plaintext bank data (2026-07-07 reversal). null when unset / undecryptable.
+    iban: safeDecrypt(u.iban_enc, decryptIban),
+    bic: safeDecrypt(u.bic_enc, decryptBic),
   };
   if (u.suspended_at !== undefined) out.suspended_at = u.suspended_at;
   if (u.suspended_reason !== undefined) out.suspended_reason = u.suspended_reason;

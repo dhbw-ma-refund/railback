@@ -1,10 +1,14 @@
-// Projection tests — assert iban/bic never leak.
+// Projection tests.
 //
-// The schemas in @railback/lib/schemas/admin don't even have iban/bic
-// fields, but a sloppy refactor could spread the full User DTO into a
-// response. These tests guard against that.
+// Since the 2026-07-07 reversal, admin USER views carry plaintext iban/bic
+// (decrypted from iban_enc/bic_enc). TICKET and SEPA-mandate views still must
+// NOT carry any iban/bic. In every view the *encrypted* blob (iban_enc /
+// bic_enc) must never appear — decryption happens, ciphertext never leaks.
 
+import { Buffer } from "node:buffer";
 import { describe, expect, it } from "vitest";
+import { encryptBic, encryptIban } from "@railback/lib/crypto/iban";
+import { resetKekCache } from "@railback/lib/crypto/kek";
 
 import {
   recentTicketEntry,
@@ -16,6 +20,16 @@ import {
   userSummary,
 } from "../src/projections.js";
 import type { SepaMandate, Ticket, User } from "@railback/lib/types/dto";
+
+// These projection tests exercise the real AES-256-GCM decrypt path, so a KEK
+// must be present before the fixtures encrypt at module load. Set it here (not
+// via installTestEnv — this spec doesn't boot the handler) and reset the
+// cache so getKek() picks it up.
+process.env["RAILBACK_IBAN_KEK"] = Buffer.alloc(32, 0x42).toString("base64");
+resetKekCache();
+
+const ALICE_IBAN = "DE89370400440532013000";
+const ALICE_BIC = "COBADEFFXXX";
 
 const baseUser: User = {
   email: "alice@example.com",
@@ -31,8 +45,8 @@ const baseUser: User = {
   },
   user_state: "ACTIVE",
   created_at: "2026-01-01T00:00:00Z",
-  iban_enc: "SECRET_IBAN_ENC",
-  bic_enc: "SECRET_BIC_ENC",
+  iban_enc: encryptIban(ALICE_IBAN),
+  bic_enc: encryptBic(ALICE_BIC),
   datenschutz_einwilligung: true,
   agb_akzeptiert: true,
 };
@@ -74,48 +88,71 @@ const baseMandate: SepaMandate = {
   issued_at: "2026-06-11T19:00:00Z",
 };
 
-function leaksBankSecrets(obj: unknown): boolean {
+// The encrypted blobs must NEVER appear in any projection output — admin
+// views decrypt to plaintext, they never echo ciphertext. (The mandate
+// fixture uses literal sentinels; the user fixture uses real ciphertext, so
+// we also check the encoded base64 blobs don't leak.)
+function leaksCiphertext(obj: unknown): boolean {
   const json = JSON.stringify(obj);
-  return /SECRET_IBAN_ENC|SECRET_BIC_ENC|SECRET_M_IBAN_ENC|SECRET_M_BIC_ENC|iban|bic/i.test(
-    json,
-  );
+  if (/SECRET_M_IBAN_ENC|SECRET_M_BIC_ENC/.test(json)) return true;
+  if (json.includes(baseUser.iban_enc!) || json.includes(baseUser.bic_enc!)) return true;
+  return false;
 }
 
-describe("admin projections — iban/bic never leak", () => {
-  it("userSummary strips encrypted fields", () => {
+// Ticket / mandate views must not carry iban/bic at all (neither key).
+function hasBankKeys(obj: unknown): boolean {
+  return /"(iban|bic)"/i.test(JSON.stringify(obj));
+}
+
+describe("admin projections — user views decrypt iban/bic; ticket/mandate views don't leak", () => {
+  it("userSummary returns plaintext iban/bic, never ciphertext", () => {
     const v = userSummary(baseUser, { ticketCount: 3, totalRefunded: "29.90" });
-    expect(leaksBankSecrets(v)).toBe(false);
+    expect(leaksCiphertext(v)).toBe(false);
+    expect(v.iban).toBe(ALICE_IBAN);
+    expect(v.bic).toBe(ALICE_BIC);
     // sanity: shape carries the right keys
     expect(v.email).toBe("alice@example.com");
     expect(v.user_state).toBe("ACTIVE");
     expect(v.ticket_count).toBe(3);
   });
 
-  it("userDetailView strips encrypted fields, surfaces recent_tickets", () => {
+  it("userSummary degrades undecryptable/absent bank data to null", () => {
+    const noBank: User = { ...baseUser };
+    delete noBank.iban_enc;
+    delete noBank.bic_enc;
+    const v = userSummary(noBank, { ticketCount: 0, totalRefunded: "0.00" });
+    expect(v.iban).toBeNull();
+    expect(v.bic).toBeNull();
+  });
+
+  it("userDetailView returns plaintext iban/bic + recent_tickets", () => {
     const v = userDetailView(
       baseUser,
       { ticketCount: 1, totalRefunded: "29.90" },
       [baseTicket],
     );
-    expect(leaksBankSecrets(v)).toBe(false);
+    expect(leaksCiphertext(v)).toBe(false);
+    expect(v.iban).toBe(ALICE_IBAN);
+    expect(v.bic).toBe(ALICE_BIC);
     expect(v.recent_tickets).toHaveLength(1);
   });
 
-  it("ticketSummaryView strips encrypted fields, unprefixed wire names", () => {
+  it("ticketSummaryView carries no iban/bic, unprefixed wire names", () => {
     const v = ticketSummaryView(baseTicket, { vorname: "Alice", nachname: "Müller" });
-    expect(leaksBankSecrets(v)).toBe(false);
+    expect(hasBankKeys(v)).toBe(false);
     expect(v.abreisedatum).toBe("2026-05-12");
     expect(v.zugnummer_plan).toBe("IC 2345");
     expect(v.fahrkartenpreis).toBe("29.90");
   });
 
-  it("ticketDetailView keeps fahrt_*/tatsaechlich_* flat and strips encrypted fields", () => {
+  it("ticketDetailView keeps fahrt_*/tatsaechlich_* flat and carries no iban/bic", () => {
     const v = ticketDetailView(baseTicket, {
       user: { vorname: "Alice", nachname: "Müller" },
       hasBelege: false,
       mandate: baseMandate,
     });
-    expect(leaksBankSecrets(v)).toBe(false);
+    expect(hasBankKeys(v)).toBe(false);
+    expect(leaksCiphertext(v)).toBe(false);
     expect(v.fahrt_abreisedatum).toBe("2026-05-12");
     expect(v.sepa_mandate?.state).toBe("ISSUED");
     expect(v.has_belege).toBe(false);
@@ -124,7 +161,8 @@ describe("admin projections — iban/bic never leak", () => {
 
   it("sepaMandateView emits state + expires_at, never iban/bic", () => {
     const v = sepaMandateView(baseMandate);
-    expect(leaksBankSecrets(v)).toBe(false);
+    expect(hasBankKeys(v)).toBe(false);
+    expect(leaksCiphertext(v)).toBe(false);
     expect(v.state).toBe("ISSUED");
     expect(v.expires_at).toBe("2029-06-11T19:00:00Z");
   });

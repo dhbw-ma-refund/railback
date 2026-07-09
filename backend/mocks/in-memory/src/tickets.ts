@@ -12,7 +12,7 @@ import type {
   TicketPatch,
   TicketRepo,
 } from "@railback/lib";
-import type { StateTimelineEntry, UserTicketItem } from "@railback/lib";
+import type { StateTimelineEntry, TicketOwnerItem, UserTicketItem } from "@railback/lib";
 
 import { deleteRow, getRow, listSk, type MemState, paginate, putRow } from "./state.js";
 
@@ -175,7 +175,26 @@ export class InMemoryTicketRepo implements TicketRepo {
       updated_at: now,
     };
     const item = toItem(input.email, t);
+    // Atomicity parity with DDB adapter: both the UserTicket row and the
+    // TicketOwner mapping row are written in one shot. attribute_not_exists
+    // equivalents: neither may already exist.
+    const ownerPk = keys.ticketOwnerPk(input.ticketId);
+    const ownerSk = keys.TICKET_OWNER_SK;
+    if (getRow(this.state, item.PK, item.SK) !== null) {
+      throw new AppError("ERR_CONFLICT", `Ticket ${input.ticketId} already exists`);
+    }
+    if (getRow(this.state, ownerPk, ownerSk) !== null) {
+      throw new AppError("ERR_CONFLICT", `TicketOwner ${input.ticketId} already exists`);
+    }
+    const owner: TicketOwnerItem = {
+      PK: ownerPk,
+      SK: ownerSk,
+      email: keys.normaliseEmail(input.email),
+      ticketId: input.ticketId,
+      created_at: now,
+    };
     putRow(this.state, item.PK, item.SK, item);
+    putRow(this.state, owner.PK, owner.SK, owner);
     return t;
   }
 
@@ -201,7 +220,25 @@ export class InMemoryTicketRepo implements TicketRepo {
       updated_at: now,
     };
     const item = toItem(input.email, t);
+    // Same atomicity contract as create(): ticket + owner in one shot, both
+    // must not already exist.
+    const ownerPk = keys.ticketOwnerPk(input.ticketId);
+    const ownerSk = keys.TICKET_OWNER_SK;
+    if (getRow(this.state, item.PK, item.SK) !== null) {
+      throw new AppError("ERR_CONFLICT", `Ticket ${input.ticketId} already exists`);
+    }
+    if (getRow(this.state, ownerPk, ownerSk) !== null) {
+      throw new AppError("ERR_CONFLICT", `TicketOwner ${input.ticketId} already exists`);
+    }
+    const owner: TicketOwnerItem = {
+      PK: ownerPk,
+      SK: ownerSk,
+      email: keys.normaliseEmail(input.email),
+      ticketId: input.ticketId,
+      created_at: now,
+    };
     putRow(this.state, item.PK, item.SK, item);
+    putRow(this.state, owner.PK, owner.SK, owner);
     return t;
   }
 

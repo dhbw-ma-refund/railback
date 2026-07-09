@@ -40,6 +40,14 @@ import { normaliseEmail } from "@railback/lib/storage/ddb/keys";
 
 export interface RunCascadePassArgs {
   now: Date;
+  /**
+   * Dry-run: enumerate + count what WOULD be anonymised/deleted, but perform
+   * no destructive writes. Anonymisation is irreversible (PII stripped, PK
+   * rewritten), so the first prod run should be gated. Defaults to true unless
+   * RAILBACK_ANONYMISATION_DRY_RUN is explicitly "false" — a fresh deploy is
+   * safe-by-default; flip the env var to arm the sweeper.
+   */
+  dryRun?: boolean;
 }
 
 export interface RunCascadePassResult {
@@ -68,6 +76,9 @@ function applyCounters(totals: RunCascadePassResult, c: UserCounters): void {
 export async function runCascadePass(args: RunCascadePassArgs): Promise<RunCascadePassResult> {
   const nowEpochSec = Math.floor(args.now.getTime() / 1000);
   const nowIso = args.now.toISOString();
+  // Default-safe: dry-run unless the env var explicitly says "false".
+  const dryRun = args.dryRun
+    ?? (process.env["RAILBACK_ANONYMISATION_DRY_RUN"] !== "false");
 
   const totals: RunCascadePassResult = {
     cascaded_users: 0,
@@ -82,10 +93,11 @@ export async function runCascadePass(args: RunCascadePassArgs): Promise<RunCasca
   const users = await db().users.scanDeletionScheduledExpired(nowEpochSec);
   for (const user of users) {
     try {
-      const counters = await cascadeOneUser(user.email, nowIso);
+      const counters = await cascadeOneUser(user.email, nowIso, dryRun);
       applyCounters(totals, counters);
       log.info("anonymisation-sweeper.cascade.user_done", {
         email_hash: emailFingerprint(user.email),
+        dry_run: dryRun,
         ...counters,
       });
     } catch (err) {
@@ -103,10 +115,11 @@ export async function runCascadePass(args: RunCascadePassArgs): Promise<RunCasca
   const orphans = await db().users.scanOrphanUserPks();
   for (const email of orphans) {
     try {
-      const counters = await cascadeOneUser(email, nowIso);
+      const counters = await cascadeOneUser(email, nowIso, dryRun);
       applyCounters(totals, counters);
       log.info("anonymisation-sweeper.cascade.orphan_done", {
         email_hash: emailFingerprint(email),
+        dry_run: dryRun,
         ...counters,
       });
     } catch (err) {
@@ -117,10 +130,14 @@ export async function runCascadePass(args: RunCascadePassArgs): Promise<RunCasca
     }
   }
 
+  // SUMMARY — one line the operator can eyeball before arming the sweeper.
+  // In dry-run the counts are "would-be" figures; no rows were mutated.
+  log.info("anonymisation-sweeper.cascade.summary", { dry_run: dryRun, ...totals });
+
   return totals;
 }
 
-async function cascadeOneUser(email: string, nowIso: string): Promise<UserCounters> {
+async function cascadeOneUser(email: string, nowIso: string, dryRun: boolean): Promise<UserCounters> {
   const norm = normaliseEmail(email);
   // DB_SCHEMA.md §"Cascade on user delete" item 3 line 1026: anonymised PK
   // uses the FULL sha256 hex (not the 16-char emailHash prefix).
@@ -131,6 +148,25 @@ async function cascadeOneUser(email: string, nowIso: string): Promise<UserCounte
   //    so stranded blob/mandate rows from previously hard-deleted tickets
   //    still get their RAW/RENDERED/BELEG/OWNER cleanup in this pass.
   const ticketIds = await db().tickets.enumerateAllTicketIdsForUser(email);
+
+  // DRY-RUN: read-only accounting. Count what a real run WOULD touch —
+  // blob rows that exist, template count, mandate + ticket count — without
+  // deleting or rewriting anything. Returns before any destructive call.
+  if (dryRun) {
+    let wouldDeleteBlobs = 0;
+    for (const ticketId of ticketIds) {
+      if (await db().blobs.getRawUpload(email, ticketId)) wouldDeleteBlobs++;
+      if (await db().blobs.getRenderedPdf(email, ticketId)) wouldDeleteBlobs++;
+      wouldDeleteBlobs += (await db().blobs.listReceipts(email, ticketId)).length;
+    }
+    const templates = await db().routeTemplates.list(email);
+    return {
+      anonymised_tickets: ticketIds.length,
+      anonymised_mandates: 0, // no non-destructive mandate enumerator; reported at real-run time
+      deleted_templates: templates.length,
+      deleted_blobs: wouldDeleteBlobs,
+    };
+  }
 
   // 2. Per-ticket blob + TicketOwner cleanup FIRST, under the live PK.
   //    Track failures: any per-call throw flips `hadFailures` and we

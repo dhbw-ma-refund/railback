@@ -110,13 +110,13 @@ def test_happy_path_barcode_extraction(
     assert len(calls) == 1
 
     item = ddb_table.get_item(
-        Key={"PK": f"USER#{email}", "SK": f"TICKET#{ticket_id}"}
+        Key={"pk": f"USER#{email}", "sk": f"TICKET#{ticket_id}"}
     )["Item"]
     assert item["extraction_status"] == "DONE"
     assert item["extraction_method"] == "BARCODE"
     assert item["barcode_uid"] == "ABC12345"
-    assert item["GSI2_PK"] == "BARCODE"
-    assert item["GSI2_SK"] == "ABC12345"
+    assert item["gsi2_pk"] == "BARCODE"
+    assert item["gsi2_sk"] == "ABC12345"
 
 
 def test_no_raw_sibling_row_still_completes(
@@ -216,7 +216,7 @@ def test_email_hash_mismatch_is_skipped(
 
     # And the parent ticket was NOT updated — still PROCESSING.
     item = ddb_table.get_item(
-        Key={"PK": f"USER#{real_email}", "SK": f"TICKET#{ticket_id}"}
+        Key={"pk": f"USER#{real_email}", "sk": f"TICKET#{ticket_id}"}
     )["Item"]
     assert item["extraction_status"] == "PROCESSING"
 
@@ -304,7 +304,7 @@ def test_s3_fetch_error_marks_failed(
     assert summary["methods"]["FAILED"] == 1
 
     item = ddb_table.get_item(
-        Key={"PK": f"USER#{email}", "SK": f"TICKET#{ticket_id}"}
+        Key={"pk": f"USER#{email}", "sk": f"TICKET#{ticket_id}"}
     )["Item"]
     assert item["extraction_status"] == "FAILED"
     # State-machine: VALIDATING → INVALID; method is NOT overwritten.
@@ -392,8 +392,8 @@ def test_anonymised_parent_row_is_parent_missing(
     # after the anonymisation sweeper has run.
     ddb_table.put_item(
         Item={
-            "PK": f"TICKET#{ticket_id}",
-            "SK": "OWNER",
+            "pk": f"TICKET#{ticket_id}",
+            "sk": "OWNER",
             "email": email,
             "ticketId": ticket_id,
             "created_at": "2026-06-29T00:00:00+00:00",
@@ -401,8 +401,8 @@ def test_anonymised_parent_row_is_parent_missing(
     )
     ddb_table.put_item(
         Item={
-            "PK": "USER#sha256:deadbeefcafe1234567890abcdef0011223344556677889900aabbccddeeff",
-            "SK": f"TICKET#{ticket_id}",
+            "pk": "USER#sha256:deadbeefcafe1234567890abcdef0011223344556677889900aabbccddeeff",
+            "sk": f"TICKET#{ticket_id}",
             "ticket_state": "APPROVED",
         }
     )
@@ -422,7 +422,7 @@ def test_anonymised_parent_row_is_parent_missing(
 
     # Confirm no new row got created under the canonical USER#<email> PK.
     response = ddb_table.get_item(
-        Key={"PK": f"USER#{email}", "SK": f"TICKET#{ticket_id}"}
+        Key={"pk": f"USER#{email}", "sk": f"TICKET#{ticket_id}"}
     )
     assert "Item" not in response
 
@@ -464,12 +464,12 @@ def test_idempotent_double_invocation(
 
     handler.lambda_handler(event, None)
     item_a = ddb_table.get_item(
-        Key={"PK": f"USER#{email}", "SK": f"TICKET#{ticket_id}"}
+        Key={"pk": f"USER#{email}", "sk": f"TICKET#{ticket_id}"}
     )["Item"]
 
     handler.lambda_handler(event, None)
     item_b = ddb_table.get_item(
-        Key={"PK": f"USER#{email}", "SK": f"TICKET#{ticket_id}"}
+        Key={"pk": f"USER#{email}", "sk": f"TICKET#{ticket_id}"}
     )["Item"]
 
     # Stable fields
@@ -479,8 +479,8 @@ def test_idempotent_double_invocation(
         "extraction_confidence",
         "barcode_uid",
         "vorname_aus_ticket",
-        "GSI2_PK",
-        "GSI2_SK",
+        "gsi2_pk",
+        "gsi2_sk",
     ):
         assert item_a[field] == item_b[field], (
             f"{field} should be idempotent: {item_a[field]!r} vs {item_b[field]!r}"
@@ -523,7 +523,7 @@ def test_unexpected_exception_post_owner_triggers_fail_result(
     assert summary["methods"]["FAILED"] == 1
 
     item = ddb_table.get_item(
-        Key={"PK": f"USER#{email}", "SK": f"TICKET#{ticket_id}"}
+        Key={"pk": f"USER#{email}", "sk": f"TICKET#{ticket_id}"}
     )["Item"]
     assert item["extraction_status"] == "FAILED"
     assert item["ticket_state"] == "INVALID"

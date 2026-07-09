@@ -114,13 +114,13 @@ export async function handlePostUpload(event: ApiGwEvent): Promise<ApiGwResponse
 
     // Write TicketOwner + UserTicket BEFORE returning the presign so the
     // extractor's reverse-lookup never races the S3 ObjectCreated event.
-    // Order: owner first (cheap pre-condition for the rest of the
-    // ticket lifecycle), then UserTicket. Both writes are skipped if
-    // `existing` was non-null above — that path is the resume case where
-    // the rows already exist from the first /upload call.
+    // Both rows are written atomically inside tickets.create() (the DDB
+    // adapter uses TransactWriteItems; the in-memory backend mirrors the
+    // contract). Skipped if `existing` was non-null above — that path is
+    // the resume case where the rows already exist from the first /upload
+    // call.
     if (!existing) {
       const uploadedAt = new Date().toISOString();
-      await db().ticketOwners.put(ticketId, email);
       await db().tickets.create({
         email,
         ticketId,

@@ -47,6 +47,10 @@ export function installTestEnv(): ReturnType<typeof db> {
   vi.stubEnv("RAILBACK_SEPA_IBAN_OWN", TEST_IBAN_OWN);
   vi.stubEnv("RAILBACK_SEPA_BIC_OWN", TEST_BIC_OWN);
   vi.stubEnv("RAILBACK_SEPA_GLAEUBIGER_ID", TEST_GLAEUBIGER_ID);
+  // Arm the anonymisation-sweeper: the cross-Lambda flow spec asserts the
+  // destructive cascade. The sweeper defaults to dry-run (safe-by-default);
+  // flip it off here so the flow exercises the real path.
+  vi.stubEnv("RAILBACK_ANONYMISATION_DRY_RUN", "false");
   resetKekCache();
   resetDbCache();
   installDefaultSesMock();

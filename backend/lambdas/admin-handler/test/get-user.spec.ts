@@ -4,6 +4,8 @@ import { installTestEnv, teardownTestEnv } from "./setup.js";
 import { handler } from "../src/handler.js";
 import {
   ALICE_EMAIL,
+  ALICE_IBAN,
+  ALICE_BIC,
   adminAccessToken,
   aliceAccessToken,
   makeEvent,
@@ -44,7 +46,9 @@ describe("GET /admin/users/{email}", () => {
     expect(body.email).toBe(ALICE_EMAIL);
     expect(body.recent_tickets.length).toBe(10);
     expect(body.ticket_count).toBe(12);
-    expect(JSON.stringify(body)).not.toMatch(/iban|bic/i);
+    // Reversed 2026-07-07: admin sees plaintext iban/bic on the user detail view.
+    expect(body.iban).toBe(ALICE_IBAN);
+    expect(body.bic).toBe(ALICE_BIC);
   });
 
   it("ERR_NOT_FOUND for unknown email", async () => {

@@ -52,7 +52,7 @@ def test_persist_result_writes_barcode_fields(ddb_table: Any, seed_ticket: Any) 
     assert ok is True
 
     item = ddb_table.get_item(
-        Key={"PK": "USER#alice@example.com", "SK": "TICKET#tkt_001"}
+        Key={"pk": "USER#alice@example.com", "sk": "TICKET#tkt_001"}
     )["Item"]
 
     assert item["extraction_status"] == "DONE"
@@ -64,8 +64,8 @@ def test_persist_result_writes_barcode_fields(ddb_table: Any, seed_ticket: Any) 
     assert item["fahrt_fahrkartennummer"] == "ABC12345"
     assert item["fahrt_fahrkartenpreis"] == "29.90"
     # GSI2 keys ONLY for BARCODE
-    assert item["GSI2_PK"] == "BARCODE"
-    assert item["GSI2_SK"] == "ABC12345"
+    assert item["gsi2_pk"] == "BARCODE"
+    assert item["gsi2_sk"] == "ABC12345"
     # updated_at present + ISO-8601
     assert "updated_at" in item
     assert item["updated_at"].endswith("+00:00")
@@ -88,12 +88,12 @@ def test_persist_result_pdf_text_no_gsi2(ddb_table: Any, seed_ticket: Any) -> No
     assert ok is True
 
     item = ddb_table.get_item(
-        Key={"PK": "USER#bob@example.com", "SK": "TICKET#tkt_002"}
+        Key={"pk": "USER#bob@example.com", "sk": "TICKET#tkt_002"}
     )["Item"]
     assert item["extraction_method"] == "PDF_TEXT"
     assert item["fahrt_zugnummer_plan"] == "ICE 123"
-    assert "GSI2_PK" not in item
-    assert "GSI2_SK" not in item
+    assert "gsi2_pk" not in item
+    assert "gsi2_sk" not in item
     # None-valued optional fields must NOT be written
     assert "barcode_uid" not in item
 
@@ -110,12 +110,12 @@ def test_persist_result_manual_no_fields(ddb_table: Any, seed_ticket: Any) -> No
     assert ok is True
 
     item = ddb_table.get_item(
-        Key={"PK": "USER#carol@example.com", "SK": "TICKET#tkt_003"}
+        Key={"pk": "USER#carol@example.com", "sk": "TICKET#tkt_003"}
     )["Item"]
     assert item["extraction_method"] == "MANUAL"
     assert float(item["extraction_confidence"]) == 0.0
     assert item["extraction_status"] == "DONE"
-    assert "GSI2_PK" not in item
+    assert "gsi2_pk" not in item
     assert "fahrt_zugnummer_plan" not in item
 
 
@@ -132,7 +132,7 @@ def test_persist_result_condition_fails_when_no_parent(ddb_table: Any) -> None:
     # No row was created (defensive — UpdateItem with conditional won't
     # auto-create on a failed condition).
     response = ddb_table.get_item(
-        Key={"PK": "USER#ghost@example.com", "SK": "TICKET#tkt_ghost"}
+        Key={"pk": "USER#ghost@example.com", "sk": "TICKET#tkt_ghost"}
     )
     assert "Item" not in response
 
@@ -150,7 +150,7 @@ def test_persist_result_email_normalised(ddb_table: Any, seed_ticket: Any) -> No
 
     # Row should exist under the canonical PK.
     item = ddb_table.get_item(
-        Key={"PK": f"USER#{canonical}", "SK": f"TICKET#{ticket_id}"}
+        Key={"pk": f"USER#{canonical}", "sk": f"TICKET#{ticket_id}"}
     )["Item"]
     assert item["extraction_method"] == "MANUAL"
 
@@ -175,7 +175,7 @@ def test_fail_result_writes_terminal_state(ddb_table: Any, seed_ticket: Any) -> 
     assert ok is True
 
     item = ddb_table.get_item(
-        Key={"PK": "USER#erin@example.com", "SK": "TICKET#tkt_005"}
+        Key={"pk": "USER#erin@example.com", "sk": "TICKET#tkt_005"}
     )["Item"]
     assert item["extraction_status"] == "FAILED"
     # State-machine transition: VALIDATING → INVALID.
@@ -197,7 +197,7 @@ def test_fail_result_condition_fails_when_no_parent(ddb_table: Any) -> None:
     assert ok is False
 
     response = ddb_table.get_item(
-        Key={"PK": "USER#missing@example.com", "SK": "TICKET#tkt_x"}
+        Key={"pk": "USER#missing@example.com", "sk": "TICKET#tkt_x"}
     )
     assert "Item" not in response
 
@@ -220,7 +220,7 @@ def test_persist_result_transitions_validating_to_ready(
     persist.persist_result("railback", email, ticket_id, result)
 
     item = ddb_table.get_item(
-        Key={"PK": f"USER#{email}", "SK": f"TICKET#{ticket_id}"}
+        Key={"pk": f"USER#{email}", "sk": f"TICKET#{ticket_id}"}
     )["Item"]
     assert item["ticket_state"] == "READY"
     assert any(e.get("state") == "READY" for e in item.get("state_timeline", []))
@@ -247,10 +247,10 @@ def test_result_to_fields_clears_gsi2_on_non_barcode(
     fields, remove_fields, _appends = _result_to_fields(result, "tkt_x", "2026-06-29T00:00:00+00:00")
 
     assert fields["extraction_method"] == "MANUAL"
-    assert "GSI2_PK" not in fields
-    assert "GSI2_SK" not in fields
-    assert "GSI2_PK" in remove_fields
-    assert "GSI2_SK" in remove_fields
+    assert "gsi2_pk" not in fields
+    assert "gsi2_sk" not in fields
+    assert "gsi2_pk" in remove_fields
+    assert "gsi2_sk" in remove_fields
 
 
 
@@ -276,10 +276,10 @@ def test_persist_result_sets_gsi1_when_train_and_date_present(
         ),
     )
     item = ddb_table.get_item(
-        Key={"PK": f"USER#{email}", "SK": f"TICKET#{ticket_id}"}
+        Key={"pk": f"USER#{email}", "sk": f"TICKET#{ticket_id}"}
     )["Item"]
-    assert item["GSI1_PK"] == "TRAIN#ICE 597#2026-07-04"
-    assert item["GSI1_SK"] == f"TICKET#{ticket_id}"
+    assert item["gsi1_pk"] == "TRAIN#ICE 597#2026-07-04"
+    assert item["gsi1_sk"] == f"TICKET#{ticket_id}"
 
 
 def test_persist_result_no_gsi1_when_train_missing(
@@ -297,9 +297,9 @@ def test_persist_result_no_gsi1_when_train_missing(
         ExtractionResult(method="MANUAL", confidence=0.0),
     )
     item = ddb_table.get_item(
-        Key={"PK": f"USER#{email}", "SK": f"TICKET#{ticket_id}"}
+        Key={"pk": f"USER#{email}", "sk": f"TICKET#{ticket_id}"}
     )["Item"]
-    assert "GSI1_PK" not in item
+    assert "gsi1_pk" not in item
 
 
 def test_fail_result_does_not_overwrite_prior_success(
@@ -331,7 +331,7 @@ def test_fail_result_does_not_overwrite_prior_success(
     assert ok is False
 
     item = ddb_table.get_item(
-        Key={"PK": f"USER#{email}", "SK": f"TICKET#{ticket_id}"}
+        Key={"pk": f"USER#{email}", "sk": f"TICKET#{ticket_id}"}
     )["Item"]
     # Prior success is preserved.
     assert item["extraction_status"] == "DONE"
@@ -375,7 +375,7 @@ def test_persist_result_no_regression_past_validating(
     # Advance the ticket past VALIDATING (simulating that user-handler /
     # refund-pdf / admin-handler have already progressed it).
     ddb_table.update_item(
-        Key={"PK": f"USER#{email}", "SK": f"TICKET#{ticket_id}"},
+        Key={"pk": f"USER#{email}", "sk": f"TICKET#{ticket_id}"},
         UpdateExpression="SET ticket_state = :s, extraction_status = :d",
         ExpressionAttributeValues={":s": live_state, ":d": "DONE"},
     )
@@ -390,7 +390,7 @@ def test_persist_result_no_regression_past_validating(
     assert ok is False, f"replay should be a no-op when ticket_state={live_state}"
 
     item = ddb_table.get_item(
-        Key={"PK": f"USER#{email}", "SK": f"TICKET#{ticket_id}"}
+        Key={"pk": f"USER#{email}", "sk": f"TICKET#{ticket_id}"}
     )["Item"]
     # State / extraction_status preserved; no rewrite happened.
     assert item["ticket_state"] == live_state
@@ -421,7 +421,7 @@ def test_persist_result_idempotent_on_second_processing_pass(
     assert second is False
 
     item = ddb_table.get_item(
-        Key={"PK": f"USER#{email}", "SK": f"TICKET#{ticket_id}"}
+        Key={"pk": f"USER#{email}", "sk": f"TICKET#{ticket_id}"}
     )["Item"]
     assert item["extraction_status"] == "DONE"
     assert item["ticket_state"] == "READY"

@@ -97,6 +97,12 @@ function fromItemAdminView(it: UserProfileItem): UserAdminView {
   };
   if (it.suspended_at !== undefined) u.suspended_at = it.suspended_at;
   if (it.suspended_reason !== undefined) u.suspended_reason = it.suspended_reason;
+  // Reversed 2026-07-07 (DECISIONS.md): the admin view carries the encrypted
+  // iban_enc/bic_enc verbatim; admin-handler decrypts them to plaintext on
+  // read. Mirrors the DDB adapter's mapUserAdminView. Encryption at rest is
+  // unchanged — this stops stripping, it does not decrypt.
+  if (it.iban_enc !== undefined) u.iban_enc = it.iban_enc;
+  if (it.bic_enc !== undefined) u.bic_enc = it.bic_enc;
   return u;
 }
 
@@ -184,23 +190,6 @@ export class InMemoryUserRepo implements UserRepo {
     }
     putRow(this.state, next.PK, next.SK, next);
     return fromItem(next);
-  }
-
-  async list(query: UserListQuery): Promise<Page<User>> {
-    const all: UserProfileItem[] = [];
-    for (const [, bucket] of this.state.rows) {
-      const item = bucket.get(keys.USER_PROFILE_SK) as UserProfileItem | undefined;
-      if (!item) continue;
-      if (item.GSI1_PK !== "USER") continue;
-      if (query.emailPrefix && !item.email.startsWith(keys.normaliseEmail(query.emailPrefix))) continue;
-      if (query.state && item.user_state !== query.state) continue;
-      all.push(item);
-    }
-    all.sort((a, b) => a.GSI1_SK.localeCompare(b.GSI1_SK));
-    const page = paginate(all, query.limit, (it) => it.GSI1_SK, query.cursor);
-    const out: Page<User> = { items: page.items.map(fromItem) };
-    if (page.nextCursor !== undefined) out.nextCursor = page.nextCursor;
-    return out;
   }
 
   async listAdminView(query: UserListQuery): Promise<Page<UserAdminView>> {

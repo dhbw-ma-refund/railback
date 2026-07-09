@@ -1,3 +1,8 @@
+// Storage bootstrap (side-effect): registers the "ddb" backend so db()
+// resolves under RAILBACK_STORAGE=ddb at cold start. Must precede any db()
+// call. Memory-mode is registered by the vitest setup files instead.
+import "@railback/lib/storage/bootstrap";
+
 // sepa-reports Lambda orchestrator. S3-event-triggered: an admin has uploaded
 // a pain.002 / camt.054 / camt.053 XML into `sepa-reports/<YYYY-MM-DD>/<reportId>.xml`
 // via `POST /admin/sepa/reports/upload` (presigned POST). The S3 ObjectCreated

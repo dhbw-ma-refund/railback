@@ -72,8 +72,11 @@ import { requireUserCaller } from "../auth-context.js";
  * stuck in EMAIL_SENDING with no rendered PDF, and the sweeper can't
  * recover (it resends already-persisted PDFs; it does not render).
  *
- * Phase 6 (RAILBACK_STORAGE=ddb, cross-Lambda AWS Invoke):
- *   - Branch on env and use @aws-sdk/client-lambda InvokeCommand instead.
+ * Deploy shape (locked 2026-07-09, "merge into caller"): refund-pdf is NOT a
+ * standalone AWS function. esbuild bundles it INTO user-handler via this
+ * dynamic import (see scripts/build-lambdas.sh), and its PDF template ships in
+ * the user-handler zip under assets/. The call stays in-process on AWS — no
+ * cross-Lambda Invoke, no invoke IAM.
  */
 async function invokeRefundPdf(args: { email: string; ticketId: string }): Promise<void> {
   const mod: { renderAndSend?: (args: { email: string; ticketId: string }) => Promise<void> } =
