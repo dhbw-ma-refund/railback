@@ -4,6 +4,11 @@ import { useLanguage } from '../lib/LanguageContext';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import './FAQPage.css';
+import faqClaimStatus from '../../shared/assets/faq-claim-status.png';
+import faqDelayCheck from '../../shared/assets/faq-delay-check.png';
+import faqRefundCalculation from '../../shared/assets/faq-refund-calculation.png';
+import faqRefundTiers from '../../shared/assets/faq-refund-tiers.png';
+import faqTicketUpload from '../../shared/assets/faq-ticket-upload.png';
 
 // Icon component
 const Icon = ({
@@ -78,7 +83,7 @@ interface TopicContent {
 const content: Record<string, Record<string, TopicContent>> = {
   de: {
     ticket: {
-      img: 'Screenshot: Ticket-Upload-Screen',
+      img: faqTicketUpload,
       qa: [
         { q: 'Wie füge ich ein Ticket hinzu?', a: ['Tippe auf „Anspruch prüfen", fotografiere dein Ticket oder lade ein PDF hoch. RailBack liest Strecke, Datum und Zugnummer automatisch aus.'] },
         { q: 'Welche Tickets werden unterstützt?', a: ['Einzel- und Sparpreis-Tickets im Fernverkehr sowie viele Nahverkehrstickets. Du brauchst nur den QR-Code oder die Buchungsnummer.'] },
@@ -86,7 +91,7 @@ const content: Record<string, Record<string, TopicContent>> = {
       ],
     },
     reise: {
-      img: 'Screenshot: Reise-/Verspätungsprüfung',
+      img: faqDelayCheck,
       qa: [
         { q: 'Wie wird die Verspätung geprüft?', a: ['Wir gleichen deine Zugverbindung mit den offiziellen Ist-Fahrplandaten ab und ermitteln die tatsächliche Ankunftsverspätung in Minuten.'] },
         { q: 'Ab wann habe ich Anspruch?', a: ['Ab 60 Minuten Verspätung erhältst du in der Regel 25 %, ab 120 Minuten 50 % des Ticketpreises. RailBack rechnet das automatisch für dich aus.'] },
@@ -94,8 +99,8 @@ const content: Record<string, Record<string, TopicContent>> = {
       ],
     },
     anspruch: {
-      img: 'Screenshot: Anspruchsberechnung',
-      img2: 'Diagramm: Erstattungsstufen 25 % / 50 %',
+      img: faqRefundCalculation,
+      img2: faqRefundTiers,
       qa: [
         { q: 'Wie wird meine Erstattung berechnet?', a: ['Grundlage ist dein Ticketpreis multipliziert mit der gesetzlichen Erstattungsstufe (25 % oder 50 %), die sich aus der erkannten Verspätung ergibt.'] },
         { q: 'Was bedeutet „mögliche Erstattung"?', a: ['Das ist der voraussichtliche Betrag auf Basis der aktuellen Daten. Der final bewilligte Betrag wird von der Bahn bestätigt.'] },
@@ -103,7 +108,7 @@ const content: Record<string, Record<string, TopicContent>> = {
       ],
     },
     antrag: {
-      img: 'Screenshot: Antrag-Freigabe & Status',
+      img: faqClaimStatus,
       qa: [
         { q: 'Wird der Antrag automatisch versendet?', a: ['Nein. Kein Antrag verlässt RailBack ohne deine ausdrückliche Freigabe. Du behältst die volle Kontrolle.'] },
         { q: 'Was passiert nach der Freigabe?', a: ['Wir reichen deinen Antrag bei der Bahn ein. Die Prüfung dauert meist 3–5 Tage – du siehst den Status jederzeit in der App.'] },
@@ -113,7 +118,7 @@ const content: Record<string, Record<string, TopicContent>> = {
   },
   en: {
     ticket: {
-      img: 'Screenshot: ticket upload screen',
+      img: faqTicketUpload,
       qa: [
         { q: 'How do I add a ticket?', a: ['Tap "Check claim", take a photo of your ticket or upload a PDF. RailBack reads route, date and train number automatically.'] },
         { q: 'Which tickets are supported?', a: ['Single and saver fares on long-distance trains plus many regional tickets. All we need is the QR code or booking number.'] },
@@ -121,7 +126,7 @@ const content: Record<string, Record<string, TopicContent>> = {
       ],
     },
     reise: {
-      img: 'Screenshot: trip / delay check',
+      img: faqDelayCheck,
       qa: [
         { q: 'How is the delay verified?', a: ['We match your connection against the official actual timetable data and determine the real arrival delay in minutes.'] },
         { q: 'When am I entitled to a refund?', a: ['From 60 minutes you usually get 25 %, from 120 minutes 50 % of the ticket price. RailBack calculates this automatically.'] },
@@ -129,8 +134,8 @@ const content: Record<string, Record<string, TopicContent>> = {
       ],
     },
     anspruch: {
-      img: 'Screenshot: claim calculation',
-      img2: 'Chart: refund tiers 25 % / 50 %',
+      img: faqRefundCalculation,
+      img2: faqRefundTiers,
       qa: [
         { q: 'How is my refund calculated?', a: ['It is based on your ticket price multiplied by the statutory refund tier (25 % or 50 %) derived from the detected delay.'] },
         { q: 'What does "possible refund" mean?', a: ['It is the expected amount based on current data. The final approved amount is confirmed by the railway.'] },
@@ -138,7 +143,7 @@ const content: Record<string, Record<string, TopicContent>> = {
       ],
     },
     antrag: {
-      img: 'Screenshot: claim approval & status',
+      img: faqClaimStatus,
       qa: [
         { q: 'Is the claim sent automatically?', a: ['No. No claim leaves RailBack without your explicit approval. You stay in full control.'] },
         { q: 'What happens after I approve?', a: ['We file your claim with the railway. Review usually takes 3–5 days – you can see the status in the app anytime.'] },
@@ -148,10 +153,10 @@ const content: Record<string, Record<string, TopicContent>> = {
   },
 };
 
-const ImgPlaceholder = ({ label }: { label: string }) => (
-  <div className="imgph">
-    <div className="label">{label}</div>
-  </div>
+const FAQImage = ({ src, alt }: { src: string; alt: string }) => (
+  <figure className="faq-image">
+    <img src={src} alt={alt} loading="lazy" />
+  </figure>
 );
 
 export const FAQPage = () => {
@@ -183,7 +188,7 @@ export const FAQPage = () => {
             <h1 className="h1 title">{topic.t}</h1>
             <p className="page__lead">{topic.d}</p>
 
-            <ImgPlaceholder label={topicContent.img} />
+            <FAQImage src={topicContent.img} alt={topic.t} />
             <div className="qa-wrap">
               {topicContent.qa.map((item, i) => (
                 <div className={`qa${openQA === i ? ' open' : ''}`} key={i}>
@@ -204,9 +209,7 @@ export const FAQPage = () => {
               ))}
             </div>
             {topicContent.img2 && (
-              <div style={{ maxWidth: 760, margin: '16px auto 0' }}>
-                <ImgPlaceholder label={topicContent.img2} />
-              </div>
+              <FAQImage src={topicContent.img2} alt={`${topic.t} Diagramm`} />
             )}
           </div>
         </main>
