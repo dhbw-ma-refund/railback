@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './Header.css';
 import { BurgerMenu } from './BurgerMenu';
 import { useLanguage } from '../lib/LanguageContext';
+import railbackLogo from '../../shared/assets/railback-logo.png';
 
 export const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,7 +24,7 @@ export const Header = () => {
         <div className="hdr__left">
           <button className="brand" onClick={() => navigate('/')}>
             <img
-              src="/shared/assets/railback-logo.png"
+              src={railbackLogo}
               alt="RailBack Logo"
               className="brand__logo"
             />

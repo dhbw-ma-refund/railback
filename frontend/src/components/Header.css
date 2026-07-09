@@ -7,6 +7,7 @@
   justify-content: space-between;
   padding: 14px clamp(18px, 4vw, 48px);
   background: rgba(250, 249, 245, 0.86);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
   backdrop-filter: saturate(140%) blur(10px);
   border-bottom: 1px solid rgba(9, 67, 137, 0.08);
   gap: 14px;
@@ -115,7 +116,8 @@
   border-radius: 18px;
   flex: 0 0 58px;
   position: relative;
-  display: block;
+  display: grid;
+  place-items: center;
   padding: 0;
   appearance: none;
   background: rgba(255, 255, 255, 0.82);
@@ -139,36 +141,25 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 28px;
-  height: 3px;
+  width: 27px;
+  height: 2.5px;
   border-radius: 999px;
   background: var(--color-deep-trust-blue);
-  transform: translate(-50%, -50%);
-  transition: transform var(--motion-menu) var(--motion-ease), opacity var(--motion-fast) var(--motion-ease);
+  opacity: 1;
+  transform: translate3d(-50%, calc(-50% + var(--burger-line-offset, 0px)), 0) rotate(0deg) scaleX(1);
+  transform-origin: center;
 }
 
 .burger span:nth-child(1) {
-  transform: translate(-50%, calc(-50% - 10px));
+  --burger-line-offset: -9px;
 }
 
 .burger span:nth-child(2) {
-  transform: translate(-50%, -50%);
+  --burger-line-offset: 0px;
 }
 
 .burger span:nth-child(3) {
-  transform: translate(-50%, calc(-50% + 10px));
-}
-
-.burger[aria-expanded="true"] span:nth-child(1) {
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-.burger[aria-expanded="true"] span:nth-child(2) {
-  opacity: 0;
-}
-
-.burger[aria-expanded="true"] span:nth-child(3) {
-  transform: translate(-50%, -50%) rotate(-45deg);
+  --burger-line-offset: 9px;
 }
 
 @media (max-width: 980px) and (min-width: 768px) {
@@ -224,9 +215,10 @@
 @media (max-width: 767px) {
   .hdr {
     padding: 20px var(--spacing-2) 8px;
-    background: var(--color-warm-off-white);
-    border-bottom: 0;
-    backdrop-filter: none;
+    background: rgba(250, 249, 245, 0.86);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    backdrop-filter: saturate(140%) blur(10px);
+    border-bottom: 1px solid rgba(9, 67, 137, 0.08);
   }
 
   .brand {
@@ -266,7 +258,7 @@
   }
 
   .burger span {
-    width: 25px;
-    height: 3px;
+    width: 24px;
+    height: 2.5px;
   }
 }

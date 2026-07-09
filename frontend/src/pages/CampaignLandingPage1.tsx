@@ -4,6 +4,7 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { useLanguage } from '../lib/LanguageContext';
 import './LandingPage.css';
+import railbackLogo from '../../shared/assets/railback-logo.png';
 
 // Simple Icon component for landing page
 const Icon = ({ name, size = 20, color }: { name: string; size?: number; color?: string }) => {
@@ -59,7 +60,7 @@ export const CampaignLandingPage1 = () => {
           <div className="hero__grid">
             <div className="hero__mobile-logo">
               <div className="hero__mobile-logo-card">
-                <img src="/shared/assets/railback-logo.png" alt="RailBack Logo" />
+                <img src={railbackLogo} alt="RailBack Logo" />
               </div>
               <span className="hero__mobile-logo-name">RailBack</span>
             </div>

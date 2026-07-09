@@ -4,6 +4,8 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { useLanguage } from '../lib/LanguageContext';
 import './LandingPage.css';
+import railbackLogo from '../../shared/assets/railback-logo.png';
+import homeHeroPassenger from '../../shared/assets/home-hero-passenger-2.png';
 
 // Simple Icon component for landing page
 const Icon = ({ name, size = 20, color }: { name: string; size?: number; color?: string }) => {
@@ -59,7 +61,7 @@ export const LandingPage = () => {
           <div className="hero__grid">
             <div className="hero__mobile-logo">
               <div className="hero__mobile-logo-card">
-                <img src="/shared/assets/railback-logo.png" alt="RailBack Logo" />
+                <img src={railbackLogo} alt="RailBack Logo" />
               </div>
               <span className="hero__mobile-logo-name">RailBack</span>
             </div>
@@ -98,7 +100,7 @@ export const LandingPage = () => {
             <div className="hero-photo-col">
               <div className="hero-photo">
                 <img
-                  src="/shared/assets/home-hero-passenger-2.png"
+                  src={homeHeroPassenger}
                   alt="Zufriedene Bahnreisende prüft ihre Entschädigung am Smartphone"
                 />
               </div>

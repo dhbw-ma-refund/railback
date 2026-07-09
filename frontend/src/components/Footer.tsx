@@ -1,5 +1,7 @@
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../lib/LanguageContext';
 import './Footer.css';
+import railbackLogo from '../../shared/assets/railback-logo.png';
 
 export const Footer = () => {
   const { t } = useLanguage();
@@ -11,7 +13,7 @@ export const Footer = () => {
           <div className="footer__brand">
             <div className="footer__logo-wrapper">
               <img
-                src="/shared/assets/railback-logo.png"
+                src={railbackLogo}
                 alt="RailBack Logo"
                 className="footer__logo-img"
               />
@@ -20,9 +22,9 @@ export const Footer = () => {
             <p className="footer__tagline">{t.footer.tagline}</p>
           </div>
           <div className="footer__links">
-            <a href="/faq">{t.menu.faq}</a>
-            <a href="/impressum">{t.menu.imprint}</a>
-            <a href="/rechtliches">{t.menu.legal}</a>
+            <Link to="/faq">{t.menu.faq}</Link>
+            <Link to="/impressum">{t.menu.imprint}</Link>
+            <Link to="/rechtliches">{t.menu.legal}</Link>
           </div>
           <div className="footer__copy">
             {t.footer.copyright}
