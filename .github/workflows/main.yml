@@ -3,7 +3,8 @@ name: Build and Deploy Frontend to Strato
 on:
   push:
     branches:
-      - '**'
+      - landingpage
+      - frontend
   workflow_dispatch:
 
 jobs:
@@ -36,15 +37,13 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-      - name: Deploy dist to Strato via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+      - name: SFTP Deploy
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
         with:
           server: ${{ secrets.STRATO_FTP_HOST }}
           username: ${{ secrets.STRATO_FTP_USERNAME }}
           password: ${{ secrets.STRATO_FTP_PASSWORD }}
-          local-dir: frontend/dist/
-          protocol: sftp
-          dangerous-clean-slate: false
-          exclude: |
-            **/.DS_Store
-            **/Thumbs.db
+          port: 22
+          local_path: './frontend/dist/*'
+          remote_path: '/'
+          sftp_only: true
