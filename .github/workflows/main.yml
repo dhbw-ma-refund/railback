@@ -1,6 +1,9 @@
 name: Build and Deploy Frontend to Strato
 
 on:
+  pull_request:
+    branches:
+      - frontend
   push:
     branches:
       # - landingpage
