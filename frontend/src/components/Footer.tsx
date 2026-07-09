@@ -1,5 +1,6 @@
 import { useLanguage } from '../lib/LanguageContext';
 import './Footer.css';
+import railbackLogo from '../../shared/assets/railback-logo.png';
 
 export const Footer = () => {
   const { t } = useLanguage();
@@ -11,7 +12,7 @@ export const Footer = () => {
           <div className="footer__brand">
             <div className="footer__logo-wrapper">
               <img
-                src="/shared/assets/railback-logo.png"
+                src={railbackLogo}
                 alt="RailBack Logo"
                 className="footer__logo-img"
               />
