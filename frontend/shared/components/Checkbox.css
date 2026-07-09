@@ -1,0 +1,88 @@
+.rb-checkbox-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rb-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: 8px 0;
+  min-height: var(--touch-target-min);
+  cursor: pointer;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-body);
+}
+
+.rb-checkbox__input {
+  /* Visually hidden but keyboard/AT-accessible. */
+  position: absolute;
+  opacity: 0;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.rb-checkbox__box {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--color-input-border);
+  border-radius: 4px;
+  background: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: background 0.1s ease, border-color 0.1s ease, color 0.1s ease;
+}
+
+.rb-checkbox__label {
+  flex: 1;
+}
+
+/* Hover — soft blue border */
+.rb-checkbox:hover .rb-checkbox__box {
+  border-color: var(--color-deep-trust-blue);
+}
+
+/* Checked — Deep Trust Blue fill with white tick */
+.rb-checkbox__input:checked ~ .rb-checkbox__box {
+  background: var(--color-deep-trust-blue);
+  border-color: var(--color-deep-trust-blue);
+  color: white;
+}
+
+/* Focus ring */
+.rb-checkbox__input:focus-visible ~ .rb-checkbox__box {
+  outline: 2px solid var(--color-deep-trust-blue);
+  outline-offset: 2px;
+}
+
+/* Disabled */
+.rb-checkbox__input:disabled ~ .rb-checkbox__box {
+  background: var(--color-surface-disabled);
+  border-color: var(--color-input-border);
+  color: var(--color-text-disabled);
+}
+
+.rb-checkbox__input:disabled ~ .rb-checkbox__label {
+  color: var(--color-text-disabled);
+}
+
+/* Error state */
+.rb-checkbox--error .rb-checkbox__box {
+  border-color: var(--color-error-red);
+}
+
+.rb-checkbox__error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-caption);
+  color: var(--color-error-red);
+}

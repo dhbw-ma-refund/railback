@@ -14,9 +14,17 @@
 
   /* Semantic UI Colors */
   --color-error-red: #D93025;
+  --color-error-red-soft: rgba(217, 48, 37, 0.10);
+  --color-error-red-border: rgba(217, 48, 37, 0.30);
   --color-warning-yellow: #F29900;
+  --color-warning-ink: #B16A00; /* Darker amber for text-on-light warnings */
   --color-success-green: #93CD1C; /* Same as Relief Green */
+  --color-success-green-soft: rgba(147, 205, 28, 0.10);
+  --color-success-green-border: rgba(147, 205, 28, 0.30);
   --color-disabled-grey: #E0E0E0;
+  --color-text-disabled: #9E9E9E; /* Text on disabled surfaces */
+  --color-surface-disabled: #F5F5F5; /* Disabled input/element bg */
+  --color-surface-subtle: #F4F0E6; /* Same as Soft Beige — subtle card fill */
 
   /* Typography Colors */
   --color-text-primary: #1E2530; /* Anthrazit */
@@ -48,7 +56,9 @@
   /* Font Weights */
   --font-weight-bold: 700;
   --font-weight-semibold: 600;
+  --font-weight-medium: 500;
   --font-weight-regular: 400;
+  --font-weight-heavy: 800; /* Figtree Heavy — used for hero headlines */
 
   /* Spacing - 8-Point Grid */
   --spacing-1: 8px;

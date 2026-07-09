@@ -1,0 +1,56 @@
+.wizard-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-warm-off-white);
+}
+
+.wizard-container {
+  flex: 1;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--spacing-3) var(--margin-mobile) calc(var(--spacing-4) + 72px);
+  /* bottom padding leaves room for the fixed footer nav */
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.wizard-title {
+  font-size: var(--font-size-h1);
+  line-height: var(--line-height-h1);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.wizard-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+/* Field group used by all form steps. */
+.wizard-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.wizard-field-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--spacing-1);
+  align-items: end;
+}
+
+.wizard-field-row .rb-input-wrapper:last-child {
+  width: 96px;
+}
+
+.wizard-helper {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  margin: 0;
+}

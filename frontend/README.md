@@ -31,6 +31,10 @@ Both apps share the same design system from `/shared` folder:
 - Components: `@shared/components` (Button, Input, Card, StatusBadge)
 - Based on RailBack Brand Guide
 
+## Design
+
+The full brand & design system is documented in **[`docs/BRAND_AND_DESIGN.md`](./docs/BRAND_AND_DESIGN.md)** — colours, typography, tone of voice, layout rules, accessibility. Read it before writing new UI. Design tokens live in [`shared/styles/tokens.css`](./shared/styles/tokens.css); always prefer the CSS variables over hardcoded values.
+
 ## Routes
 
 ### Main App

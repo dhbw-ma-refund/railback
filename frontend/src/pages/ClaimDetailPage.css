@@ -1,0 +1,177 @@
+.claim-detail-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-warm-off-white);
+}
+
+.claim-detail-container {
+  flex: 1;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--spacing-3) var(--margin-mobile) var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.claim-detail__back {
+  background: none;
+  border: none;
+  padding: 0;
+  align-self: flex-start;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-deep-trust-blue);
+  cursor: pointer;
+  min-height: var(--touch-target-min);
+}
+
+.claim-detail__back:hover {
+  text-decoration: underline;
+}
+
+/* --- Header ---------------------------------------------------- */
+
+.claim-detail__header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.claim-detail__id-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex-wrap: wrap;
+}
+
+.claim-detail__id {
+  font-size: var(--font-size-h1);
+  line-height: var(--line-height-h1);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.claim-detail__updated {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* --- Section --------------------------------------------------- */
+
+.claim-detail__section {
+  background: white;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-default);
+  padding: var(--spacing-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.claim-detail__section-title {
+  font-size: var(--font-size-h3);
+  line-height: var(--line-height-h3);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 4px;
+}
+
+.claim-detail__dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.claim-detail__dl > div {
+  display: grid;
+  grid-template-columns: 40% 60%;
+  gap: 8px;
+  font-size: var(--font-size-caption);
+  line-height: 1.4;
+}
+
+.claim-detail__dl dt {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+}
+
+.claim-detail__dl dd {
+  color: var(--color-text-primary);
+  margin: 0;
+  word-break: break-word;
+}
+
+.claim-detail__amount {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-landing-green-ink);
+}
+
+.claim-detail__actual {
+  color: var(--color-error-red);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* --- Timeline -------------------------------------------------- */
+
+.claim-detail__timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.claim-detail__timeline-step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-1);
+  position: relative;
+  padding-left: 4px;
+}
+
+.claim-detail__timeline-step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 9px;
+  top: 18px;
+  bottom: -12px;
+  width: 2px;
+  background: rgba(74, 107, 130, 0.25);
+}
+
+.claim-detail__timeline-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-muted-gray-blue);
+  margin-top: 6px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.claim-detail__timeline-step--current .claim-detail__timeline-dot {
+  background: var(--color-relief-green);
+  box-shadow: 0 0 0 3px rgba(147, 205, 28, 0.25);
+}
+
+.claim-detail__timeline-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+}
+
+.claim-detail__timeline-time {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}

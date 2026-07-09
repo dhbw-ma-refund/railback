@@ -1,4 +1,4 @@
-/* Burger Menu Scrim */
+/* Scrim behind the drawer — soft brand-blue tint. */
 .scrim {
   position: fixed;
   inset: 0;
@@ -15,15 +15,15 @@
   pointer-events: auto;
 }
 
-/* Burger Menu Panel */
+/* Drawer panel. Radius uses --radius-card, tuned shadow for the light-header look. */
 .menu {
   position: fixed;
   z-index: 50;
-  top: 12px;
-  right: 12px;
-  width: min(340px, calc(100vw - 24px));
+  top: var(--spacing-1);
+  right: var(--spacing-1);
+  width: min(340px, calc(100vw - var(--spacing-3)));
   background: #fff;
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   overflow: hidden;
   box-shadow: 0 18px 46px rgba(9, 67, 137, 0.18);
   border: 1px solid rgba(9, 67, 137, 0.10);
@@ -56,16 +56,18 @@
 .menu__auth {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  font-size: 18px;
+  gap: var(--spacing-1);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-h3);
   cursor: pointer;
   background: none;
   border: 0;
   color: var(--color-deep-trust-blue);
   padding: 0;
+  min-height: var(--touch-target-min);
 }
 
+/* Close button — matches the light header. */
 .menu__close {
   background: #fff;
   border: 0;
@@ -97,7 +99,7 @@
   border: 0;
   background: none;
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: var(--radius-input);
   text-align: left;
   font-size: 17px;
   font-weight: 650;
@@ -137,7 +139,7 @@
 .menu__item.active {
   background: rgba(9, 67, 137, 0.06);
   color: var(--color-deep-trust-blue);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .menu__divider {
@@ -152,7 +154,7 @@
     transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Language Selector */
+/* Language selector chips */
 .lang-row {
   display: flex;
   gap: 8px;
@@ -166,15 +168,19 @@
 
 .lang-chip {
   flex: 1;
-  padding: 10px;
-  border-radius: 12px;
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-input);
   border: 1px solid var(--color-input-border);
   background: #fff;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 15px;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-caption);
   color: var(--color-muted-gray-blue);
-  transition: background var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
+  transition:
+    background var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease);
+  min-height: var(--touch-target-min);
 }
 
 .lang-chip:hover {
@@ -225,9 +231,9 @@
 /* Mobile Responsive */
 @media (max-width: 767px) {
   .menu {
-    top: 8px;
-    right: 8px;
-    width: calc(100vw - 16px);
+    top: var(--spacing-1);
+    right: var(--spacing-1);
+    width: calc(100vw - var(--spacing-2));
     max-width: 100%;
     transform-origin: top center;
     transform: translate3d(0, -12px, 0) scale(0.985);
@@ -235,44 +241,5 @@
 
   .menu.open {
     transform: translate3d(0, 0, 0) scale(1);
-  }
-
-  .menu__head {
-    padding: 16px 18px;
-  }
-
-  .menu__auth {
-    font-size: 16px;
-  }
-
-  .menu__item {
-    padding: 14px 12px;
-    font-size: 16px;
-  }
-
-  .menu__list {
-    padding: 6px;
-  }
-}
-
-@media (max-width: 480px) {
-  .menu__head {
-    padding: 14px 16px;
-  }
-
-  .menu__auth {
-    font-size: 15px;
-    gap: 8px;
-  }
-
-  .menu__close {
-    width: 30px;
-    height: 30px;
-  }
-
-  .menu__item {
-    padding: 12px 10px;
-    font-size: 15px;
-    gap: 12px;
   }
 }

@@ -1,0 +1,446 @@
+/* All aliases now map to documented brand tokens — no raw hex escapes. */
+.wizard-page:has(.rl-search) {
+  --rl-pill: var(--color-surface-subtle);
+  --rl-ink: var(--color-text-primary);
+  --rl-muted: var(--color-text-secondary);
+  --rl-cta: var(--color-deep-trust-blue);
+  --rl-cta-press: var(--color-button-pressed);
+  --rl-red: var(--color-error-red);
+  --rl-red-soft: var(--color-error-red-soft);
+  --rl-amber: var(--color-warning-ink);
+  --rl-amber-soft: rgba(242, 153, 0, 0.14);
+  --rl-green: var(--color-landing-green-ink);
+  --rl-green-soft: var(--color-success-green-soft);
+}
+
+/* --- Search form ------------------------------------------------ */
+
+.rl-search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+/* Row 1 — Datum + Uhrzeit; date takes the larger share. */
+.rl-when {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: var(--spacing-1);
+}
+
+/* Row 2 — origin + swap + destination. */
+.rl-where {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--spacing-1);
+  align-items: center;
+}
+
+.rl-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-4) var(--spacing-1) var(--spacing-3);
+  background: var(--rl-pill);
+  border-radius: 999px;
+  min-height: 56px;
+  cursor: text;
+}
+
+.rl-pill--priority {
+  background: rgba(9, 67, 137, 0.06);
+  outline: 1.5px solid rgba(9, 67, 137, 0.35);
+}
+
+.rl-pill--narrow {
+  padding-right: var(--spacing-2);
+}
+
+.rl-pill__label {
+  position: absolute;
+  top: var(--spacing-1);
+  left: var(--spacing-3);
+  font-size: var(--font-size-caption);
+  color: var(--rl-muted);
+  pointer-events: none;
+  line-height: 1;
+}
+
+.rl-pill__input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: var(--font-size-body);
+  color: var(--rl-ink);
+  font-family: inherit;
+  font-weight: var(--font-weight-semibold);
+  padding: var(--spacing-2) 0 0;
+  min-width: 0;
+}
+
+.rl-pill__input::placeholder {
+  color: var(--rl-muted);
+  font-weight: var(--font-weight-regular);
+}
+
+.rl-pill__dot,
+.rl-pill__glyph {
+  position: absolute;
+  left: var(--spacing-1);
+  top: 50%;
+  transform: translateY(-50%);
+  width: var(--spacing-3);
+  height: var(--spacing-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rl-ink);
+}
+
+.rl-pill__dot {
+  border: 2px solid var(--rl-ink);
+  border-radius: 50%;
+  background: transparent;
+  width: 18px;
+  height: 18px;
+}
+
+/* Clear button hits the 44 px target via padding — the visible dot stays small. */
+.rl-pill__clear {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--rl-muted);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rl-pill__clear:hover {
+  color: var(--rl-ink);
+}
+
+/* Swap button — expanded to full 44 px target. */
+.rl-swap {
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  border-radius: 50%;
+  border: 1.5px solid rgba(74, 107, 130, 0.3);
+  background: white;
+  color: var(--rl-ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s ease;
+}
+
+.rl-swap:hover {
+  background: rgba(9, 67, 137, 0.05);
+  border-color: var(--rl-cta);
+  color: var(--rl-cta);
+}
+
+/* Primary CTA — pill-shaped per brand §9.1. */
+.rl-search-btn {
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius-button);
+  border: none;
+  background: var(--rl-cta);
+  color: white;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  min-height: 52px;
+  margin-top: 4px;
+  transition: background 0.1s ease;
+}
+
+.rl-search-btn:hover:not(:disabled) {
+  background: var(--rl-cta-press);
+}
+
+.rl-search-btn:disabled {
+  background: var(--color-disabled-grey);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+/* --- Results --------------------------------------------------- */
+
+.rl-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  margin-top: var(--spacing-2);
+}
+
+.rl-results__title {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-bold);
+  color: var(--rl-ink);
+  margin: 0;
+}
+
+.rl-results__hint {
+  margin: 0 0 4px;
+}
+
+.rl-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.rl-card {
+  background: white;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: var(--shadow-default);
+  transition: box-shadow 0.1s ease, border-color 0.1s ease;
+}
+
+.rl-card:hover {
+  box-shadow: var(--shadow-hover);
+  border-color: rgba(74, 107, 130, 0.3);
+}
+
+/* Left rail — color-codes the whole row at a glance. */
+.rl-card__hit {
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  font-family: inherit;
+  min-height: 96px;
+}
+
+.rl-card__rail {
+  width: 6px;
+  flex-shrink: 0;
+  background: rgba(74, 107, 130, 0.25);
+}
+
+.rl-card--severe    .rl-card__rail { background: var(--rl-red); }
+.rl-card--moderate  .rl-card__rail { background: var(--color-warning-yellow); }
+.rl-card--minor     .rl-card__rail { background: var(--color-warning-yellow); opacity: 0.7; }
+.rl-card--cancelled .rl-card__rail { background: var(--rl-red); }
+.rl-card--ontime    .rl-card__rail { background: rgba(74, 107, 130, 0.25); }
+
+.rl-card__body {
+  flex: 1;
+  padding: var(--spacing-2) var(--spacing-1) var(--spacing-2) var(--spacing-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  min-width: 0;
+}
+
+.rl-card__chev {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-2) 0 var(--spacing-1);
+  color: var(--rl-muted);
+  font-size: var(--font-size-h2);
+  line-height: 1;
+}
+
+.rl-card__hit:hover .rl-card__chev {
+  color: var(--rl-cta);
+}
+
+.rl-card__hit:focus-visible {
+  outline: 2px solid var(--rl-cta);
+  outline-offset: -2px;
+}
+
+/* Row 1 — train badge + planned times ---------------------------- */
+
+.rl-card__idrow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  flex-wrap: wrap;
+}
+
+.rl-badge {
+  padding: 4px var(--spacing-1);
+  border-radius: 4px;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  color: white;
+  letter-spacing: 0.02em;
+}
+
+/* Train-category badge colours. Pulled from the transit-map palette (S-Bahn
+   green, IC/ICE dark) rather than the brand blue — they carry line identity,
+   not brand meaning. Approved brand-adjacent colour set for this use only. */
+.rl-badge--s   { background: #2E7D32; }
+.rl-badge--re  { background: #607D8B; }
+.rl-badge--ic  { background: #23364A; }
+.rl-badge--ice { background: #1A1F2B; }
+
+.rl-card__times {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--rl-ink);
+  letter-spacing: 0.01em;
+}
+
+/* Row 2 — STATUS: the loud one. Delay minutes read at a glance. */
+
+.rl-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1);
+  border-radius: var(--radius-input);
+  min-height: 40px;
+}
+
+.rl-status--severe,
+.rl-status--cancelled {
+  background: var(--rl-red-soft);
+  color: var(--rl-red);
+}
+
+.rl-status--moderate,
+.rl-status--minor {
+  background: var(--rl-amber-soft);
+  color: var(--rl-amber);
+}
+
+.rl-status--ontime {
+  background: var(--rl-green-soft);
+  color: var(--rl-green);
+}
+
+.rl-status__delta {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  min-width: 46px;
+  text-align: right;
+}
+
+.rl-status__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.rl-status__main {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+}
+
+.rl-status__sub {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-regular);
+  color: var(--rl-ink);
+  opacity: 0.75;
+  line-height: 1.2;
+}
+
+.rl-status__icon,
+.rl-status__ok {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-bold);
+  width: var(--spacing-3);
+  height: var(--spacing-3);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rl-status__icon {
+  background: var(--rl-red);
+  color: white;
+}
+
+.rl-status__ok {
+  background: currentColor;
+}
+
+.rl-status__ok::before {
+  content: '✓';
+  color: white;
+  font-size: var(--font-size-caption);
+}
+
+/* Row 3 — station names, small anchor ---------------------------- */
+
+.rl-card__stations {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-caption);
+  color: var(--rl-muted);
+}
+
+.rl-card__stations span:first-child,
+.rl-card__stations span:last-child {
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Fallback link ------------------------------------------------ */
+
+.rl-manual-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--rl-cta);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  font-size: var(--font-size-caption);
+}
+
+.rl-manual-link:hover {
+  text-decoration: underline;
+}
+
+/* Narrow phones ------------------------------------------------ */
+@media (max-width: 420px) {
+  .rl-where {
+    grid-template-columns: 1fr;
+    position: relative;
+  }
+  .rl-swap {
+    position: absolute;
+    top: 60px;
+    right: var(--spacing-1);
+    transform: rotate(90deg);
+    z-index: 1;
+    background: white;
+  }
+  .rl-status__delta {
+    font-size: var(--font-size-h2);
+    min-width: 40px;
+  }
+}

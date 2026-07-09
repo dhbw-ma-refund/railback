@@ -69,8 +69,8 @@
 }
 
 .rb-input:disabled {
-  background-color: #F5F5F5;
-  color: #9E9E9E;
+  background-color: var(--color-surface-disabled);
+  color: var(--color-text-disabled);
   cursor: not-allowed;
   border-color: var(--color-disabled-grey);
 }

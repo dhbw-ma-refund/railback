@@ -3,6 +3,7 @@ import { Button } from '@shared/components';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { useLanguage } from '../lib/LanguageContext';
+import { useAuth } from '../lib/AuthContext';
 import './LandingPage.css';
 import railbackLogo from '../../shared/assets/railback-logo.png';
 import homeHeroPassenger from '../../shared/assets/home-hero-passenger-2.png';
@@ -47,9 +48,14 @@ const Icon = ({ name, size = 20, color }: { name: string; size?: number; color?:
 export const LandingPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { isAuthenticated } = useAuth();
 
   const handleCheckClaim = () => {
-    navigate('/user');
+    if (isAuthenticated) {
+      navigate('/user');
+    } else {
+      navigate('/login');
+    }
   };
 
   return (

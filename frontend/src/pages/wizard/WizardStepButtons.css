@@ -1,0 +1,21 @@
+.wizard-step-buttons {
+  display: flex;
+  gap: var(--spacing-2);
+  justify-content: flex-end;
+  margin-top: var(--spacing-2);
+}
+
+.wizard-step-buttons .rb-button {
+  min-width: 120px;
+}
+
+/* On narrow phones, keep the buttons visible without wrapping oddly. */
+@media (max-width: 380px) {
+  .wizard-step-buttons {
+    justify-content: space-between;
+  }
+  .wizard-step-buttons .rb-button {
+    min-width: 0;
+    flex: 1;
+  }
+}
