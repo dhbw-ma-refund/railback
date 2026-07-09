@@ -57,21 +57,21 @@
 
 .error-message {
   padding: var(--spacing-2);
-  background: rgba(255, 0, 0, 0.1);
-  border: 1px solid rgba(255, 0, 0, 0.3);
-  border-radius: 8px;
-  color: #c00;
-  font-size: 14px;
+  background: var(--color-error-red-soft);
+  border: 1px solid var(--color-error-red-border);
+  border-radius: var(--radius-card);
+  color: var(--color-error-red);
+  font-size: var(--font-size-caption);
   margin-bottom: var(--spacing-2);
 }
 
 .success-message {
   padding: var(--spacing-2);
-  background: rgba(147, 205, 28, 0.1);
-  border: 1px solid rgba(147, 205, 28, 0.3);
-  border-radius: 8px;
+  background: var(--color-success-green-soft);
+  border: 1px solid var(--color-success-green-border);
+  border-radius: var(--radius-card);
   color: var(--color-relief-green);
-  font-size: 14px;
+  font-size: var(--font-size-caption);
   margin-bottom: var(--spacing-2);
 }
 

@@ -6,8 +6,40 @@ import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
-import { UserForms } from './pages/UserForms';
+import { DashboardPage } from './pages/DashboardPage';
+import { ClaimDetailPage } from './pages/ClaimDetailPage';
 import { FAQPage } from './pages/FAQPage';
+import { WizardProvider } from './pages/wizard/WizardContext';
+import { EntryStep } from './pages/wizard/EntryStep';
+import { UploadStep } from './pages/wizard/UploadStep';
+import { LookupStep } from './pages/wizard/LookupStep';
+import { FahrtStep } from './pages/wizard/FahrtStep';
+import { ProblemStep } from './pages/wizard/ProblemStep';
+import { PersonStep } from './pages/wizard/PersonStep';
+import { AuszahlungStep } from './pages/wizard/AuszahlungStep';
+import { ReviewStep } from './pages/wizard/ReviewStep';
+import { SubmittedStep } from './pages/wizard/SubmittedStep';
+
+/**
+ * Wraps every wizard route in a single WizardProvider so state persists across
+ * step navigations. Kept as a small component so App's route table stays flat.
+ */
+const WizardRoutes = () => (
+  <WizardProvider>
+    <Routes>
+      <Route index element={<EntryStep />} />
+      <Route path="upload" element={<UploadStep />} />
+      <Route path="suche" element={<LookupStep />} />
+      <Route path="reise" element={<FahrtStep />} />
+      <Route path="problem" element={<ProblemStep />} />
+      <Route path="person" element={<PersonStep />} />
+      <Route path="auszahlung" element={<AuszahlungStep />} />
+      <Route path="pruefen" element={<ReviewStep />} />
+      <Route path="eingereicht" element={<SubmittedStep />} />
+      <Route path="*" element={<Navigate to="/antrag/neu" replace />} />
+    </Routes>
+  </WizardProvider>
+);
 
 function App() {
   return (
@@ -28,13 +60,33 @@ function App() {
               }
             />
             <Route
-              path="/user"
+              path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <UserForms />
+                  <DashboardPage />
                 </ProtectedRoute>
               }
             />
+            {/* Wizard tree — must come BEFORE /antrag/:ticketId so the literal
+                'neu' segment doesn't get eaten by the param route. */}
+            <Route
+              path="/antrag/neu/*"
+              element={
+                <ProtectedRoute>
+                  <WizardRoutes />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/antrag/:ticketId"
+              element={
+                <ProtectedRoute>
+                  <ClaimDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            {/* Backwards-compat: old /user link redirects into the wizard. */}
+            <Route path="/user" element={<Navigate to="/antrag/neu" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

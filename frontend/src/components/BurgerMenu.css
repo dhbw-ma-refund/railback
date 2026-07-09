@@ -1,4 +1,4 @@
-/* Burger Menu Scrim */
+/* Scrim behind the drawer — soft brand-blue tint. */
 .scrim {
   position: fixed;
   inset: 0;
@@ -15,17 +15,17 @@
   pointer-events: auto;
 }
 
-/* Burger Menu Panel */
+/* Drawer panel. Radius uses --radius-card, shadow uses the soft brand default. */
 .menu {
   position: fixed;
   z-index: 50;
-  top: 12px;
-  right: 12px;
-  width: min(340px, calc(100vw - 24px));
+  top: var(--spacing-1);
+  right: var(--spacing-1);
+  width: min(340px, calc(100vw - var(--spacing-3)));
   background: #fff;
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   overflow: hidden;
-  box-shadow: 0 14px 40px rgba(9, 67, 137, 0.16);
+  box-shadow: var(--shadow-hover);
   border: 1px solid rgba(9, 67, 137, 0.08);
   transform-origin: top right;
   transform: scale(0.96) translateY(-6px);
@@ -44,7 +44,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px;
+  padding: var(--spacing-2) var(--spacing-3);
   background: var(--color-deep-trust-blue);
   color: #fff;
 }
@@ -52,23 +52,25 @@
 .menu__auth {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  font-size: 18px;
+  gap: var(--spacing-1);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-h3);
   cursor: pointer;
   background: none;
   border: 0;
   color: #fff;
   padding: 0;
+  min-height: var(--touch-target-min);
 }
 
+/* Full 44 px close button (brand §10.2). */
 .menu__close {
   background: rgba(255, 255, 255, 0.16);
   border: 0;
   color: #fff;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  border-radius: var(--radius-input);
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -79,7 +81,7 @@
 }
 
 .menu__list {
-  padding: 8px;
+  padding: var(--spacing-1);
 }
 
 .menu__item {
@@ -87,17 +89,18 @@
   align-items: center;
   gap: var(--spacing-2);
   width: 100%;
-  padding: 15px 14px;
+  padding: var(--spacing-2);
   border: 0;
   background: none;
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: var(--radius-input);
   text-align: left;
-  font-size: 17px;
-  font-weight: 500;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
   text-decoration: none;
   transition: background 0.14s;
+  min-height: var(--touch-target-min);
 }
 
 .menu__item:hover {
@@ -116,33 +119,34 @@
 .menu__item.active {
   background: rgba(9, 67, 137, 0.06);
   color: var(--color-deep-trust-blue);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .menu__divider {
   height: 1px;
   background: rgba(9, 67, 137, 0.08);
-  margin: 6px 12px;
+  margin: var(--spacing-1) var(--spacing-2);
 }
 
-/* Language Selector */
+/* Language selector chips */
 .lang-row {
   display: flex;
-  gap: 8px;
-  padding: 6px 14px 14px;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2) var(--spacing-2);
 }
 
 .lang-chip {
   flex: 1;
-  padding: 10px;
-  border-radius: 12px;
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-input);
   border: 1px solid var(--color-input-border);
   background: #fff;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 15px;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-caption);
   color: var(--color-muted-gray-blue);
   transition: all 0.14s;
+  min-height: var(--touch-target-min);
 }
 
 .lang-chip:hover {
@@ -158,48 +162,9 @@
 /* Mobile Responsive */
 @media (max-width: 767px) {
   .menu {
-    top: 8px;
-    right: 8px;
-    width: calc(100vw - 16px);
+    top: var(--spacing-1);
+    right: var(--spacing-1);
+    width: calc(100vw - var(--spacing-2));
     max-width: 100%;
-  }
-
-  .menu__head {
-    padding: 16px 18px;
-  }
-
-  .menu__auth {
-    font-size: 16px;
-  }
-
-  .menu__item {
-    padding: 14px 12px;
-    font-size: 16px;
-  }
-
-  .menu__list {
-    padding: 6px;
-  }
-}
-
-@media (max-width: 480px) {
-  .menu__head {
-    padding: 14px 16px;
-  }
-
-  .menu__auth {
-    font-size: 15px;
-    gap: 8px;
-  }
-
-  .menu__close {
-    width: 30px;
-    height: 30px;
-  }
-
-  .menu__item {
-    padding: 12px 10px;
-    font-size: 15px;
-    gap: 12px;
   }
 }

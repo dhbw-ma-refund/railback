@@ -45,7 +45,7 @@
 .burger {
   width: 48px;
   height: 48px;
-  border-radius: 14px;
+  border-radius: var(--radius-button);
   flex: 0 0 48px;
   position: relative;
   display: block;

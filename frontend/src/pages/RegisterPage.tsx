@@ -5,6 +5,7 @@ import { Footer } from '../components/Footer';
 import { Button } from '@shared/components';
 import { Input } from '@shared/components';
 import { Card } from '@shared/components';
+import { Checkbox } from '@shared/components';
 import { useLanguage } from '../lib/LanguageContext';
 import { useAuth } from '../lib/AuthContext';
 import { RegisterRequest } from '../lib/api';
@@ -187,34 +188,28 @@ export const RegisterPage = () => {
         return (
           <form onSubmit={handleSubmit} className="wizard-step-content">
             <h2 className="h2">{t.auth.register.step4Title}</h2>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 'var(--spacing-2)' }}>
-              <input
-                type="checkbox"
-                checked={formData.datenschutz_einwilligung}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    datenschutz_einwilligung: e.target.checked,
-                  })
-                }
-                required
-              />
-              <span style={{ fontSize: '14px' }}>{t.auth.register.datenschutz}</span>
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 'var(--spacing-2)' }}>
-              <input
-                type="checkbox"
-                checked={formData.agb_akzeptiert}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    agb_akzeptiert: e.target.checked,
-                  })
-                }
-                required
-              />
-              <span style={{ fontSize: '14px' }}>{t.auth.register.agb}</span>
-            </label>
+            <Checkbox
+              checked={formData.datenschutz_einwilligung}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  datenschutz_einwilligung: e.target.checked,
+                })
+              }
+              required
+              label={t.auth.register.datenschutz}
+            />
+            <Checkbox
+              checked={formData.agb_akzeptiert}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  agb_akzeptiert: e.target.checked,
+                })
+              }
+              required
+              label={t.auth.register.agb}
+            />
             {error && <div className="error-message">{error}</div>}
             <div className="button-group">
               <Button variant="secondary" onClick={handleBack}>

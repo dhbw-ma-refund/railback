@@ -177,7 +177,7 @@
   border-radius: 44px;
   background: #0b1a2b;
   padding: 12px;
-  box-shadow: 0 30px 70px rgba(9, 67, 137, 0.28), inset 0 0 0 2px rgba(255, 255, 255, 0.06);
+  box-shadow: var(--shadow-default), inset 0 0 0 2px rgba(255, 255, 255, 0.06);
 }
 
 .phone__notch {
@@ -236,7 +236,7 @@
   color: #fff;
   border-radius: 18px;
   padding: 16px 16px 18px;
-  box-shadow: 0 10px 24px rgba(9, 67, 137, 0.3);
+  box-shadow: var(--shadow-default);
 }
 
 .tripcard__route {
@@ -327,7 +327,7 @@
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  box-shadow: 0 14px 40px rgba(9, 67, 137, 0.16);
+  box-shadow: var(--shadow-default);
   max-width: 280px;
 }
 

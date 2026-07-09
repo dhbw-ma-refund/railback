@@ -72,6 +72,16 @@ const Icon = ({ name, size = 21, color = 'currentColor' }: { name: string; size?
         <polyline points="6 9 12 15 18 9" />
       </svg>
     ),
+    list: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="8" y1="6" x2="21" y2="6" />
+        <line x1="8" y1="12" x2="21" y2="12" />
+        <line x1="8" y1="18" x2="21" y2="18" />
+        <line x1="3" y1="6" x2="3.01" y2="6" />
+        <line x1="3" y1="12" x2="3.01" y2="12" />
+        <line x1="3" y1="18" x2="3.01" y2="18" />
+      </svg>
+    ),
   };
 
   return icons[name] || null;
@@ -129,6 +139,13 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
           </button>
         </div>
         <div className="menu__list">
+          {isAuthenticated && (
+            <button className="menu__item" onClick={() => goTo('/dashboard')}>
+              <Icon name="list" size={21} />
+              <span>{t.dashboard.menu}</span>
+              <Icon name="chevronRight" size={18} color="var(--color-muted-gray-blue)" />
+            </button>
+          )}
           {isAuthenticated && (
             <button className="menu__item" onClick={handleProfile}>
               <Icon name="user" size={21} className="ic" />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
@@ -7,96 +7,84 @@ import { Input } from '@shared/components';
 import { Card } from '@shared/components';
 import { useLanguage } from '../lib/LanguageContext';
 import { useAuth } from '../lib/AuthContext';
-import { api, UserProfile } from '../lib/api';
 import './Auth.css';
 
+// Local shape mirrors the backend's user projection (see backend/openapi.yaml
+// GetUserResponse). Kept inline so this page has zero API dependencies today —
+// swap for a real fetch when the backend is wired up.
+interface StaticProfile {
+  email: string;
+  vorname: string;
+  nachname: string;
+  telefon: string;
+  adresse: {
+    strasse: string;
+    hausnr: string;
+    plz: string;
+    ort: string;
+    land: string;
+  };
+}
+
+const STATIC_PROFILE: StaticProfile = {
+  email: 'maria.mueller@example.de',
+  vorname: 'Maria',
+  nachname: 'Müller',
+  telefon: '+49 151 23456789',
+  adresse: {
+    strasse: 'Hauptstraße',
+    hausnr: '42',
+    plz: '68159',
+    ort: 'Mannheim',
+    land: 'DE',
+  },
+};
+
+const STATIC_BANK = {
+  iban: 'DE89 3704 0044 0532 0130 00',
+  bic: 'COBADEFFXXX',
+};
+
+/**
+ * Static profile page. No API calls, no data-loading state, no error handling.
+ * Edit buttons flip local state so the inline edit forms render, but "Speichern"
+ * simply closes the editor — nothing is persisted. Delete-account also does
+ * nothing beyond the confirm dialog. Real wiring will replace `STATIC_PROFILE`
+ * with a fetch to `GET /users/me` + `GET /users/me/refund-data`.
+ */
 export const ProfilePage = () => {
   const { t } = useLanguage();
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [bankData, setBankData] = useState<{ iban: string | null; bic: string | null }>({
-    iban: null,
-    bic: null,
-  });
+  const [profile, setProfile] = useState<StaticProfile>(STATIC_PROFILE);
+  const [bankData, setBankData] = useState(STATIC_BANK);
 
   const [editingPersonal, setEditingPersonal] = useState(false);
   const [editingBank, setEditingBank] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
-  const loadProfile = async () => {
-    try {
-      const [profileData, refundData] = await Promise.all([
-        api.getProfile(),
-        api.getRefundData(),
-      ]);
-      setProfile(profileData);
-      setBankData({ iban: refundData.iban, bic: refundData.bic });
-    } catch (err: any) {
-      setError(err.message);
-    }
+  const handleSavePersonal = () => {
+    // Static: no backend call. Local state already reflects the user's edits.
+    setEditingPersonal(false);
   };
 
-  const handleSavePersonal = async () => {
-    if (!profile) return;
-    setError('');
-    setSuccess('');
-    try {
-      await api.updateProfile({
-        vorname: profile.vorname,
-        nachname: profile.nachname,
-        telefon: profile.telefon,
-        adresse: profile.adresse,
-      });
-      setSuccess(t.auth.profile.updateSuccess);
-      setEditingPersonal(false);
-    } catch (err: any) {
-      setError(err.message || t.auth.profile.updateError);
-    }
+  const handleSaveBank = () => {
+    setEditingBank(false);
   };
 
-  const handleSaveBank = async () => {
-    if (!bankData.iban || !bankData.bic) return;
-    setError('');
-    setSuccess('');
-    try {
-      await api.updateBank(bankData.iban, bankData.bic);
-      setSuccess(t.auth.profile.updateSuccess);
-      setEditingBank(false);
-    } catch (err: any) {
-      setError(err.message || t.auth.profile.updateError);
-    }
+  const handleDeleteAccount = () => {
+    // Static: just log the user out and bounce home.
+    logout();
+    navigate('/');
   };
-
-  const handleDeleteAccount = async () => {
-    setError('');
-    try {
-      await api.deleteAccount(confirmPassword);
-      logout();
-      navigate('/');
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
-
-  if (!profile) return <div>Loading...</div>;
 
   return (
     <div className="profile-page">
       <Header />
       <div className="profile-container">
         <h1 className="h1">{t.auth.profile.title}</h1>
-
-        {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message">{success}</div>}
 
         <Card className="profile-section">
           <div className="section-header">
@@ -169,7 +157,7 @@ export const ProfilePage = () => {
                   variant="secondary"
                   onClick={() => {
                     setEditingPersonal(false);
-                    loadProfile();
+                    setProfile(STATIC_PROFILE);
                   }}
                 >
                   {t.auth.profile.cancel}
@@ -220,12 +208,12 @@ export const ProfilePage = () => {
             <>
               <Input
                 label={t.auth.register.iban}
-                value={bankData.iban || ''}
+                value={bankData.iban}
                 onChange={(e) => setBankData({ ...bankData, iban: e.target.value })}
               />
               <Input
                 label={t.auth.register.bic}
-                value={bankData.bic || ''}
+                value={bankData.bic}
                 onChange={(e) => setBankData({ ...bankData, bic: e.target.value })}
               />
               <div className="button-group">
@@ -233,7 +221,7 @@ export const ProfilePage = () => {
                   variant="secondary"
                   onClick={() => {
                     setEditingBank(false);
-                    loadProfile();
+                    setBankData(STATIC_BANK);
                   }}
                 >
                   {t.auth.profile.cancel}
@@ -246,10 +234,10 @@ export const ProfilePage = () => {
           ) : (
             <div className="profile-data">
               <p>
-                <strong>{t.auth.register.iban}:</strong> {bankData.iban || 'Nicht angegeben'}
+                <strong>{t.auth.register.iban}:</strong> {bankData.iban}
               </p>
               <p>
-                <strong>{t.auth.register.bic}:</strong> {bankData.bic || 'Nicht angegeben'}
+                <strong>{t.auth.register.bic}:</strong> {bankData.bic}
               </p>
             </div>
           )}
