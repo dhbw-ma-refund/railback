@@ -28,6 +28,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Rollup native package for GitHub runner
+        run: |
+          ROLLUP_VERSION=$(node -p "require('rollup/package.json').version")
+          npm install --no-save --no-package-lock "@rollup/rollup-linux-x64-gnu@${ROLLUP_VERSION}"
+
       - name: Build frontend
         run: npm run build
 
