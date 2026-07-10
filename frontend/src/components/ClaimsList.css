@@ -1,12 +1,26 @@
-/* Responsives Grid: eine Spalte auf dem Handy, füllt auf größeren Screens die
-   Breite (auto-fit lässt die Karten die Reihe ausfüllen). */
+/* Responsives Grid mit maximal 3 Spalten: 1 (Handy) → 2 (Tablet) → 3 (Desktop).
+   Die Deckelung sorgt für ausgewogene Reihen bei vielen Anträgen (6 → 3+3 statt
+   4+2) und hält die Kartenbreite konstant; die Karten füllen in jeder Stufe die
+   volle Breite. */
 .claims-list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--spacing-2);
+}
+
+@media (min-width: 768px) {
+  .claims-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1080px) {
+  .claims-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .claims-list__state {
