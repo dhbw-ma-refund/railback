@@ -318,7 +318,22 @@ export const LegalPage = ({ type }: LegalPageProps) => {
               className="rb-button rb-button--secondary rb-button--medium legal-page__back"
               onClick={goBack}
             >
-              <span aria-hidden="true">←</span>
+              {/* Gleiches Pfeil-Icon wie auf FAQ- und Preise-Seite, damit alle
+                  Zurück-Buttons ein einheitliches Design haben. */}
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="12 19 5 12 12 5" />
+              </svg>
               {t.menu.back}
             </button>
           </div>

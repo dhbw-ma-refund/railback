@@ -49,7 +49,7 @@ export const PricingPage = () => {
     <div className="pricing-page">
       <Header />
       <main className="pricing-main">
-        <div className="pricing-page__head">
+        <div className="pricing-page__head fade-in">
           <button
             type="button"
             className="rb-button rb-button--secondary rb-button--medium pricing-page__back"
@@ -74,7 +74,7 @@ export const PricingPage = () => {
             {t.menu.back}
           </button>
         </div>
-        <section className="pricing-hero wrap container">
+        <section className="pricing-hero wrap container fade-in">
           <div className="pricing-hero__copy">
             <span className="pricing-hero__eyebrow">{text.eyebrow}</span>
             <h1>{text.title}</h1>

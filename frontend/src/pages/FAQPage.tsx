@@ -177,7 +177,22 @@ export const FAQPage = () => {
                 className="rb-button rb-button--secondary rb-button--medium back"
                 onClick={() => setSelectedTopic(null)}
               >
-                <Icon name="arrowLeft" size={18} /> {t.menu.faq}
+                {/* Einheitliches Pfeil-Icon (identisch zu Preise/Rechtliches). */}
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="19" y1="12" x2="5" y2="12" />
+                  <polyline points="12 19 5 12 12 5" />
+                </svg>
+                {t.menu.faq}
               </button>
             </div>
             <h1 className="h1 title">{topic.t}</h1>
@@ -225,7 +240,22 @@ export const FAQPage = () => {
               className="rb-button rb-button--secondary rb-button--medium back"
               onClick={goBack}
             >
-              <Icon name="arrowLeft" size={18} /> {t.menu.back}
+              {/* Einheitliches Pfeil-Icon (identisch zu Preise/Rechtliches). */}
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="12 19 5 12 12 5" />
+              </svg>
+              {t.menu.back}
             </button>
           </div>
           <h1 className="h1 title">{t.faq.title}</h1>
