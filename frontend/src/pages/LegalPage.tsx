@@ -188,7 +188,7 @@ const LEGAL_CONTENT: Record<
       ],
       disputeTitle: 'Dispute resolution',
       dispute:
-        'The European Commission provides a platform for online dispute resolution. RailBack is neither obliged nor willing to participate in dispute resolution proceedings before a consumer arbitration board.',
+        'We are neither willing nor obliged to take part in dispute resolution proceedings before a consumer arbitration board.',
     },
     legal: {
       title: 'Legal',
