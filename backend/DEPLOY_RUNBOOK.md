@@ -24,9 +24,45 @@ Concrete facts discovered against the real account — use these exact values.
   `gsi3` was added 2026-07-10 (`aws dynamodb update-table`, keys
   `gsi3_pk`/`gsi3_sk`, projection ALL) — the route-lookup/delay feature needs
   it. You have `UpdateTable` rights.
-- **Confirmed rights so far:** DynamoDB describe/list/update-table in
-  eu-north-1. Lambda / API Gateway / IAM rights still to be verified against
-  the account.
+- **Confirmed rights (probed 2026-07-10):**
+  - DynamoDB: describe / list / update-table in eu-north-1 — ✅
+  - Lambda: on ONE pre-created function `s241539` you can
+    `update-function-code`, `update-function-configuration`, change runtime
+    (→ `nodejs20.x`), handler, and env vars — ✅
+  - That function has a public **Function URL** (auth NONE, CORS `*`):
+    `https://ckmhi46i2xidpl7joik5hby2ba0vhlso.lambda-url.eu-north-1.on.aws/`
+  - Shared execution role provided: `lambdaFunctionRole_students_eu-north-1`
+  - **DENIED:** `lambda:CreateFunction`, all of API Gateway
+    (`apigateway:GET`), IAM create/read (`iam:GetRole`, `ListPolicies`, …)
+- **THIS IS A LOCKED STUDENT SANDBOX.** The account gives each student exactly
+  one Lambda (named after their matriculation number) + a Function URL. You
+  **cannot** create the 8 separate functions, the API Gateway, or the
+  S3/SNS/EventBridge triggers the architecture assumes. **The provisioning
+  steps below are NOT executable at this access level.** Two ways forward:
+  1. **Request more access** (see below) to match the multi-Lambda design, or
+  2. **Collapse to a single-Lambda monolith** on `s241539` (its Function URL
+     replaces API Gateway; handlers already self-route, so one dispatcher can
+     serve `/auth`, `/users`, `/admin`). Event-driven pieces (extractor on
+     upload, email/anonymisation crons) then need manual/inline triggering.
+
+### Access to request from the professor (be specific — "more access" is too vague)
+
+To run the multi-Lambda architecture as designed, ask for these actions in
+**eu-north-1**, scoped to `railback*`-named resources if he wants to limit blast
+radius:
+
+- `lambda:CreateFunction`, `DeleteFunction`, `AddPermission`,
+  `CreateEventSourceMapping`, `GetFunction*` (create the 8 functions + let S3/SNS invoke them)
+- `iam:PassRole` on `lambdaFunctionRole_students_eu-north-1` (attach the shared
+  role to new functions) — or a dedicated `railback-lambda-role`
+- API Gateway: `apigateway:*` (create the HTTP API + routes) — OR skip API
+  Gateway entirely and use per-function Function URLs (`lambda:CreateFunctionUrlConfig`)
+- `events:PutRule`, `PutTargets` (EventBridge crons for the sweepers)
+- `sns:CreateTopic`, `Subscribe` + SES event-destination rights (email-webhook)
+- S3: `PutBucketNotification` on the bucket (trigger ticket-extractor on upload)
+
+If he declines any of these, fall back to the single-Lambda monolith (option 2
+above) — it needs no new permissions beyond what you already have.
 
 ---
 
