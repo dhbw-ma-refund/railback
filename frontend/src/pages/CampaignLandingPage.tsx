@@ -64,6 +64,11 @@ export interface CampaignContent {
    * `.hero-photo` container.
    */
   heroVisual?: ReactNode;
+  /**
+   * Optional extra root class for per-campaign CSS tweaks (e.g. a smaller
+   * headline for a longer, multi-line title).
+   */
+  className?: string;
 }
 
 interface CampaignLandingPageProps {
@@ -93,7 +98,7 @@ export const CampaignLandingPage = ({ content }: CampaignLandingPageProps) => {
   const rootModifier = content.heroVisual ? 'landing-page--default' : 'landing-page--campaign';
 
   return (
-    <div className={`landing-page ${rootModifier}`}>
+    <div className={`landing-page landing-campaign ${content.className ?? ''} ${rootModifier}`}>
       <Header ctaLabel={content.ctaLabel} />
       <section className="hero">
         <div className="hero__bg"></div>
