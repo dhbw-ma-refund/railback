@@ -52,7 +52,9 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 2000px;
+  /* Keep copy and visual connected instead of letting the empty first grid
+     track absorb all additional desktop width. */
+  max-width: clamp(1320px, 74vw, 2000px);
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(380px, 480px);
@@ -298,6 +300,14 @@
 
   .trust__item {
     font-size: 18px;
+  }
+}
+
+/* Taller desktop formats need a tighter composition than widescreen layouts. */
+@media (min-width: 1200px) and (max-width: 1999px) and (max-aspect-ratio: 4 / 3) {
+  .hero__grid {
+    max-width: clamp(1280px, 70vw, 1400px);
+    gap: clamp(64px, 5vw, 96px);
   }
 }
 
