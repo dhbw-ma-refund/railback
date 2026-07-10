@@ -7,7 +7,7 @@ import type { Ticket } from '../services/types/ticket';
 import { fmtDate, fmtDateTime } from '../services/format/date';
 import { fmtEUR } from '../services/format/money';
 import { TicketStateBadge } from '../ui/TicketStateBadge';
-import { Modal } from '../ui/Modal';
+import { StateOverrideDialog } from './StateOverrideDialog';
 import { Button } from '../ui-library';
 import './DetailPage.css';
 
@@ -115,13 +115,15 @@ export function TicketDetailPage() {
         </Button>
       </div>
 
-      <Modal
+      <StateOverrideDialog
+        ticket={ticket}
         open={stateDialogOpen}
         onClose={() => setStateDialogOpen(false)}
-        title="Ticket-State überschreiben"
-      >
-        <p>Kommt in WP #477. Aktueller State: {ticket.ticket_state}.</p>
-      </Modal>
+        onSaved={(updated) => {
+          setTicket(updated);
+          setStateDialogOpen(false);
+        }}
+      />
 
       <section className="rb-detail__section">
         <h2 className="rb-detail__section-title">Reisende:r</h2>

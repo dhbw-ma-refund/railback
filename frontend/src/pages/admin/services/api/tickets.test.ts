@@ -105,3 +105,72 @@ describe('ticketsApi.getTicket', () => {
     expect(t.state_timeline[1].state).toBe('VALIDATING'); // GARBAGE → default
   });
 });
+
+describe('ticketsApi.patchTicket', () => {
+  beforeEach(() => {
+    setTokens('a', 'r', 9999);
+    vi.stubGlobal('fetch', vi.fn());
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    clearTokens();
+  });
+
+  it('sends PATCH with JSON body and returns the parsed ticket', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      jsonResponse(200, {
+        ...LIST_ITEM,
+        ticket_state: 'APPROVED',
+        fahrt_abreisedatum: '2026-07-01',
+        fahrt_abreisebahnhof: 'Berlin Hbf',
+        fahrt_zielbahnhof: 'Hamburg Hbf',
+        fahrt_abfahrtszeit_plan: '10:00',
+        fahrt_ankunftszeit_plan: '12:00',
+        fahrt_zugnummer_plan: 'ICE 500',
+        fahrt_zugkategorie_plan: 'ICE',
+        fahrt_fahrkartennummer: 'DE123',
+        fahrt_fahrkartenpreis: '49.00',
+        service_fee_betrag: '0.75',
+        state_timeline: [],
+        admin_note: 'ok',
+        db_paid_at: '2026-07-10T09:00:00+02:00',
+      }),
+    );
+    const updated = await ticketsApi.patchTicket('T1', {
+      ticket_state: 'APPROVED',
+      db_paid_at: '2026-07-10T09:00:00+02:00',
+      admin_note: 'ok',
+    });
+    const [, init] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
+    expect(init.method).toBe('PATCH');
+    expect(init.body).toBe(
+      '{"ticket_state":"APPROVED","db_paid_at":"2026-07-10T09:00:00+02:00","admin_note":"ok"}',
+    );
+    const headers = init.headers as Record<string, string>;
+    expect(headers['Content-Type']).toBe('application/json');
+    expect(updated.ticket_state).toBe('APPROVED');
+    expect(updated.admin_note).toBe('ok');
+  });
+
+  it('URL-encodes the ticket id in the PATCH path', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      jsonResponse(200, {
+        ...LIST_ITEM,
+        fahrt_abreisedatum: '',
+        fahrt_abreisebahnhof: '',
+        fahrt_zielbahnhof: '',
+        fahrt_abfahrtszeit_plan: '',
+        fahrt_ankunftszeit_plan: '',
+        fahrt_zugnummer_plan: '',
+        fahrt_zugkategorie_plan: '',
+        fahrt_fahrkartennummer: '',
+        fahrt_fahrkartenpreis: '',
+        service_fee_betrag: null,
+        state_timeline: [],
+      }),
+    );
+    await ticketsApi.patchTicket('01KABC/def', { admin_note: 'x' });
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).toContain('/admin/tickets/01KABC%2Fdef');
+  });
+});

@@ -123,6 +123,18 @@ export interface ListTicketsParams {
   cursor?: string;
 }
 
+/**
+ * PATCH payload matches TicketPatch in the mock's OpenAPI schema and the
+ * "Editable" set in BACKEND_CONTRACT.md §PATCH /admin/tickets. Everything
+ * else (money, journey, antragsart) is immutable — recourse is REJECT +
+ * resubmit.
+ */
+export interface TicketPatchPayload {
+  ticket_state?: TicketState;
+  db_paid_at?: string | null;
+  admin_note?: string | null;
+}
+
 export const ticketsApi = {
   async listTickets(
     params: ListTicketsParams = {},
@@ -145,6 +157,19 @@ export const ticketsApi = {
   async getTicket(ticketId: string, signal?: AbortSignal): Promise<Ticket> {
     const raw = await apiClient.get<unknown>(
       `/admin/tickets/${encodeURIComponent(ticketId)}`,
+      { signal },
+    );
+    return parseTicket(raw);
+  },
+
+  async patchTicket(
+    ticketId: string,
+    payload: TicketPatchPayload,
+    signal?: AbortSignal,
+  ): Promise<Ticket> {
+    const raw = await apiClient.patch<unknown>(
+      `/admin/tickets/${encodeURIComponent(ticketId)}`,
+      payload,
       { signal },
     );
     return parseTicket(raw);

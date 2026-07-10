@@ -9,11 +9,15 @@ export interface ModalProps {
   children: ReactNode;
   primaryLabel?: string;
   onPrimary?: () => void;
+  primaryDisabled?: boolean;
+  primaryBusyLabel?: string;
+  primaryBusy?: boolean;
 }
 
 /**
- * Bare-bones modal. Locks background scroll while open and closes on Escape.
- * Kept intentionally thin — WP #477 will layer real form state on top.
+ * Bare-bones modal. Locks background scroll while open and closes on Escape
+ * or scrim click. Callers pass the form body as `children` and wire the
+ * primary button through `onPrimary` / `primaryBusy` / `primaryDisabled`.
  */
 export function Modal({
   open,
@@ -22,6 +26,9 @@ export function Modal({
   children,
   primaryLabel,
   onPrimary,
+  primaryDisabled,
+  primaryBusyLabel,
+  primaryBusy,
 }: ModalProps) {
   useEffect(() => {
     if (!open) return;
@@ -59,8 +66,13 @@ export function Modal({
             Schließen
           </Button>
           {onPrimary && (
-            <Button type="button" variant="primary" onClick={onPrimary}>
-              {primaryLabel ?? 'OK'}
+            <Button
+              type="button"
+              variant="primary"
+              onClick={onPrimary}
+              disabled={primaryDisabled || primaryBusy}
+            >
+              {primaryBusy ? (primaryBusyLabel ?? 'Speichert…') : (primaryLabel ?? 'OK')}
             </Button>
           )}
         </div>
