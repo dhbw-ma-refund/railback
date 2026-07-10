@@ -16,8 +16,9 @@
     linear-gradient(
       to top right,
       rgba(147, 205, 28, 0.18) 0%,
-      rgba(250, 249, 245, 0.92) 36%,
-      var(--color-warm-off-white) 68%
+      rgba(147, 205, 28, 0.1) 20%,
+      rgba(250, 249, 245, 0.92) 52%,
+      var(--color-warm-off-white) 78%
     );
   display: flex;
   flex-direction: column;
