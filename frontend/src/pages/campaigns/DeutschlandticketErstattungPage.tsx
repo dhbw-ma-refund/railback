@@ -2,7 +2,7 @@ import { CampaignLandingPage } from '../CampaignLandingPage';
 import type { CampaignContent } from '../CampaignLandingPage';
 import { useLanguage } from '../../lib/LanguageContext';
 import type { Language } from '../../lib/LanguageContext';
-import heroImage from '../../../shared/assets/deutschlandticket-erstattung.png';
+import heroImage from '../../../shared/assets/deutschlandticket-erstattung-2.png';
 
 /**
  * Campaign 2 — railback.de/deutschlandticket-erstattung
