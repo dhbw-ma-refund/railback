@@ -1,0 +1,20 @@
+{
+  "name": "@railback/lambdas-deploy",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@railback/lib": "*",
+    "@railback/lambdas-auth-handler": "*",
+    "@railback/lambdas-user-handler": "*",
+    "@railback/lambdas-admin-handler": "*",
+    "@railback/email-sweeper": "*",
+    "@railback/email-webhook": "*",
+    "@railback/anonymisation-sweeper": "*",
+    "@railback/sepa-reports": "*"
+  }
+}

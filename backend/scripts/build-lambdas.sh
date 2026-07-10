@@ -47,6 +47,7 @@ NODE_LAMBDAS=(
   email-webhook
   sepa-reports
   user-handler
+  _deploy
 )
 
 # Pick src/index.ts if present (re-exports handler), else src/handler.ts.
@@ -71,9 +72,10 @@ build_node() {
     "${SDK_EXTERNAL[@]}" \
     --outfile="$stage/index.js"
 
-  # user-handler bundles refund-pdf (dynamic import); refund-pdf reads its PDF
-  # template from ./assets next to the bundle. Ship it.
-  if [[ "$l" == "user-handler" ]]; then
+  # user-handler bundles refund-pdf (dynamic import); the single-function
+  # _deploy dispatcher bundles user-handler → refund-pdf too. refund-pdf reads
+  # its PDF template from ./assets next to the bundle. Ship it for both.
+  if [[ "$l" == "user-handler" || "$l" == "_deploy" ]]; then
     mkdir -p "$stage/assets"
     cp lambdas/refund-pdf/assets/reimbursement-form_de.pdf "$stage/assets/"
   fi

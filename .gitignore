@@ -191,3 +191,6 @@ node_modules/
 # Claude Code local settings
 **/settings.local.json
 CLAUDE.md
+
+# Deploy secrets — real env for the single-function deploy (KEK/JWT/internal secret)
+backend/scripts/environment.json

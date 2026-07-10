@@ -7,6 +7,47 @@ Everything lives in region **eu-north-1** (Stockholm). Do not mix regions.
 
 ---
 
+## ⭐ ACTUAL deploy path (locked 2026-07-10): single function + Function URL
+
+The account is a **locked student sandbox**: you get ONE pre-created Lambda
+(`s241539`) with a public **Function URL**, and you can update its code/config
+but CANNOT create more functions, API Gateway, IAM roles, or S3/SNS/EventBridge
+triggers. So the whole backend runs as **one dispatcher Lambda**, not the 8
+separate functions the "Mental model" / provisioning sections below describe.
+(Those sections are kept for reference / if broader access is ever granted.)
+
+**How it works:** `lambdas/_deploy/src/index.ts` is a dispatcher that routes
+`/auth`, `/users`, `/admin` to the real handlers (they self-route internally),
+and exposes `/_internal/*` (shared-secret-gated) for the work that would
+normally be trigger-driven (email retry, SES webhook replay, anonymisation,
+SEPA report ingest). The Function URL is the public endpoint — no API Gateway.
+
+**Deploy it:**
+```bash
+export AWS_PROFILE=railback
+cd railback/backend
+cp scripts/environment.example.json scripts/environment.json   # then fill in secrets + prof's bucket/SES
+scripts/deploy-single.sh                                        # build + config + env + code + URL
+```
+`environment.json` is gitignored (holds the KEK/JWT/internal secret). Generate
+secrets with `openssl rand -hex 32` (JWT), `openssl rand -base64 32` (KEK),
+`openssl rand -hex 24` (internal). The script prints the Function URL + a smoke
+test at the end.
+
+**What's live vs manual in this mode:**
+- Live (synchronous): register, login/refresh, profile, route-template ticket,
+  refund submit → EU-form rendered + emailed, admin review/approve, pain.008.
+- Manual (call `POST /_internal/...` with `x-internal-secret` header, since no
+  triggers): `email-sweep`, `email-webhook` (replay SES event), `anonymisation-sweep`,
+  `sepa-reports`. Barcode ticket-extraction (Python) is **not** deployed — use
+  the route-template (`MANUAL_ROUTE`) flow instead.
+
+Blockers still pending from the prof: **S3 bucket name** + **SES from-address**
+(and SES out of sandbox). Fill those into `environment.json` before the refund/
+email path will work end-to-end. See `SES_STRATO_SETUP.md`.
+
+---
+
 ## Known environment (confirmed 2026-07-10)
 
 Concrete facts discovered against the real account — use these exact values.
