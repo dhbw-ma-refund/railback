@@ -5,6 +5,7 @@
 /* Landing page specific styles */
 .landing-page {
   --hero-header-offset: 112px;
+  --page-inline-padding: clamp(22px, 4vw, 96px);
   min-height: 100vh;
   background: var(--color-warm-off-white);
   display: flex;
@@ -21,8 +22,8 @@
 .pricing-page .wrap {
   max-width: 2560px;
   margin: 0 auto;
-  padding-right: clamp(22px, 4vw, 96px);
-  padding-left: clamp(22px, 4vw, 96px);
+  padding-right: var(--page-inline-padding, clamp(22px, 4vw, 96px));
+  padding-left: var(--page-inline-padding, clamp(22px, 4vw, 96px));
 }
 
 .container {
