@@ -280,6 +280,12 @@
     border-radius: 38px;
   }
 
+  .landing-page--phone-visual.landing-page--default .phone-col {
+    justify-content: flex-start;
+    margin-left: 0;
+    margin-right: auto;
+  }
+
   .hero__cta {
     margin-bottom: 34px;
   }
@@ -365,14 +371,42 @@
 
 .landing-page--phone-visual.landing-page--default .phone-col {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   width: min(460px, calc(100vw - 48px));
+  margin-left: auto;
 }
 
 .landing-page--phone-visual .phone {
-  width: clamp(330px, 24vw, 440px);
+  width: clamp(320px, 22vw, 430px);
   height: auto;
   aspect-ratio: 330 / 674;
+}
+
+.landing-page--phone-visual .floating-badge {
+  left: -72px;
+  bottom: 112px;
+}
+
+.landing-page--phone-visual .floating-badge .infocard {
+  max-width: 470px;
+  padding: 26px 30px;
+  gap: 24px;
+  border-radius: 22px;
+}
+
+.landing-page--phone-visual .floating-badge .infocard__badge {
+  width: 98px;
+  height: 98px;
+  border-radius: 22px;
+  font-size: 31px;
+}
+
+.landing-page--phone-visual .floating-badge .infocard__title {
+  font-size: 24px;
+}
+
+.landing-page--phone-visual .floating-badge .infocard__sub {
+  font-size: 17px;
 }
 
 @media (max-width: 980px) and (min-width: 768px) {
