@@ -40,6 +40,9 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+      - name: Verify SPA fallback
+        run: test -f dist/.htaccess
+
       - name: SFTP Deploy
         uses: wlixcc/SFTP-Deploy-Action@v1.2.6
         with:
@@ -48,5 +51,18 @@ jobs:
           password: ${{ secrets.STRATO_FTP_PASSWORD }}
           port: 22
           local_path: './frontend/dist/*'
+          remote_path: '/'
+          sftp_only: true
+
+      # The glob above intentionally deploys the regular build files, but shell
+      # globs do not include dotfiles. Upload the Apache SPA fallback explicitly.
+      - name: SFTP Deploy SPA fallback
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+        with:
+          server: ${{ secrets.STRATO_FTP_HOST }}
+          username: ${{ secrets.STRATO_FTP_USERNAME }}
+          password: ${{ secrets.STRATO_FTP_PASSWORD }}
+          port: 22
+          local_path: './frontend/dist/.htaccess'
           remote_path: '/'
           sftp_only: true
