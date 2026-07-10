@@ -27,6 +27,48 @@ const testUser = {
 
 storage.users.set(testUser.email, testUser);
 
+// Beispiel-Anträge für den Test-Nutzer. Ersetzt später der echte get-tickets
+// Endpoint; Shape 1:1 zum API-Contract (GET /users/me/tickets). Post-submit
+// Tickets tragen erwartete_erstattung/email_status/submitted_at, das VALIDATING
+// Ticket (pre-submit) lässt sie laut Contract weg.
+const sampleTickets = [
+  {
+    ticketId: '01J9X2N3P4Q5R6S7T8U9V0W1X',
+    ticket_state: 'PENDING_DB_PAYMENT',
+    abreisedatum: '2026-06-12',
+    abreisebahnhof: 'Mannheim Hbf',
+    zielbahnhof: 'Karlsruhe Hbf',
+    fahrkartenpreis: '29.90',
+    antragsart: 'ENTSCHAEDIGUNG_60_119',
+    erwartete_erstattung: '29.90',
+    email_status: 'DELIVERED',
+    submitted_at: '2026-06-12T09:15:47+02:00',
+    updated_at: '2026-06-12T09:15:47+02:00',
+  },
+  {
+    ticketId: '01J9Y3M4N5P6Q7R8S9T0U1V2W',
+    ticket_state: 'APPROVED',
+    abreisedatum: '2026-05-28',
+    abreisebahnhof: 'Frankfurt Hbf',
+    zielbahnhof: 'Stuttgart Hbf',
+    fahrkartenpreis: '54.00',
+    antragsart: 'ENTSCHAEDIGUNG_120_PLUS',
+    erwartete_erstattung: '27.00',
+    email_status: 'DELIVERED',
+    submitted_at: '2026-05-28T16:03:00+02:00',
+    updated_at: '2026-05-29T10:00:00+02:00',
+  },
+  {
+    ticketId: '01J9Z4L5M6N7P8Q9R0S1T2U3V',
+    ticket_state: 'VALIDATING',
+    abreisedatum: '2026-07-02',
+    abreisebahnhof: 'Heidelberg Hbf',
+    zielbahnhof: 'München Hbf',
+    fahrkartenpreis: '89.90',
+    updated_at: '2026-07-02T08:30:00+02:00',
+  },
+];
+
 // Helper functions
 const generateToken = () => 'mock_' + Math.random().toString(36).substring(2, 15);
 
@@ -200,6 +242,13 @@ export const mockAPI = {
       return {
         status: 204,
         data: {}
+      };
+    }
+
+    if (endpoint === '/users/me/tickets' && method === 'GET') {
+      return {
+        status: 200,
+        data: { items: sampleTickets }
       };
     }
 

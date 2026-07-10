@@ -85,6 +85,12 @@ class ApiClient {
       body: JSON.stringify({ confirmPassword }),
     });
   }
+
+  // Antragsübersicht des angemeldeten Nutzers. Folgt dem Backend-Contract
+  // (get-tickets → TicketSummary[]). Paginierung via opaque cursor.
+  async getTickets(): Promise<TicketsResponse> {
+    return this.request('/users/me/tickets', { headers: this.getHeaders() });
+  }
 }
 
 export const api = new ApiClient();
@@ -150,6 +156,30 @@ export interface RefundData {
   };
   iban: string | null;
   bic: string | null;
+}
+
+// Ein Antrag in der Dashboard-Übersicht. Shape 1:1 zum API-Contract
+// (GET /users/me/tickets, API_CONTRACT_USERFORMS.md). `ticket_state` ist ein
+// Wert der Backend-TicketState-Enum (siehe StatusChip).
+export interface TicketSummary {
+  ticketId: string;
+  ticket_state: string;
+  abreisedatum: string;      // YYYY-MM-DD
+  abreisebahnhof: string;
+  zielbahnhof: string;
+  fahrkartenpreis: string;   // Dezimal als String ("29.90"), EUR implizit
+  updated_at: string;        // ISO-8601 mit TZ
+  // Erst ab ticket_state >= EMAIL_SENDING gesetzt; davor laut Contract weggelassen.
+  antragsart?: string;
+  erwartete_erstattung?: string;
+  email_status?: string;
+  submitted_at?: string;
+}
+
+// GET /users/me/tickets liefert { items: [...] } — keine Paginierung
+// (typischer Nutzer < 20 Anträge).
+export interface TicketsResponse {
+  items: TicketSummary[];
 }
 
 export interface UpdateProfileRequest {

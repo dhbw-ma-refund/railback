@@ -2,8 +2,10 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@shared/components';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import { ClaimsList } from '../components/ClaimsList';
 import { useLanguage } from '../lib/LanguageContext';
 import { useAuth } from '../lib/AuthContext';
+import { useTickets } from '../hooks/useTickets';
 import './LandingPage.css';
 import railbackLogo from '../../shared/assets/railback-logo.png';
 import homeHeroPassenger from '../../shared/assets/home-hero-passenger-2.png';
@@ -49,6 +51,8 @@ export const LandingPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
+  // Anträge nur für eingeloggte Nutzer laden; anonyme Besucher lösen keinen Call aus.
+  const { tickets, loading, error } = useTickets(isAuthenticated);
 
   const handleCheckClaim = () => {
     if (isAuthenticated) {
@@ -114,6 +118,25 @@ export const LandingPage = () => {
           </div>
         </div>
       </section>
+      {isAuthenticated && (
+        <section className="landing-claims" aria-labelledby="landing-claims-title">
+          <div className="wrap container">
+            <div className="landing-claims__head">
+              <h2 id="landing-claims-title" className="landing-claims__title">
+                {t.dashboard.claimsTitle}
+              </h2>
+              <button
+                type="button"
+                className="landing-claims__link"
+                onClick={() => navigate('/dashboard')}
+              >
+                {t.dashboard.viewAll}
+              </button>
+            </div>
+            <ClaimsList tickets={tickets} loading={loading} error={error} />
+          </div>
+        </section>
+      )}
       <section className="eligibility" id="eligibility" aria-labelledby="eligibility-title">
         <div className="wrap container">
           <div className="eligibility__head">

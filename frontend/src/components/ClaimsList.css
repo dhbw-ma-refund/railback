@@ -1,0 +1,90 @@
+/* Responsives Grid: eine Spalte auf dem Handy, füllt auf größeren Screens die
+   Breite (auto-fit lässt die Karten die Reihe ausfüllen). */
+.claims-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-2);
+}
+
+.claims-list__state {
+  margin: 0;
+  padding: var(--spacing-3) var(--spacing-2);
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+}
+
+.claims-list__state--error {
+  color: var(--color-error, #b00020);
+}
+
+.claims-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  background: #fff;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-default);
+  padding: var(--spacing-2);
+}
+
+.claims-card__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.claims-card__id {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+.claims-card__dot {
+  color: var(--color-text-secondary);
+}
+
+.claims-card__details {
+  margin-left: auto;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-deep-trust-blue);
+  cursor: pointer;
+  min-height: var(--touch-target-min);
+}
+
+.claims-card__details:hover {
+  text-decoration: underline;
+}
+
+.claims-card__body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.claims-card__body > div {
+  display: flex;
+  gap: 6px;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.claims-card__body dt {
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+}
+
+.claims-card__body dd {
+  margin: 0;
+}

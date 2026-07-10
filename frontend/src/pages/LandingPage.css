@@ -587,6 +587,47 @@
   display: none;
 }
 
+/* Nur eingeloggt: Antragsübersicht direkt auf der Landingpage. Nutzt dieselbe
+   Container-Breite und Überschriften-Optik wie die Eligibility-Sektion, damit
+   sie sich nahtlos ins bestehende Design einfügt. Das Karten-Grid liegt in
+   components/ClaimsList.css. */
+.landing-claims {
+  padding: clamp(40px, 6vh, 72px) 0 clamp(8px, 2vh, 24px);
+  background: var(--color-warm-off-white);
+}
+
+.landing-claims__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-3);
+}
+
+.landing-claims__title {
+  margin: 0;
+  color: var(--color-deep-trust-blue);
+  /* Gleiche Größe wie die Eligibility-Überschrift (.eligibility__head h2). */
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1.12;
+}
+
+.landing-claims__link {
+  flex: none;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-deep-trust-blue);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.landing-claims__link:hover {
+  text-decoration: underline;
+}
+
 .eligibility {
   padding: clamp(48px, 7vh, 82px) 0 clamp(56px, 8vh, 96px);
   /* background: #eaf1f8; */
