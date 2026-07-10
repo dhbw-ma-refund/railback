@@ -428,34 +428,55 @@
     --hero-header-offset: 84px;
   }
 
+  .landing-page .hdr__nav {
+    display: none;
+  }
+
   .hero {
     padding: 44px 0 56px;
   }
 
   .hero__grid {
-    grid-template-columns: 1fr;
-    gap: 34px;
-    justify-items: start;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 280px);
+    gap: clamp(24px, 4vw, 36px);
+    max-width: 900px;
+    justify-items: stretch;
+  }
+
+  .landing-page--campaign .hero__grid,
+  .landing-page--phone-visual .hero__grid {
+    grid-template-columns: minmax(0, 720px);
+    max-width: 720px;
+  }
+
+  .hero__copy {
+    max-width: 100%;
   }
 
   .hero .h1 {
     max-width: 17ch;
-    font-size: clamp(36px, 6vw, 48px);
+    font-size: clamp(34px, 4.5vw, 40px);
   }
 
   .hero__proof li {
-    font-size: clamp(19px, 2.5vw, 22px);
+    font-size: clamp(17px, 2.2vw, 19px);
   }
 
-  .phone-col,
-  .hero-photo-col {
+  .landing-page .phone-col,
+  .landing-page--phone-visual.landing-page--default .phone-col {
+    display: none;
+  }
+
+  .landing-page .hero-photo-col {
+    display: flex;
     width: 100%;
-    justify-content: center;
+    justify-content: flex-end;
     margin-right: 0;
   }
 
   .hero-photo {
-    width: min(430px, calc(100vw - 48px));
+    width: 100%;
+    max-width: 280px;
   }
 
   .phone {
@@ -889,8 +910,10 @@
     margin-right: 0;
   }
 
+  .landing-page--phone-visual.landing-page--default .phone-col,
   .landing-page--campaign .phone-col {
     display: none;
+    margin-right: 0;
   }
 
   .hero-photo-col {
