@@ -7,7 +7,7 @@ import heroImage from '../../../shared/assets/deutschlandticket-erstattung.png';
  * Focus: automatic compensation for Deutschlandticket & other long-term tickets.
  */
 const content: CampaignContent = {
-  title: 'Automatische Entschädigung\nfür Deutschlandticket &\nLangzeittickets',
+  title: 'Automatische Entschädigung für\nDeutschlandticket &\nLangzeittickets',
   mobileTitle: 'Automatische Entschädigung\nfür Deutschlandticket &\nLangzeittickets',
   ctaLabel: 'Jetzt Erstattung starten',
   mobileCtaLabel: 'Erstattung starten',

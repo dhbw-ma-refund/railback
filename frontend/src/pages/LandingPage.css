@@ -218,11 +218,16 @@
 
 @media (min-width: 1200px) {
   .hero__grid {
-    grid-template-columns: minmax(0, 1fr) minmax(460px, 720px);
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 620px);
+    gap: clamp(48px, 5vw, 96px);
+  }
+
+  .hero__copy {
+    max-width: 840px;
   }
 
   .hero-photo {
-    width: clamp(460px, min(31vw, 60vh), 720px);
+    width: clamp(430px, min(29vw, 58vh), 640px);
   }
 }
 
@@ -252,12 +257,12 @@
 
 @media (min-width: 2000px) {
   .hero__grid {
-    grid-template-columns: minmax(0, 1fr) minmax(760px, 900px);
-    gap: clamp(120px, 6vw, 160px);
+    grid-template-columns: minmax(0, 1fr) minmax(700px, 820px);
+    gap: clamp(96px, 5vw, 130px);
   }
 
   .hero__copy {
-    max-width: 900px;
+    max-width: 1040px;
   }
 
   .hero .h1 {
@@ -276,7 +281,7 @@
   }
 
   .hero-photo {
-    width: clamp(720px, min(34vw, 65vh), 900px);
+    width: clamp(700px, min(32vw, 65vh), 820px);
     border-radius: 38px;
   }
 
