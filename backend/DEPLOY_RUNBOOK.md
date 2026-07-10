@@ -7,6 +7,29 @@ Everything lives in region **eu-north-1** (Stockholm). Do not mix regions.
 
 ---
 
+## Known environment (confirmed 2026-07-10)
+
+Concrete facts discovered against the real account — use these exact values.
+
+- **AWS profile:** credentials live under a named profile `railback` in
+  `~/.aws/`, NOT `default`. Run `export AWS_PROFILE=railback` in your shell
+  (or add it to `~/.zshrc`) so plain `aws ...` and `scripts/deploy.sh` pick
+  them up. Verify: `aws sts get-caller-identity` → account `502129302313`,
+  user `s241539`.
+- **Your access is scoped to eu-north-1 only** (other regions return
+  AccessDenied). Fine — everything is in eu-north-1.
+- **DynamoDB table name is `RailBack`** (capital R, capital B) — case matters.
+  Set `RAILBACK_DDB_TABLE=RailBack` everywhere. Keys `pk`/`sk`.
+- **GSIs:** all four now present — `gsi1`, `gsi2`, `gsi_email_pending`, `gsi3`.
+  `gsi3` was added 2026-07-10 (`aws dynamodb update-table`, keys
+  `gsi3_pk`/`gsi3_sk`, projection ALL) — the route-lookup/delay feature needs
+  it. You have `UpdateTable` rights.
+- **Confirmed rights so far:** DynamoDB describe/list/update-table in
+  eu-north-1. Lambda / API Gateway / IAM rights still to be verified against
+  the account.
+
+---
+
 ## Mental model — what "deploy" means here
 
 There are two separate jobs. Don't confuse them.
