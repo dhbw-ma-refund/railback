@@ -443,8 +443,7 @@
     justify-items: stretch;
   }
 
-  .landing-page--campaign .hero__grid,
-  .landing-page--phone-visual .hero__grid {
+  .landing-page--campaign .hero__grid {
     grid-template-columns: minmax(0, 720px);
     max-width: 720px;
   }
@@ -462,8 +461,25 @@
     font-size: clamp(17px, 2.2vw, 19px);
   }
 
-  .landing-page .phone-col,
+  .landing-page .phone-col {
+    display: none;
+  }
+
   .landing-page--phone-visual.landing-page--default .phone-col {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .landing-page--phone-visual .phone {
+    width: min(250px, 100%);
+    height: auto;
+    aspect-ratio: 330 / 674;
+  }
+
+  .landing-page--phone-visual .floating-badge {
     display: none;
   }
 
