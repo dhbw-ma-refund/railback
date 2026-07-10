@@ -15,10 +15,14 @@
   flex: 1;
 }
 
-.wrap {
-  max-width: 1180px;
+.landing-page .wrap,
+.faq-page .wrap,
+.legal-page .wrap,
+.pricing-page .wrap {
+  max-width: 2560px;
   margin: 0 auto;
-  padding: 0 clamp(16px, 4vw, 40px);
+  padding-right: clamp(22px, 4vw, 96px);
+  padding-left: clamp(22px, 4vw, 96px);
 }
 
 .container {
@@ -47,10 +51,17 @@
 .hero__grid {
   position: relative;
   z-index: 1;
+  width: 100%;
+  max-width: 2000px;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(380px, 480px);
   gap: clamp(56px, 7vw, 112px);
   align-items: center;
+}
+
+.hero__copy {
+  max-width: 720px;
 }
 
 .hero__claim {
@@ -201,6 +212,93 @@
   border-radius: 32px;
   overflow: hidden;
   box-shadow: 0 30px 70px rgba(9, 67, 137, 0.22);
+}
+
+@media (min-width: 1200px) {
+  .hero__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(460px, 720px);
+  }
+
+  .hero-photo {
+    width: clamp(460px, min(31vw, 60vh), 720px);
+  }
+}
+
+@media (min-width: 1440px) {
+  .hero__grid {
+    gap: clamp(72px, 6vw, 120px);
+  }
+
+  .hero .h1 {
+    max-width: 15ch;
+    font-size: clamp(52px, 3.55vw, 68px);
+  }
+
+  .hero__proof li {
+    font-size: clamp(24px, 1.4vw, 28px);
+  }
+
+  .hero__tag {
+    font-size: clamp(21px, 1.25vw, 24px);
+  }
+
+  .trust__item {
+    font-size: 16px;
+  }
+
+}
+
+@media (min-width: 2000px) {
+  .hero__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(760px, 900px);
+    gap: clamp(120px, 6vw, 160px);
+  }
+
+  .hero__copy {
+    max-width: 900px;
+  }
+
+  .hero .h1 {
+    max-width: 15ch;
+    font-size: clamp(76px, 3.45vw, 88px);
+  }
+
+  .hero__proof {
+    gap: 9px;
+    padding-left: 28px;
+    margin-bottom: 30px;
+  }
+
+  .hero__proof li {
+    font-size: clamp(29px, 1.25vw, 32px);
+  }
+
+  .hero-photo {
+    width: clamp(720px, min(34vw, 65vh), 900px);
+    border-radius: 38px;
+  }
+
+  .hero__cta {
+    margin-bottom: 34px;
+  }
+
+  .hero__cta .rb-button--large {
+    height: 68px;
+    padding: 0 42px;
+    font-size: 22px;
+  }
+
+  .hero__tag {
+    font-size: clamp(26px, 1.1vw, 28px);
+  }
+
+  .trust {
+    gap: 30px;
+  }
+
+  .trust__item {
+    font-size: 18px;
+  }
 }
 
 .hero-photo img {
@@ -579,6 +677,13 @@
   line-height: 1.55;
 }
 
+@media (min-width: 1440px) {
+  .eligibility-card {
+    min-height: 270px;
+    padding: clamp(26px, 2vw, 34px);
+  }
+}
+
 /* Responsive */
 @media (max-width: 767px) {
   .landing-page {
@@ -777,8 +882,12 @@
     text-align: left;
   }
 
-  .wrap {
-    padding: 0 22px;
+  .landing-page .wrap,
+  .faq-page .wrap,
+  .legal-page .wrap,
+  .pricing-page .wrap {
+    padding-right: 22px;
+    padding-left: 22px;
   }
 
   .eligibility {

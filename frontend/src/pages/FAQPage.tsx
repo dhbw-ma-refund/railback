@@ -171,7 +171,7 @@ export const FAQPage = () => {
       <div className="faq-page">
         <Header />
         <main className="faq-main">
-          <div className="wrap container page fade-in">
+          <div className="wrap container page page--detail fade-in">
             <div className="page__head">
               <button
                 className="rb-button rb-button--secondary rb-button--medium back"
@@ -204,7 +204,7 @@ export const FAQPage = () => {
               ))}
             </div>
             {topicContent.img2 && (
-              <div style={{ maxWidth: 760, margin: '16px auto 0' }}>
+              <div className="faq-detail__secondary-image">
                 <ImgPlaceholder label={topicContent.img2} />
               </div>
             )}
@@ -219,7 +219,7 @@ export const FAQPage = () => {
     <div className="faq-page">
       <Header />
       <main className="faq-main">
-        <div className="wrap container page fade-in">
+        <div className="wrap container page page--overview fade-in">
           <div className="page__head">
             <button
               className="rb-button rb-button--secondary rb-button--medium back"

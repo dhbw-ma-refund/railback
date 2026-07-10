@@ -19,7 +19,7 @@
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 440px);
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 480px);
   align-items: center;
   gap: clamp(32px, 6vw, 72px);
   padding-top: clamp(24px, 4vh, 48px);
@@ -131,6 +131,61 @@
 .pricing-card__note {
   margin: var(--spacing-2) 0 0;
   font-size: 14px;
+}
+
+@media (min-width: 1440px) {
+  .pricing-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(480px, 560px);
+    gap: clamp(72px, 7vw, 136px);
+  }
+
+  .pricing-hero__copy {
+    max-width: 760px;
+  }
+
+  .pricing-hero h1 {
+    font-size: clamp(58px, 3.8vw, 72px);
+  }
+
+  .pricing-hero__copy p {
+    font-size: clamp(19px, 1.2vw, 22px);
+  }
+
+  .pricing-card {
+    padding: clamp(36px, 2.6vw, 48px);
+  }
+}
+
+@media (min-width: 2000px) {
+  .pricing-hero {
+    max-width: 2200px;
+    grid-template-columns: minmax(0, 1fr) minmax(620px, 700px);
+    gap: 160px;
+  }
+
+  .pricing-hero__copy {
+    max-width: 900px;
+  }
+
+  .pricing-hero h1 {
+    font-size: clamp(76px, 3.45vw, 88px);
+  }
+
+  .pricing-hero__copy p {
+    font-size: 24px;
+  }
+
+  .pricing-card {
+    padding: 54px;
+  }
+
+  .pricing-card h2 {
+    font-size: 30px;
+  }
+
+  .pricing-card li {
+    font-size: 18px;
+  }
 }
 
 @media (max-width: 767px) {
