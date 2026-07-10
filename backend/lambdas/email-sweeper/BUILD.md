@@ -80,7 +80,7 @@ doesn't mask a successful Pass A's count, and vice-versa.
   `noreply@railback.example`. Hard-fail if unset — see `send-email.ts`.
 - `RAILBACK_SES_CONFIGURATION_SET` — optional; SES Configuration Set name
   wired up to the SNS event destination consumed by `email-webhook`.
-- `RAILBACK_AWS_REGION` — defaults to `eu-central-1`.
+- `RAILBACK_AWS_REGION` — defaults to `eu-north-1`.
 - `RAILBACK_S3_BUCKET` — required when `RAILBACK_STORAGE=ddb` (Phase 5).
 - `RAILBACK_DDB_TABLE` — required when `RAILBACK_STORAGE=ddb` (Phase 5).
 

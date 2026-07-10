@@ -73,7 +73,7 @@ RAILBACK_STORAGE=memory \
 RAILBACK_JWT_SECRET=dev-secret \
 RAILBACK_IBAN_KEK=$(node -e "console.log(Buffer.alloc(32,0x42).toString('base64'))") \
 RAILBACK_S3_BUCKET=railback-storage \
-RAILBACK_AWS_REGION=eu-central-1 \
+RAILBACK_AWS_REGION=eu-north-1 \
 npx vitest run lambdas/admin-handler
 ```
 

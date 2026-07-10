@@ -58,7 +58,7 @@ surfaces the issue instead of masking it (external-review fix
 ## Runtime env
 
 - `RAILBACK_STORAGE` — `memory` for local/dev, `ddb` on Lambda.
-- `RAILBACK_AWS_REGION` — defaults to `eu-central-1`.
+- `RAILBACK_AWS_REGION` — defaults to `eu-north-1`.
 - `RAILBACK_DDB_TABLE` — required when `RAILBACK_STORAGE=ddb` (Phase 5).
 
 No SES env vars — the webhook never calls SES.

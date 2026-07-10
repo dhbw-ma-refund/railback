@@ -70,7 +70,7 @@ wizard can retry from a clean slate.
   missing env blows up at SES rather than silently in prod.
 - `RAILBACK_SES_CONFIGURATION_SET` — optional; SES Configuration Set name
   wired up to the SNS event destination consumed by `email-webhook`.
-- `RAILBACK_AWS_REGION` — defaults to `eu-central-1`.
+- `RAILBACK_AWS_REGION` — defaults to `eu-north-1`.
 - `RAILBACK_S3_BUCKET` — required when `RAILBACK_STORAGE=ddb` (Phase 5).
   In `memory` mode the in-memory BlobRepo writes into its own
   `memory-mock` bucket — `persist.ts` mirrors that fallback.

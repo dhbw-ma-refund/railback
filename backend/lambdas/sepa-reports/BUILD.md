@@ -92,7 +92,7 @@ pain.002 but not necessarily in camt.05x envelopes).
 - `RAILBACK_STORAGE` — `memory` for local/dev, `ddb` on Lambda (Phase 5).
 - `RAILBACK_S3_BUCKET` — required when `RAILBACK_STORAGE=ddb` (Phase 5).
 - `RAILBACK_DDB_TABLE` — required when `RAILBACK_STORAGE=ddb` (Phase 5).
-- `RAILBACK_AWS_REGION` — SES region (default `eu-central-1`).
+- `RAILBACK_AWS_REGION` — SES region (default `eu-north-1`).
 - `RAILBACK_SES_FROM_ADDRESS` — R-tx notification From-address. Missing =
   hard `ERR_INTERNAL` at first email (config error, not runtime hiccup).
 - `RAILBACK_SES_CONFIGURATION_SET` — optional; used for outbound event

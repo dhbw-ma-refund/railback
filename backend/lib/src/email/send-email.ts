@@ -66,7 +66,7 @@ let sesClient: SESv2Client | null = null;
 
 function getClient(): SESv2Client {
   if (sesClient !== null) return sesClient;
-  const region = process.env["RAILBACK_AWS_REGION"] ?? "eu-central-1";
+  const region = process.env["RAILBACK_AWS_REGION"] ?? "eu-north-1";
   sesClient = new SESv2Client({ region });
   return sesClient;
 }

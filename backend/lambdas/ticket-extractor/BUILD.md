@@ -65,7 +65,7 @@ Env vars expected by the Lambda:
 | Name | Purpose |
 |---|---|
 | `RAILBACK_DDB_TABLE` | DynamoDB table (default `railback` in tests) |
-| `AWS_REGION` | `eu-central-1` (matches the rest of the stack) |
+| `AWS_REGION` | `eu-north-1` (matches the rest of the stack) |
 
 ## IAM policy stub (Phase 5)
 
@@ -86,7 +86,7 @@ phase can copy-paste:
       "Sid": "ReadTicketOwnerAndUpdateUserTicket",
       "Effect": "Allow",
       "Action": ["dynamodb:GetItem", "dynamodb:UpdateItem"],
-      "Resource": "arn:aws:dynamodb:eu-central-1:<acct>:table/railback"
+      "Resource": "arn:aws:dynamodb:eu-north-1:<acct>:table/railback"
     },
     {
       "Sid": "CloudWatchLogs",
