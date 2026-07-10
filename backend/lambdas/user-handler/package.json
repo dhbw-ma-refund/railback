@@ -8,6 +8,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-lambda": "^3.1084.0",
     "@railback/db": "*",
     "@railback/lib": "*",
     "@railback/refund-pdf": "*",

@@ -38,6 +38,7 @@ import type { ApiGwEvent, ApiGwResponse } from "../event.js";
 import { readJsonBody } from "../event.js";
 import { errorResponse, okJson } from "../response.js";
 import { requireUserCaller } from "../auth-context.js";
+import { extractorConfigured, invokeExtractor } from "./invoke-extractor.js";
 
 const TICKET_ID_RE = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
@@ -151,8 +152,8 @@ export async function handlePostUploadConfirm(
     }
 
     const uploadedAt = new Date().toISOString();
-    // size_bytes = 0 placeholder — the S3-event-triggered extractor will
-    // overwrite it with the real size once the object exists.
+    // size_bytes = 0 placeholder — the extractor overwrites it with the real
+    // size once it reads the object.
     await db().blobs.putRawUpload(email, ticketId, {
       filename: parsed.data.filename,
       s3_bucket: bucketName(),
@@ -161,6 +162,21 @@ export async function handlePostUploadConfirm(
       size_bytes: 0,
       uploaded_at: uploadedAt,
     });
+
+    // Single-function deployment (no S3 trigger): drive extraction ourselves by
+    // synchronously invoking the Python ticket-extractor with a synthetic S3
+    // event. Best-effort — if it's not configured (memory/dev) or the invoke
+    // fails, we fall through with the ticket's current status and the frontend
+    // can retry. When it succeeds, the extractor has updated the UserTicket row,
+    // so re-read it to return the fresh extraction_status.
+    if (extractorConfigured()) {
+      await invokeExtractor({ bucket: bucketName(), key: derivedKey });
+      const refreshed = await db().tickets.get(email, ticketId);
+      return okJson(202, {
+        ticketId,
+        extraction_status: refreshed?.extraction_status ?? existing.extraction_status,
+      });
+    }
 
     return okJson(202, {
       ticketId: existing.ticketId,

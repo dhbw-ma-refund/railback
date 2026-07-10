@@ -22,25 +22,41 @@ and exposes `/_internal/*` (shared-secret-gated) for the work that would
 normally be trigger-driven (email retry, SES webhook replay, anonymisation,
 SEPA report ingest). The Function URL is the public endpoint — no API Gateway.
 
-**Deploy it:**
+**Ticket extraction** (Aztec barcode / PDF text) runs as a SECOND function
+(Python, its own slot), because it can't bundle into Node. There's no S3
+trigger, so the dispatcher invokes it **synchronously** from `upload-confirm`
+via `lambda:InvokeFunction` with a synthetic S3 event (see
+`lambdas/user-handler/src/routes/invoke-extractor.ts`). Gated on
+`RAILBACK_EXTRACTOR_FUNCTION` — unset → extraction is skipped and tickets use
+the route-template (`MANUAL_ROUTE`) flow instead.
+
+**Deploy it (two functions):**
 ```bash
 export AWS_PROFILE=railback
 cd railback/backend
 cp scripts/environment.example.json scripts/environment.json   # then fill in secrets + prof's bucket/SES
-scripts/deploy-single.sh                                        # build + config + env + code + URL
+
+# 1. deploy the Python extractor to a dedicated Python slot
+RAILBACK_EXTRACTOR_FN=<a-python-slot> scripts/deploy-extractor.sh
+# 2. set RAILBACK_EXTRACTOR_FUNCTION=<that slot> in scripts/environment.json
+# 3. deploy the dispatcher (main function)
+scripts/deploy-single.sh
 ```
 `environment.json` is gitignored (holds the KEK/JWT/internal secret). Generate
 secrets with `openssl rand -hex 32` (JWT), `openssl rand -base64 32` (KEK),
-`openssl rand -hex 24` (internal). The script prints the Function URL + a smoke
-test at the end.
+`openssl rand -hex 24` (internal). Each deploy script prints its result + a
+smoke test at the end. (The extractor zip is ~48 MB — under the 50 MB direct
+zip-upload limit, but only just.)
 
 **What's live vs manual in this mode:**
-- Live (synchronous): register, login/refresh, profile, route-template ticket,
-  refund submit → EU-form rendered + emailed, admin review/approve, pain.008.
+- Live (synchronous): register, login/refresh, profile, ticket upload +
+  **extraction** (via direct-invoke), route-template ticket, refund submit →
+  EU-form rendered + emailed, admin review/approve, pain.008.
 - Manual (call `POST /_internal/...` with `x-internal-secret` header, since no
-  triggers): `email-sweep`, `email-webhook` (replay SES event), `anonymisation-sweep`,
-  `sepa-reports`. Barcode ticket-extraction (Python) is **not** deployed — use
-  the route-template (`MANUAL_ROUTE`) flow instead.
+  triggers): `email-sweep` (retry attempts 2-3), `email-webhook` (replay an SES
+  delivery/bounce event to advance a ticket), `anonymisation-sweep` (GDPR).
+  These are genuinely periodic/background jobs, not part of the happy path — the
+  first email send is inline, so a normal refund demo needs no manual step.
 
 Blockers still pending from the prof: **S3 bucket name** + **SES from-address**
 (and SES out of sandbox). Fill those into `environment.json` before the refund/

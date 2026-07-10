@@ -11,6 +11,9 @@
     "RAILBACK_S3_BUCKET": "REPLACE_with_prof_bucket_name",
     "RAILBACK_SES_FROM_ADDRESS": "noreply@REPLACE_with_verified_domain",
 
+    "_comment_extractor": "Set to the function name hosting the Python ticket-extractor (deploy-extractor.sh). If empty, upload-confirm skips extraction (tickets must use the MANUAL_ROUTE flow).",
+    "RAILBACK_EXTRACTOR_FUNCTION": "",
+
     "_comment_optional": "Below are optional. Omit SES config set if no SNS wiring. Add the 4 RAILBACK_SEPA_* only if demoing pain.008.",
     "RAILBACK_SES_CONFIGURATION_SET": "",
     "RAILBACK_SEPA_KONTOINHABER": "",

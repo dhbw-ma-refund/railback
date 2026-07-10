@@ -35,6 +35,7 @@ SDK_EXTERNAL=(
   --external:@aws-sdk/lib-dynamodb
   --external:@aws-sdk/client-s3
   --external:@aws-sdk/client-sesv2
+  --external:@aws-sdk/client-lambda
 )
 
 # Deployable Node handler Lambdas. refund-pdf + pain008-generator intentionally
