@@ -806,6 +806,20 @@
   font-weight: 850;
 }
 
+.eligibility-card--percentage {
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(9, 67, 137, 0.1);
+}
+
+.eligibility-card--percentage .eligibility-card__amount {
+  min-width: 92px;
+  min-height: 58px;
+  color: var(--color-deep-trust-blue);
+  background: var(--color-relief-green);
+  font-size: 28px;
+  box-shadow: 0 10px 22px rgba(105, 182, 0, 0.24);
+}
+
 .eligibility-card h3 {
   margin: 0 0 10px;
   color: var(--color-deep-trust-blue);
