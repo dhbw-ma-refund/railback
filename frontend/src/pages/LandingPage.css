@@ -218,11 +218,16 @@
 
 @media (min-width: 1200px) {
   .hero__grid {
-    grid-template-columns: minmax(0, 1fr) minmax(460px, 720px);
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 620px);
+    gap: clamp(48px, 5vw, 96px);
+  }
+
+  .hero__copy {
+    max-width: 840px;
   }
 
   .hero-photo {
-    width: clamp(460px, min(31vw, 60vh), 720px);
+    width: clamp(460px, min(30vw, 60vh), 680px);
   }
 }
 
@@ -252,12 +257,12 @@
 
 @media (min-width: 2000px) {
   .hero__grid {
-    grid-template-columns: minmax(0, 1fr) minmax(760px, 900px);
-    gap: clamp(120px, 6vw, 160px);
+    grid-template-columns: minmax(0, 1fr) minmax(700px, 820px);
+    gap: clamp(96px, 5vw, 130px);
   }
 
   .hero__copy {
-    max-width: 900px;
+    max-width: 1040px;
   }
 
   .hero .h1 {
@@ -276,8 +281,19 @@
   }
 
   .hero-photo {
-    width: clamp(720px, min(34vw, 65vh), 900px);
+    width: clamp(740px, min(33vw, 65vh), 860px);
     border-radius: 38px;
+  }
+
+  .landing-page--phone-visual.landing-page--default .phone-col {
+    justify-content: flex-start;
+    width: min(460px, calc(100vw - 48px));
+    margin-left: 0;
+    margin-right: auto;
+  }
+
+  .landing-page--phone-visual .phone {
+    width: clamp(380px, 18vw, 430px);
   }
 
   .hero__cta {
@@ -295,7 +311,11 @@
   }
 
   .trust {
-    gap: 30px;
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    align-items: flex-start;
+    column-gap: 34px;
+    row-gap: 14px;
   }
 
   .trust__item {
@@ -311,11 +331,46 @@
   }
 }
 
-.hero-photo img {
+.hero-photo img,
+.hero-photo svg {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* Campaign headlines use manual line breaks (\n) for exact wording control.
+   Lift the shared 15–16ch cap so each intended line stays on one line instead
+   of getting wrapped further. Scoped to campaign pages only — the main landing
+   page keeps its tighter measure. */
+.landing-page.landing-campaign .hero__title {
+  max-width: none;
+}
+
+/* Campaign pages that still show the compact phone mock (no hero image yet):
+   the phone is narrow and right-aligned, so the default wide visual track opens
+   a large empty gap between copy and phone (and strands the floating badge).
+   Pull the columns together and hand the freed width to the copy column.
+   When a hero image is set the root becomes `--default` and the standard
+   full-bleed layout applies again automatically. */
+@media (min-width: 1200px) {
+  .landing-page.landing-campaign.landing-page--campaign .hero__grid {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: clamp(48px, 5vw, 88px);
+    max-width: clamp(1140px, 84vw, 1520px);
+  }
+}
+
+@media (min-width: 2000px) {
+  .landing-page.landing-campaign.landing-page--campaign .hero__grid {
+    grid-template-columns: minmax(0, 1fr) 420px;
+    gap: 100px;
+    max-width: 1640px;
+  }
+
+  .landing-page.landing-campaign.landing-page--campaign .hero__copy {
+    max-width: 820px;
+  }
 }
 
 .landing-page--default .phone-col,
@@ -326,6 +381,46 @@
 .landing-page--default .hero-photo-col,
 .landing-page--campaign .phone-col {
   display: flex;
+}
+
+.landing-page--phone-visual.landing-page--default .phone-col {
+  display: flex;
+  justify-content: flex-end;
+  width: min(420px, calc(100vw - 48px));
+  margin-left: auto;
+}
+
+.landing-page--phone-visual .phone {
+  width: clamp(300px, 19vw, 390px);
+  height: auto;
+  aspect-ratio: 330 / 674;
+}
+
+.landing-page--phone-visual .floating-badge {
+  left: -72px;
+  bottom: 112px;
+}
+
+.landing-page--phone-visual .floating-badge .infocard {
+  max-width: 470px;
+  padding: 26px 30px;
+  gap: 24px;
+  border-radius: 22px;
+}
+
+.landing-page--phone-visual .floating-badge .infocard__badge {
+  width: 98px;
+  height: 98px;
+  border-radius: 22px;
+  font-size: 31px;
+}
+
+.landing-page--phone-visual .floating-badge .infocard__title {
+  font-size: 24px;
+}
+
+.landing-page--phone-visual .floating-badge .infocard__sub {
+  font-size: 17px;
 }
 
 @media (max-width: 980px) and (min-width: 768px) {
