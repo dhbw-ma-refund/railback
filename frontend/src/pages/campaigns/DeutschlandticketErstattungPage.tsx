@@ -4,6 +4,10 @@ import type { CampaignContent } from '../CampaignLandingPage';
 /**
  * Campaign 2 — railback.de/deutschlandticket-erstattung
  * Focus: automatic compensation for Deutschlandticket & other long-term tickets.
+ *
+ * To use a campaign photo, import it and set `heroVisual`, e.g.:
+ *   import heroImg from '../../../shared/assets/deutschlandticket-hero.png';
+ *   heroVisual: <img src={heroImg} alt="…" />
  */
 const content: CampaignContent = {
   title: 'Automatische Entschädigung für\nDeutschlandticket & Langzeit Tickets',

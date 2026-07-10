@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@shared/components';
 import { Header } from '../components/Header';
@@ -57,6 +58,12 @@ export interface CampaignContent {
   ctaLabel: string;
   /** Shorter CTA label for narrow screens. Falls back to `ctaLabel`. */
   mobileCtaLabel?: string;
+  /**
+   * Optional hero visual shown on the right (e.g. a campaign illustration).
+   * When set it replaces the default phone mock and renders in the shared
+   * `.hero-photo` container.
+   */
+  heroVisual?: ReactNode;
 }
 
 interface CampaignLandingPageProps {
@@ -80,8 +87,13 @@ export const CampaignLandingPage = ({ content }: CampaignLandingPageProps) => {
     navigate('/user');
   };
 
+  // The `--default` / `--campaign` modifier only picks which hero visual column
+  // is shown: `--default` reveals `.hero-photo-col` (image/illustration),
+  // `--campaign` reveals `.phone-col` (the phone mock). Reuse that here.
+  const rootModifier = content.heroVisual ? 'landing-page--default' : 'landing-page--campaign';
+
   return (
-    <div className="landing-page landing-page--campaign">
+    <div className={`landing-page ${rootModifier}`}>
       <Header ctaLabel={content.ctaLabel} />
       <section className="hero">
         <div className="hero__bg"></div>
@@ -125,6 +137,11 @@ export const CampaignLandingPage = ({ content }: CampaignLandingPageProps) => {
                 ))}
               </div>
             </div>
+            {content.heroVisual ? (
+              <div className="hero-photo-col">
+                <div className="hero-photo hero-photo--illustration">{content.heroVisual}</div>
+              </div>
+            ) : (
             <div className="phone-col">
               <div className="phone">
                 <div className="phone__notch"></div>
@@ -170,6 +187,7 @@ export const CampaignLandingPage = ({ content }: CampaignLandingPageProps) => {
                 </div>
               </div>
             </div>
+            )}
           </div>
         </div>
       </section>
