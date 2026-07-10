@@ -14,6 +14,8 @@ const content: CampaignContent = {
     'Verspätung automatisch prüfen lassen',
     'Erstattung erhalten',
   ],
+  className: 'campaign-ticket',
+  phoneAsHeroVisual: true,
 };
 
 export const TicketErstattungPage = () => <CampaignLandingPage content={content} />;

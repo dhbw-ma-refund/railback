@@ -363,6 +363,18 @@
   display: flex;
 }
 
+.landing-page--phone-visual.landing-page--default .phone-col {
+  display: flex;
+  justify-content: center;
+  width: min(460px, calc(100vw - 48px));
+}
+
+.landing-page--phone-visual .phone {
+  width: clamp(330px, 24vw, 440px);
+  height: auto;
+  aspect-ratio: 330 / 674;
+}
+
 @media (max-width: 980px) and (min-width: 768px) {
   .landing-page {
     --hero-header-offset: 84px;

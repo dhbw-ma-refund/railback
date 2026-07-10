@@ -66,6 +66,8 @@ export interface CampaignContent {
    * `.hero-photo` container.
    */
   heroVisual?: ReactNode;
+  /** Show the shared phone mock inside the default two-column hero layout. */
+  phoneAsHeroVisual?: boolean;
   /**
    * Optional extra root class for per-campaign CSS tweaks (e.g. a smaller
    * headline for a longer, multi-line title).
@@ -95,13 +97,13 @@ export const CampaignLandingPage = ({ content }: CampaignLandingPageProps) => {
     navigate('/user');
   };
 
-  // The `--default` / `--campaign` modifier only picks which hero visual column
-  // is shown: `--default` reveals `.hero-photo-col` (image/illustration),
-  // `--campaign` reveals `.phone-col` (the phone mock). Reuse that here.
-  const rootModifier = content.heroVisual ? 'landing-page--default' : 'landing-page--campaign';
+  // The default layout matches the main landing page and can show either a
+  // supplied visual or the shared phone mock in the right column.
+  const rootModifier = content.heroVisual || content.phoneAsHeroVisual ? 'landing-page--default' : 'landing-page--campaign';
+  const phoneVisualClass = content.phoneAsHeroVisual ? 'landing-page--phone-visual' : '';
 
   return (
-    <div className={`landing-page landing-campaign ${content.className ?? ''} ${rootModifier}`}>
+    <div className={`landing-page landing-campaign ${content.className ?? ''} ${rootModifier} ${phoneVisualClass}`}>
       <Header ctaLabel={content.ctaLabel} />
       <section className="hero">
         <div className="hero__bg"></div>
