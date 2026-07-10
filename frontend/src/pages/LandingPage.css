@@ -227,7 +227,7 @@
   }
 
   .hero-photo {
-    width: clamp(430px, min(29vw, 58vh), 640px);
+    width: clamp(460px, min(30vw, 60vh), 680px);
   }
 }
 
@@ -281,7 +281,7 @@
   }
 
   .hero-photo {
-    width: clamp(700px, min(32vw, 65vh), 820px);
+    width: clamp(740px, min(33vw, 65vh), 860px);
     border-radius: 38px;
   }
 
