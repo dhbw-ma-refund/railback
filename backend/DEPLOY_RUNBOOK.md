@@ -16,6 +16,15 @@ triggers. So the whole backend runs as **one dispatcher Lambda**, not the 8
 separate functions the "Mental model" / provisioning sections below describe.
 (Those sections are kept for reference / if broader access is ever granted.)
 
+**Which functions to deploy into.** This deploy uses TWO function slots: the
+Node dispatcher goes on your own `s241539`; the Python extractor goes on a
+second slot you designate at deploy time (`RAILBACK_EXTRACTOR_FN`). The slot
+must be one you've been granted — the correct granted list is TBD (the first
+list provided did not match any existing function names). Deploying **replaces
+all code** on the target function (`update-function-code` overwrites the
+zip wholesale), so "clearing its old content" happens automatically — but only
+point the scripts at functions you're allowed to clobber.
+
 **How it works:** `lambdas/_deploy/src/index.ts` is a dispatcher that routes
 `/auth`, `/users`, `/admin` to the real handlers (they self-route internally),
 and exposes `/_internal/*` (shared-secret-gated) for the work that would
