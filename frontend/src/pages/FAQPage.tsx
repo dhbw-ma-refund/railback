@@ -106,7 +106,7 @@ const content: Record<string, Record<string, TopicContent>> = {
       img: 'Screenshot: Antrag-Freigabe & Status',
       qa: [
         { q: 'Wird der Antrag automatisch versendet?', a: ['Nein. Kein Antrag verlässt RailBack ohne deine ausdrückliche Freigabe. Du behältst die volle Kontrolle.'] },
-        { q: 'Was passiert nach der Freigabe?', a: ['Wir reichen deinen Antrag bei der Bahn ein. Die Prüfung dauert meist 3–5 Tage – du siehst den Status jederzeit in der App.'] },
+        { q: 'Was passiert nach der Freigabe?', a: ['Wir reichen deinen Antrag bei der Bahn ein. Die Prüfung dauert meist zwischen drei und fünf Tagen. Du siehst den Status jederzeit in der App.'] },
         { q: 'Wohin wird die Erstattung ausgezahlt?', a: ['Auf das von dir hinterlegte Konto (IBAN). Sobald die Auszahlung initiiert ist, bekommst du eine Benachrichtigung.'] },
       ],
     },
@@ -141,7 +141,7 @@ const content: Record<string, Record<string, TopicContent>> = {
       img: 'Screenshot: claim approval & status',
       qa: [
         { q: 'Is the claim sent automatically?', a: ['No. No claim leaves RailBack without your explicit approval. You stay in full control.'] },
-        { q: 'What happens after I approve?', a: ['We file your claim with the railway. Review usually takes 3–5 days – you can see the status in the app anytime.'] },
+        { q: 'What happens after I approve?', a: ['We file your claim with the railway. Review usually takes between three and five days. You can see the status in the app anytime.'] },
         { q: 'Where is the refund paid out?', a: ['To the account (IBAN) you provided. As soon as the payout is initiated, you get a notification.'] },
       ],
     },
