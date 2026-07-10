@@ -5,6 +5,7 @@
 /* Landing page specific styles */
 .landing-page {
   --hero-header-offset: 112px;
+  --page-inline-padding: clamp(22px, 4vw, 96px);
   min-height: 100vh;
   background: var(--color-warm-off-white);
   display: flex;
@@ -21,8 +22,8 @@
 .pricing-page .wrap {
   max-width: 2560px;
   margin: 0 auto;
-  padding-right: clamp(22px, 4vw, 96px);
-  padding-left: clamp(22px, 4vw, 96px);
+  padding-right: var(--page-inline-padding, clamp(22px, 4vw, 96px));
+  padding-left: var(--page-inline-padding, clamp(22px, 4vw, 96px));
 }
 
 .container {
@@ -196,6 +197,7 @@
   display: flex;
   justify-content: flex-end;
   position: relative;
+  isolation: isolate;
   margin-right: 0;
   max-width: 100%;
 }
@@ -204,8 +206,28 @@
   display: flex;
   justify-content: flex-end;
   position: relative;
+  isolation: isolate;
   margin-right: 0;
   max-width: 100%;
+}
+
+.phone-col::before,
+.hero-photo-col::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  right: -10%;
+  width: 125%;
+  max-width: 680px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(147, 205, 28, 0.24), transparent 42%),
+    radial-gradient(circle at 58% 55%, rgba(9, 67, 137, 0.2), transparent 68%);
+  transform: translateY(-50%);
+  filter: blur(6px);
+  pointer-events: none;
 }
 
 .hero-photo {
@@ -428,34 +450,71 @@
     --hero-header-offset: 84px;
   }
 
+  .landing-page .hdr__nav {
+    display: none;
+  }
+
   .hero {
     padding: 44px 0 56px;
   }
 
   .hero__grid {
-    grid-template-columns: 1fr;
-    gap: 34px;
-    justify-items: start;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 280px);
+    gap: clamp(24px, 4vw, 36px);
+    max-width: 900px;
+    justify-items: stretch;
+  }
+
+  .landing-page--campaign .hero__grid {
+    grid-template-columns: minmax(0, 720px);
+    max-width: 720px;
+  }
+
+  .hero__copy {
+    max-width: 100%;
   }
 
   .hero .h1 {
     max-width: 17ch;
-    font-size: clamp(36px, 6vw, 48px);
+    font-size: clamp(34px, 4.5vw, 40px);
   }
 
   .hero__proof li {
-    font-size: clamp(19px, 2.5vw, 22px);
+    font-size: clamp(17px, 2.2vw, 19px);
   }
 
-  .phone-col,
-  .hero-photo-col {
+  .landing-page .phone-col {
+    display: none;
+  }
+
+  .landing-page--phone-visual.landing-page--default .phone-col {
+    display: flex;
     width: 100%;
-    justify-content: center;
+    justify-content: flex-end;
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .landing-page--phone-visual .phone {
+    width: min(250px, 100%);
+    height: auto;
+    aspect-ratio: 330 / 674;
+  }
+
+  .landing-page--phone-visual .floating-badge {
+    display: none;
+  }
+
+  .landing-page .hero-photo-col {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
     margin-right: 0;
   }
 
   .hero-photo {
-    width: min(430px, calc(100vw - 48px));
+    width: 100%;
+    max-width: 280px;
   }
 
   .phone {
@@ -769,6 +828,20 @@
   font-weight: 850;
 }
 
+.eligibility-card--percentage {
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(9, 67, 137, 0.1);
+}
+
+.eligibility-card--percentage .eligibility-card__amount {
+  min-width: 92px;
+  min-height: 58px;
+  color: var(--color-deep-trust-blue);
+  background: var(--color-relief-green);
+  font-size: 28px;
+  box-shadow: 0 10px 22px rgba(105, 182, 0, 0.24);
+}
+
 .eligibility-card h3 {
   margin: 0 0 10px;
   color: var(--color-deep-trust-blue);
@@ -889,8 +962,10 @@
     margin-right: 0;
   }
 
+  .landing-page--phone-visual.landing-page--default .phone-col,
   .landing-page--campaign .phone-col {
     display: none;
+    margin-right: 0;
   }
 
   .hero-photo-col {
@@ -950,7 +1025,7 @@
     justify-content: center;
     min-height: 48px;
     height: 48px;
-    font-size: 16px;
+    font-size: 22px;
     font-weight: 800;
     border-radius: 8px;
     box-shadow: 0 8px 18px rgba(9, 67, 137, 0.18);

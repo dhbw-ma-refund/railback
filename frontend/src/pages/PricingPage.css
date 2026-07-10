@@ -2,6 +2,7 @@
 @import '@shared/styles/typography.css';
 
 .pricing-page {
+  --page-inline-padding: clamp(22px, 4vw, 96px);
   min-height: 100svh;
   background: var(--color-warm-off-white);
   display: flex;
@@ -22,7 +23,7 @@
 .pricing-page__head {
   position: absolute;
   top: clamp(16px, 2.5vh, 36px);
-  left: clamp(22px, 4.5vw, 88px);
+  left: var(--page-inline-padding);
   z-index: 1;
   margin: 0;
   /* Gleiches padding-top wie die FAQ-Seite (.page__head), damit der Button
@@ -269,7 +270,7 @@
   .pricing-page__head {
     position: static;
     margin: var(--spacing-2) 0;
-    padding: var(--spacing-2) var(--margin-mobile) 0;
+    padding: var(--spacing-2) var(--page-inline-padding) 0;
   }
 
   .pricing-page .pricing-page__back {

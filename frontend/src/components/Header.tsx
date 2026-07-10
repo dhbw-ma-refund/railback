@@ -46,9 +46,6 @@ export const Header = ({ ctaLabel }: HeaderProps) => {
           </button>
         </div>
         <nav className="hdr__nav" aria-label="Hauptnavigation">
-          <button className="hdr__link" onClick={() => navigate('/faq')}>
-            {t.menu.faq}
-          </button>
           <button className="hdr__link" onClick={() => navigate('/preise')}>
             {t.menu.prices}
           </button>

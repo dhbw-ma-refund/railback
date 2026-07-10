@@ -210,7 +210,10 @@ export const CampaignLandingPage = ({ content }: CampaignLandingPageProps) => {
           </div>
           <div className="eligibility__rail" aria-label={t.eligibility.eyebrow}>
             {t.eligibility.items.map((item: { amount: string; title: string; text: string }) => (
-              <article className="eligibility-card" key={item.title}>
+              <article
+                className={`eligibility-card${item.amount.includes('%') ? ' eligibility-card--percentage' : ''}`}
+                key={item.title}
+              >
                 <div className="eligibility-card__amount">{item.amount}</div>
                 <h3>{item.title}</h3>
                 <p>{item.text}</p>

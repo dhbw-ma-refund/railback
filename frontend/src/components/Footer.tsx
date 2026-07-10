@@ -17,12 +17,15 @@ export const Footer = () => {
                 alt="RailBack Logo"
                 className="footer__logo-img"
               />
-              <span className="footer__logo">RailBack</span>
+              <span className="footer__logo-text">
+                <span className="footer__logo">RailBack</span>
+                <span className="footer__logo-claim">{t.hero.claim}</span>
+              </span>
             </div>
-            <p className="footer__tagline">{t.footer.tagline}</p>
           </div>
           <div className="footer__links">
             <Link to="/faq">{t.menu.faq}</Link>
+            <Link to="/preise">{t.menu.prices}</Link>
             <Link to="/impressum">{t.menu.imprint}</Link>
             <Link to="/rechtliches">{t.menu.legal}</Link>
           </div>
