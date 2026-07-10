@@ -327,21 +327,6 @@
   max-width: none;
 }
 
-/* Deutschlandticket campaign: the headline is a fixed 3-line block. Size it as
-   large as possible while keeping the longest line ("Automatische Entschädigung",
-   ≈13.75px wide per 1px of font-size) on a single line within the copy column.
-   The compact-phone layout below keeps that column ~720px wide. */
-.landing-page.campaign-dticket .hero__title {
-  font-size: clamp(36px, 4vw, 50px);
-  line-height: 1.14;
-}
-
-@media (min-width: 2000px) {
-  .landing-page.campaign-dticket .hero__title {
-    font-size: clamp(50px, 2.7vw, 58px);
-  }
-}
-
 /* Campaign pages that still show the compact phone mock (no hero image yet):
    the phone is narrow and right-aligned, so the default wide visual track opens
    a large empty gap between copy and phone (and strands the floating badge).
