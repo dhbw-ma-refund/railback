@@ -287,8 +287,13 @@
 
   .landing-page--phone-visual.landing-page--default .phone-col {
     justify-content: flex-start;
+    width: min(460px, calc(100vw - 48px));
     margin-left: 0;
     margin-right: auto;
+  }
+
+  .landing-page--phone-visual .phone {
+    width: clamp(380px, 18vw, 430px);
   }
 
   .hero__cta {
@@ -381,12 +386,12 @@
 .landing-page--phone-visual.landing-page--default .phone-col {
   display: flex;
   justify-content: flex-end;
-  width: min(460px, calc(100vw - 48px));
+  width: min(420px, calc(100vw - 48px));
   margin-left: auto;
 }
 
 .landing-page--phone-visual .phone {
-  width: clamp(320px, 22vw, 430px);
+  width: clamp(300px, 19vw, 390px);
   height: auto;
   aspect-ratio: 330 / 674;
 }
