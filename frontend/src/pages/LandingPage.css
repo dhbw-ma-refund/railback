@@ -306,7 +306,11 @@
   }
 
   .trust {
-    gap: 30px;
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    align-items: flex-start;
+    column-gap: 34px;
+    row-gap: 14px;
   }
 
   .trust__item {
