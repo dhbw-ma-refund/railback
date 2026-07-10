@@ -58,6 +58,8 @@ export interface CampaignContent {
   ctaLabel: string;
   /** Shorter CTA label for narrow screens. Falls back to `ctaLabel`. */
   mobileCtaLabel?: string;
+  /** Campaign-specific benefit list. Falls back to the shared landing copy. */
+  proof?: string[];
   /**
    * Optional hero visual shown on the right (e.g. a campaign illustration).
    * When set it replaces the default phone mock and renders in the shared
@@ -87,6 +89,7 @@ export const CampaignLandingPage = ({ content }: CampaignLandingPageProps) => {
 
   const mobileTitle = content.mobileTitle ?? content.title;
   const mobileCta = content.mobileCtaLabel ?? content.ctaLabel;
+  const proof = content.proof ?? t.hero.proof;
 
   const handleCheckClaim = () => {
     navigate('/user');
@@ -114,7 +117,7 @@ export const CampaignLandingPage = ({ content }: CampaignLandingPageProps) => {
               <h1 className="h1 hero__title hero__title--desktop">{content.title}</h1>
               <h1 className="h1 hero__title hero__title--mobile">{mobileTitle}</h1>
               <ul className="hero__proof" aria-label="RailBack Vorteile">
-                {t.hero.proof.map((item: string) => (
+                {proof.map((item: string) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>

@@ -11,6 +11,11 @@ const content: CampaignContent = {
   mobileTitle: 'Automatische Entschädigung\nfür Deutschlandticket &\nLangzeittickets',
   ctaLabel: 'Jetzt Erstattung starten',
   mobileCtaLabel: 'Erstattung starten',
+  proof: [
+    'Deutschlandticket hinterlegen',
+    'Verspätungen automatisch prüfen lassen',
+    'Entschädigung erhalten',
+  ],
   className: 'campaign-dticket',
   heroVisual: (
     <img
