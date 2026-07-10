@@ -9,18 +9,28 @@
 }
 
 .pricing-main {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
+/* Gleiche Platzierung wie der Zurück-Button auf der FAQ-Übersicht:
+   absolut oben links, damit der Hero-Inhalt vertikal zentriert bleibt
+   und der Button denselben Abstand zum Header hat. */
 .pricing-page__head {
-  margin-top: var(--spacing-2);
-  margin-bottom: var(--spacing-2);
+  position: absolute;
+  top: clamp(16px, 2.5vh, 36px);
+  left: clamp(22px, 4.5vw, 88px);
+  z-index: 1;
+  margin: 0;
+  /* Gleiches padding-top wie die FAQ-Seite (.page__head), damit der Button
+     denselben Abstand zum Header hat. */
+  padding-top: var(--spacing-2);
 }
 
-.pricing-page__back {
+.pricing-page .pricing-page__back {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -153,6 +163,14 @@
 }
 
 @media (min-width: 1440px) {
+  /* Gleiche Button-Maße wie der Zurück-Button auf der FAQ-Seite. */
+  .pricing-page .pricing-page__back {
+    height: 50px;
+    min-height: 50px;
+    padding: 0 20px;
+    font-size: 17px;
+  }
+
   .pricing-hero {
     grid-template-columns: minmax(0, 1fr) minmax(500px, 600px);
     gap: clamp(72px, 5vw, 96px);
@@ -176,6 +194,14 @@
 }
 
 @media (min-width: 2000px) {
+  .pricing-page .pricing-page__back {
+    height: 58px;
+    min-height: 58px;
+    padding: 0 26px;
+    gap: 12px;
+    font-size: 20px;
+  }
+
   .pricing-hero {
     grid-template-columns: minmax(0, 1fr) minmax(620px, 680px);
     gap: 96px;
@@ -240,6 +266,19 @@
 }
 
 @media (max-width: 767px) {
+  .pricing-page__head {
+    position: static;
+    margin: var(--spacing-2) 0;
+    padding: var(--spacing-2) var(--margin-mobile) 0;
+  }
+
+  .pricing-page .pricing-page__back {
+    height: 44px;
+    min-height: 44px;
+    padding: 0 16px 0 12px;
+    background: transparent;
+  }
+
   .pricing-hero {
     gap: 24px;
   }

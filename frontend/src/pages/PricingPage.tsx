@@ -49,7 +49,7 @@ export const PricingPage = () => {
     <div className="pricing-page">
       <Header />
       <main className="pricing-main">
-        <div className="wrap container pricing-page__head">
+        <div className="pricing-page__head">
           <button
             type="button"
             className="rb-button rb-button--secondary rb-button--medium pricing-page__back"
