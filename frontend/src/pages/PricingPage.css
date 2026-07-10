@@ -27,6 +27,8 @@
 
 .pricing-page .pricing-hero.wrap {
   max-width: clamp(1180px, 78vw, 1800px);
+  padding-top: clamp(24px, 4vh, 48px);
+  padding-bottom: clamp(48px, 6vh, 80px);
 }
 
 .pricing-hero__copy {
@@ -207,6 +209,8 @@
 
   .pricing-page .pricing-hero.wrap {
     max-width: 760px;
+    padding-top: clamp(32px, 5vh, 52px);
+    padding-bottom: clamp(48px, 7vh, 72px);
   }
 
   .pricing-hero__copy {
@@ -226,8 +230,11 @@
 @media (max-width: 767px) {
   .pricing-hero {
     gap: 24px;
+  }
+
+  .pricing-page .pricing-hero.wrap {
     padding-top: 24px;
-    padding-bottom: 36px;
+    padding-bottom: 56px;
   }
 
   .pricing-hero__eyebrow {
