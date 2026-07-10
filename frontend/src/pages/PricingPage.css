@@ -12,6 +12,18 @@
   flex: 1;
   min-height: 0;
   display: flex;
+  flex-direction: column;
+}
+
+.pricing-page__head {
+  margin-top: var(--spacing-2);
+  margin-bottom: var(--spacing-2);
+}
+
+.pricing-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .pricing-hero {

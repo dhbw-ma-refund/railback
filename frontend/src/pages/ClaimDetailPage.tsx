@@ -1,4 +1,5 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useSmartBack } from '../hooks/useSmartBack';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { StatusChip, TicketState } from '../components/StatusChip';
@@ -119,7 +120,7 @@ const formatDateTime = (iso: string) => {
 const formatEuro = (decimal: string) => `${decimal.replace('.', ',')} €`;
 
 export const ClaimDetailPage = () => {
-  const navigate = useNavigate();
+  const goBack = useSmartBack('/dashboard');
   const { t } = useLanguage();
   const { ticketId } = useParams<{ ticketId: string }>();
 
@@ -136,7 +137,7 @@ export const ClaimDetailPage = () => {
         <button
           type="button"
           className="claim-detail__back"
-          onClick={() => navigate('/dashboard')}
+          onClick={goBack}
         >
           ← {t.claimDetail.back}
         </button>

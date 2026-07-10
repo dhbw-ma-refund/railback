@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useSmartBack } from '../hooks/useSmartBack';
 import { useLanguage } from '../lib/LanguageContext';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
@@ -155,7 +155,7 @@ const ImgPlaceholder = ({ label }: { label: string }) => (
 );
 
 export const FAQPage = () => {
-  const navigate = useNavigate();
+  const goBack = useSmartBack('/');
   const { lang, t } = useLanguage();
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [openQA, setOpenQA] = useState<number>(0);
@@ -223,7 +223,7 @@ export const FAQPage = () => {
           <div className="page__head">
             <button
               className="rb-button rb-button--secondary rb-button--medium back"
-              onClick={() => navigate('/')}
+              onClick={goBack}
             >
               <Icon name="arrowLeft" size={18} /> {t.menu.back}
             </button>

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useSmartBack } from '../hooks/useSmartBack';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { useLanguage } from '../lib/LanguageContext';
@@ -305,7 +305,7 @@ const RechtlichesContent = ({ lang }: { lang: Language }) => {
 };
 
 export const LegalPage = ({ type }: LegalPageProps) => {
-  const navigate = useNavigate();
+  const goBack = useSmartBack('/');
   const { lang, t } = useLanguage();
 
   return (
@@ -316,7 +316,7 @@ export const LegalPage = ({ type }: LegalPageProps) => {
           <div className="legal-page__head">
             <button
               className="rb-button rb-button--secondary rb-button--medium legal-page__back"
-              onClick={() => navigate('/')}
+              onClick={goBack}
             >
               <span aria-hidden="true">←</span>
               {t.menu.back}
