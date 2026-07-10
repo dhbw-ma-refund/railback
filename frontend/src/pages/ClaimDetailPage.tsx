@@ -207,6 +207,9 @@ export const ClaimDetailPage = () => {
               <dt>{t.claimDetail.actual}</dt>
               <dd className="claim-detail__actual">
                 {ticket.tatsaechlich_abfahrtszeit} → {ticket.tatsaechlich_ankunftszeit}
+                <span className="claim-detail__delay-tag" aria-label={t.claimDetail.delayedTag}>
+                  {t.claimDetail.delayedTag}
+                </span>
               </dd>
             </div>
             <div>

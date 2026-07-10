@@ -34,6 +34,7 @@ export const LoginPage = () => {
       <main className="auth-container">
         <Card className="auth-card">
           <h1 className="h1">{t.auth.login.title}</h1>
+          <p className="auth-subtitle">{t.auth.login.subtitle}</p>
           {error && <div className="error-message">{error}</div>}
           <form onSubmit={handleSubmit}>
             <Input

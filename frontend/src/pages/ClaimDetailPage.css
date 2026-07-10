@@ -51,7 +51,7 @@
   font-size: var(--font-size-h1);
   line-height: var(--line-height-h1);
   font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
+  color: var(--color-deep-trust-blue);
   margin: 0;
 }
 
@@ -78,7 +78,7 @@
   font-size: var(--font-size-h3);
   line-height: var(--line-height-h3);
   font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
+  color: var(--color-deep-trust-blue);
   margin: 0 0 4px;
 }
 
@@ -93,18 +93,21 @@
   display: grid;
   grid-template-columns: 40% 60%;
   gap: 8px;
-  font-size: var(--font-size-caption);
-  line-height: 1.4;
+  align-items: baseline;
 }
 
 .claim-detail__dl dt {
   color: var(--color-text-secondary);
   font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
   margin: 0;
 }
 
 .claim-detail__dl dd {
   color: var(--color-text-primary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
   margin: 0;
   word-break: break-word;
 }
@@ -115,8 +118,20 @@
 }
 
 .claim-detail__actual {
-  color: var(--color-error-red);
+  color: var(--color-warning-ink);
   font-weight: var(--font-weight-semibold);
+}
+
+.claim-detail__delay-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(242, 153, 0, 0.12);
+  color: var(--color-warning-ink);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
 }
 
 /* --- Timeline -------------------------------------------------- */
@@ -145,7 +160,8 @@
   top: 18px;
   bottom: -12px;
   width: 2px;
-  background: rgba(74, 107, 130, 0.25);
+  background: var(--color-muted-gray-blue);
+  opacity: 0.25;
 }
 
 .claim-detail__timeline-dot {

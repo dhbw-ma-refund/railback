@@ -232,6 +232,7 @@ export const RegisterPage = () => {
       <main className="auth-container">
         <Card className="auth-card">
           <h1 className="h1">{t.auth.register.title}</h1>
+          <p className="auth-subtitle">{t.auth.register.subtitle}</p>
           <div className="wizard-progress">
             {[1, 2, 3, 4].map((s) => (
               <div

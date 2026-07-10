@@ -85,6 +85,7 @@ export const ProfilePage = () => {
       <Header />
       <main className="profile-container">
         <h1 className="h1">{t.auth.profile.title}</h1>
+        <p className="profile-subtitle">{t.auth.profile.subtitle}</p>
 
         <Card className="profile-section">
           <div className="section-header">

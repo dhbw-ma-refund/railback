@@ -63,7 +63,7 @@ export const ProblemStep = () => {
                 aria-pressed={active}
               >
                 <span className="problem-row__box" aria-hidden="true">
-                  {active ? '✓' : '×'}
+                  {active ? '✓' : ''}
                 </span>
                 <span>{t.wizard.problem[row.labelKey]}</span>
               </button>

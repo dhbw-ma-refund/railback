@@ -190,7 +190,7 @@
 .rl-results__title {
   font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
-  color: var(--rl-ink);
+  color: var(--rl-cta);
   margin: 0;
 }
 
@@ -209,16 +209,16 @@
 
 .rl-card {
   background: white;
-  border: 1px solid var(--color-input-border);
+  border: 0;
   border-radius: var(--radius-card);
   overflow: hidden;
   box-shadow: var(--shadow-default);
-  transition: box-shadow 0.1s ease, border-color 0.1s ease;
+  transition: box-shadow 0.1s ease, transform 0.1s ease;
 }
 
 .rl-card:hover {
   box-shadow: var(--shadow-hover);
-  border-color: rgba(74, 107, 130, 0.3);
+  transform: translateY(-1px);
 }
 
 /* Left rail — color-codes the whole row at a glance. */

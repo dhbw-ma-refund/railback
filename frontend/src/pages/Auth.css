@@ -2,6 +2,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: var(--color-warm-off-white);
 }
 
 .auth-container {
@@ -10,7 +11,9 @@
   justify-content: center;
   align-items: center;
   padding: var(--spacing-4);
-  background: linear-gradient(180deg, rgba(9, 67, 137, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+  background:
+    linear-gradient(180deg, rgba(9, 67, 137, 0.05) 0%, rgba(147, 205, 28, 0.04) 100%),
+    var(--color-warm-off-white);
 }
 
 .auth-card {
@@ -20,8 +23,24 @@
 }
 
 .auth-card .h1 {
-  margin-bottom: var(--spacing-3);
+  margin-bottom: var(--spacing-1);
   text-align: center;
+}
+
+.auth-subtitle {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  margin: 0 0 var(--spacing-3);
+}
+
+.profile-subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  margin: 0 0 var(--spacing-3);
+  max-width: 60ch;
 }
 
 .auth-card .h2 {
@@ -42,7 +61,9 @@
 .auth-link {
   text-align: center;
   margin-top: var(--spacing-3);
-  font-size: 14px;
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  color: var(--color-text-secondary);
 }
 
 .auth-link a {
@@ -96,23 +117,25 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 2px solid var(--color-muted-gray-blue);
+  border: 2px solid var(--color-input-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  color: var(--color-muted-gray-blue);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  background: white;
 }
 
 .wizard-step.active {
   border-color: var(--color-deep-trust-blue);
   background: var(--color-deep-trust-blue);
   color: #fff;
+  box-shadow: 0 0 0 3px rgba(9, 67, 137, 0.15);
 }
 
 .wizard-step.completed {
-  border-color: var(--color-relief-green);
-  background: var(--color-relief-green);
+  border-color: var(--color-deep-trust-blue);
+  background: var(--color-deep-trust-blue);
   color: #fff;
 }
 
@@ -122,14 +145,22 @@
   margin-top: var(--spacing-3);
 }
 
+.profile-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-warm-off-white);
+}
+
 .profile-container {
   max-width: 800px;
   margin: 0 auto;
   padding: var(--spacing-4);
+  width: 100%;
 }
 
 .profile-container .h1 {
-  margin-bottom: var(--spacing-3);
+  margin-bottom: var(--spacing-1);
 }
 
 .profile-section {
@@ -154,10 +185,13 @@
 
 .profile-data p {
   margin-bottom: var(--spacing-1);
-  font-size: 16px;
-  line-height: 140%;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text-primary);
 }
 
 .profile-data strong {
-  color: var(--color-deep-trust-blue);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+  margin-right: 4px;
 }

@@ -30,7 +30,7 @@
   font-size: var(--font-size-h1);
   line-height: var(--line-height-h1);
   font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
+  color: var(--color-deep-trust-blue);
   margin: 0;
 }
 
@@ -66,7 +66,7 @@
   padding: 0 var(--spacing-2);
   font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
+  color: var(--color-deep-trust-blue);
   margin: 0;
 }
 
@@ -114,7 +114,7 @@
 .claim-card__id {
   font-weight: var(--font-weight-bold);
   font-size: var(--font-size-body);
-  color: var(--color-text-primary);
+  color: var(--color-deep-trust-blue);
 }
 
 .claim-card__dot {
@@ -147,13 +147,16 @@
 .claim-card__body > div {
   display: flex;
   gap: 6px;
-  font-size: var(--font-size-caption);
-  color: var(--color-text-secondary);
-  line-height: 1.4;
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-body);
 }
 
 .claim-card__body dt {
   font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+  align-self: center;
   margin: 0;
 }
 
