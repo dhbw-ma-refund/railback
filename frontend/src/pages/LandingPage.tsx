@@ -61,6 +61,7 @@ export const LandingPage = () => {
   return (
     <div className="landing-page landing-page--default">
       <Header />
+      <main className="landing-main">
       <section className="hero">
         <div className="hero__bg"></div>
         <div className="wrap container">
@@ -135,6 +136,7 @@ export const LandingPage = () => {
           </div>
         </div>
       </section>
+      </main>
       <Footer />
     </div>
   );

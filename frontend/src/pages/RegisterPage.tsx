@@ -229,7 +229,7 @@ export const RegisterPage = () => {
   return (
     <div className="auth-page">
       <Header />
-      <div className="auth-container">
+      <main className="auth-container">
         <Card className="auth-card">
           <h1 className="h1">{t.auth.register.title}</h1>
           <div className="wizard-progress">
@@ -250,7 +250,7 @@ export const RegisterPage = () => {
             <a href="/login">{t.auth.register.login}</a>
           </p>
         </Card>
-      </div>
+      </main>
       <Footer />
     </div>
   );

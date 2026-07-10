@@ -83,7 +83,7 @@ export const ProfilePage = () => {
   return (
     <div className="profile-page">
       <Header />
-      <div className="profile-container">
+      <main className="profile-container">
         <h1 className="h1">{t.auth.profile.title}</h1>
 
         <Card className="profile-section">
@@ -269,7 +269,7 @@ export const ProfilePage = () => {
             </>
           )}
         </Card>
-      </div>
+      </main>
       <Footer />
     </div>
   );

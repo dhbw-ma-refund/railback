@@ -24,7 +24,13 @@
   flex-direction: column;
 }
 
-.landing-page > .hero {
+.landing-page > .landing-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-main > .hero {
   flex: 1;
 }
 
@@ -856,7 +862,7 @@
     --hero-header-offset: 80px;
   }
 
-  .landing-page > .hero {
+  .landing-page > .landing-main > .hero {
     flex: 0 0 auto;
   }
 

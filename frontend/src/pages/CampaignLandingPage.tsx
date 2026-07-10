@@ -105,6 +105,7 @@ export const CampaignLandingPage = ({ content }: CampaignLandingPageProps) => {
   return (
     <div className={`landing-page landing-campaign ${content.className ?? ''} ${rootModifier} ${phoneVisualClass}`}>
       <Header ctaLabel={content.ctaLabel} />
+      <main className="landing-main">
       <section className="hero">
         <div className="hero__bg"></div>
         <div className="wrap container">
@@ -222,6 +223,7 @@ export const CampaignLandingPage = ({ content }: CampaignLandingPageProps) => {
           </div>
         </div>
       </section>
+      </main>
       <Footer />
     </div>
   );

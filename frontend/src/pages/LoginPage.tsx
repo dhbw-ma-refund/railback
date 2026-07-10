@@ -31,7 +31,7 @@ export const LoginPage = () => {
   return (
     <div className="auth-page">
       <Header />
-      <div className="auth-container">
+      <main className="auth-container">
         <Card className="auth-card">
           <h1 className="h1">{t.auth.login.title}</h1>
           {error && <div className="error-message">{error}</div>}
@@ -59,7 +59,7 @@ export const LoginPage = () => {
             <a href="/register">{t.auth.login.register}</a>
           </p>
         </Card>
-      </div>
+      </main>
       <Footer />
     </div>
   );
