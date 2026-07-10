@@ -188,6 +188,10 @@ export const BurgerMenu = ({ open, onClose, ctaLabel }: BurgerMenuProps) => {
             <span>{t.menu.prices}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
+          <button className="menu__item" onClick={() => goTo('/faq')}>
+            <span>{t.menu.faq}</span>
+            <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
+          </button>
           <a className="menu__item" href="mailto:support@railback.de?subject=Support-Anfrage%20RailBack">
             <span>{t.menu.support}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
