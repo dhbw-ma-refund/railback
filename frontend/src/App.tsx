@@ -4,6 +4,8 @@ import { AuthProvider } from './lib/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LandingPage } from './pages/LandingPage';
 import { CampaignLandingPage1 } from './pages/CampaignLandingPage1';
+import { TicketErstattungPage } from './pages/campaigns/TicketErstattungPage';
+import { DeutschlandticketErstattungPage } from './pages/campaigns/DeutschlandticketErstattungPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
@@ -52,6 +54,9 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/campaign-landing-page-1" element={<CampaignLandingPage1 />} />
+            {/* Marketing campaign landing pages — see src/pages/campaigns. */}
+            <Route path="/ticket-erstattung" element={<TicketErstattungPage />} />
+            <Route path="/deutschlandticket-erstattung" element={<DeutschlandticketErstattungPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/faq" element={<FAQPage />} />

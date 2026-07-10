@@ -108,12 +108,16 @@ const Icon = ({
 interface BurgerMenuProps {
   open: boolean;
   onClose: () => void;
+  /** Overrides the primary menu item's CTA label (used by campaign pages). */
+  ctaLabel?: string;
 }
 
-export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
+export const BurgerMenu = ({ open, onClose, ctaLabel }: BurgerMenuProps) => {
   const navigate = useNavigate();
   const { lang, setLang, t } = useLanguage();
   const { isAuthenticated, user, logout } = useAuth();
+
+  const cta = ctaLabel ?? t.hero.cta1;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -160,7 +164,7 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
           {isAuthenticated ? (
             <>
               <button className="menu__item menu__item--primary" onClick={() => goTo('/antrag/neu')}>
-                <span>{t.hero.cta1}</span>
+                <span>{cta}</span>
                 <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
               </button>
               <button className="menu__item" onClick={() => goTo('/dashboard')}>
@@ -176,7 +180,7 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
             </>
           ) : (
             <button className="menu__item menu__item--primary" onClick={() => goTo('/login')}>
-              <span>{t.hero.cta1}</span>
+              <span>{cta}</span>
               <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
             </button>
           )}

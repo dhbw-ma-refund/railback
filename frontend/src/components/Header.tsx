@@ -5,10 +5,21 @@ import { BurgerMenu } from './BurgerMenu';
 import { useLanguage } from '../lib/LanguageContext';
 import railbackLogo from '../../shared/assets/railback-logo.png';
 
-export const Header = () => {
+interface HeaderProps {
+  /**
+   * Overrides the CTA label in the nav button and the primary burger-menu item.
+   * Used by campaign landing pages so the whole page shares one CTA wording.
+   * Falls back to the default hero CTA when omitted.
+   */
+  ctaLabel?: string;
+}
+
+export const Header = ({ ctaLabel }: HeaderProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useLanguage();
+
+  const cta = ctaLabel ?? t.hero.cta1;
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -42,7 +53,7 @@ export const Header = () => {
             {t.menu.prices}
           </button>
           <button className="hdr__cta" onClick={() => navigate('/user')}>
-            {t.hero.cta1}
+            {cta}
           </button>
         </nav>
         <button
@@ -56,7 +67,7 @@ export const Header = () => {
           <span></span>
         </button>
       </header>
-      <BurgerMenu open={menuOpen} onClose={closeMenu} />
+      <BurgerMenu open={menuOpen} onClose={closeMenu} ctaLabel={ctaLabel} />
     </>
   );
 };
