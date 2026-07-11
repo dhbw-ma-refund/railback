@@ -80,12 +80,18 @@ if [[ $DO_CODE -eq 1 ]]; then
 fi
 
 if [[ $DO_URL -eq 1 ]]; then
-  echo ">> ensure Function URL (public, CORS *)"
-  CORS='AllowOrigins=*,AllowMethods=*,AllowHeaders=content-type:authorization:x-internal-secret'
+  echo ">> ensure Function URL (public, native CORS *)"
+  # CORS is owned by the Function URL platform (handlers set NO CORS headers —
+  # see lib/src/http/response.ts). AllowHeaders MUST be a JSON list of separate
+  # strings. The old shorthand 'AllowHeaders=a:b:c' parsed as ONE colon-joined
+  # header value, so the platform had zero valid allowed headers and answered
+  # every preflight with 200 + no Access-Control-* → browser CORS failure.
+  # Use --cli-input-json so the list can't be mangled by shorthand parsing.
+  CORS_JSON='{"AllowOrigins":["*"],"AllowMethods":["*"],"AllowHeaders":["content-type","authorization","x-internal-secret"],"MaxAge":86400}'
   aws lambda create-function-url-config --region "$REGION" --function-name "$FN" \
-    --auth-type NONE --cors "$CORS" >/dev/null 2>&1 \
+    --auth-type NONE --cli-input-json "{\"Cors\":$CORS_JSON}" >/dev/null 2>&1 \
   || aws lambda update-function-url-config --region "$REGION" --function-name "$FN" \
-    --auth-type NONE --cors "$CORS" >/dev/null 2>&1 || true
+    --auth-type NONE --cli-input-json "{\"Cors\":$CORS_JSON}" >/dev/null 2>&1 || true
 fi
 
 URL="$(aws lambda get-function-url-config --region "$REGION" --function-name "$FN" --query FunctionUrl --output text 2>/dev/null || true)"

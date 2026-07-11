@@ -81,19 +81,17 @@ export async function handler(event: ApiGwEvent): Promise<ApiGwResponse> {
     const method = event.requestContext?.http?.method?.toUpperCase() ?? "GET";
     const path = event.requestContext?.http?.path ?? event.rawPath ?? "";
 
-    // CORS preflight. The Function URL's native CORS also answers this; we
-    // respond here too so behaviour is identical whether or not native CORS is
-    // configured, and to advertise the x-internal-secret header.
+    // CORS is owned by the Function URL's NATIVE CORS config, not here. The
+    // platform intercepts the OPTIONS preflight before this handler runs and
+    // injects Access-Control-* on every response. We must NOT set CORS headers
+    // ourselves — a handler-set access-control-allow-origin gets ADDED to the
+    // platform's, yielding a duplicated header value that browsers reject.
+    // (Verified 2026-07-11: preflight returns the platform's 200/json, never
+    // this handler's response.) If native CORS is ever removed, restore an
+    // OPTIONS branch here AND drop the config — never run both. See
+    // DEPLOY_RUNBOOK.md.
     if (method === "OPTIONS") {
-      return {
-        statusCode: 204,
-        headers: {
-          "access-control-allow-origin": "*",
-          "access-control-allow-headers": "authorization,content-type,x-internal-secret",
-          "access-control-allow-methods": "GET,POST,PATCH,PUT,DELETE,OPTIONS",
-        },
-        body: "",
-      };
+      return { statusCode: 204, headers: {}, body: "" };
     }
 
     // Liveness probe (no auth) — handy for the demo / uptime check.

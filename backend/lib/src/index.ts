@@ -13,7 +13,6 @@ export { AppError, ERROR_STATUS_CODES, toApiResponse } from "./errors/index.js";
 export type { ApiErrorBody, ApiErrorResponse } from "./errors/index.js";
 
 export {
-  corsHeaders,
   jsonResponse,
   noContentResponse,
   errorResponse,

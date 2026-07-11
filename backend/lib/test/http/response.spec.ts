@@ -1,24 +1,23 @@
 import { describe, expect, it } from "vitest";
 import { AppError } from "../../src/errors/index.js";
 import {
-  corsHeaders,
   errorResponse,
   jsonResponse,
   noContentResponse,
 } from "../../src/http/response.js";
 
 describe("http response helpers", () => {
-  it("corsHeaders has the three required directives", () => {
-    expect(corsHeaders["access-control-allow-origin"]).toBe("*");
-    expect(corsHeaders["access-control-allow-headers"]).toContain("authorization");
-    expect(corsHeaders["access-control-allow-methods"]).toContain("PATCH");
+  it("response helpers do NOT set CORS headers (Function URL native CORS owns them)", () => {
+    // Setting access-control-allow-origin here would duplicate the platform's
+    // header on the Function URL and get rejected by browsers. See response.ts.
+    expect(jsonResponse(200, {}).headers["access-control-allow-origin"]).toBeUndefined();
+    expect(noContentResponse().headers["access-control-allow-origin"]).toBeUndefined();
   });
 
   it("jsonResponse stringifies + includes content-type", () => {
     const r = jsonResponse(200, { ok: true });
     expect(r.statusCode).toBe(200);
     expect(r.headers["content-type"]).toBe("application/json");
-    expect(r.headers["access-control-allow-origin"]).toBe("*");
     expect(JSON.parse(r.body)).toEqual({ ok: true });
   });
 
@@ -26,7 +25,6 @@ describe("http response helpers", () => {
     const r = noContentResponse();
     expect(r.statusCode).toBe(204);
     expect(r.body).toBe("");
-    expect(r.headers["access-control-allow-origin"]).toBe("*");
   });
 
   it("errorResponse round-trips an AppError", () => {
