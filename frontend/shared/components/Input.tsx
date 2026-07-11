@@ -31,7 +31,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         />
         {error && (
           <div id={`${inputId}-error`} className="rb-input-error">
-            <span className="rb-input-error-icon" aria-hidden="true">⚠</span>
+            <span className="rb-input-error-icon" aria-hidden="true" />
             {error}
           </div>
         )}
