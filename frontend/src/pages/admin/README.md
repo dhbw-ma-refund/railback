@@ -2,7 +2,8 @@
 
 The admin panel lives under `/admin-panel/*` and shares the Vite dev server,
 build pipeline, and design tokens with the main app. It is a read-only
-management surface backed by the mock backend at `http://localhost:16704/v1`
+management surface backed by the prod Lambda at
+`https://ckmhi46i2xidpl7joik5hby2ba0vhlso.lambda-url.eu-north-1.on.aws`
 (or whatever `VITE_API_BASE_URL` points at).
 
 ## Routes

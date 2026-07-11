@@ -5,7 +5,7 @@ import { decodeJwt } from '../auth/jwt';
 /**
  * Minimal typed fetch wrapper with a single-shot refresh on 401.
  *
- * - Base URL from VITE_API_BASE_URL (falls back to mock at :16704).
+ * - Base URL from VITE_API_BASE_URL (falls back to the prod Lambda URL).
  * - Access token injected from sessionStorage per call.
  * - Non-2xx → ApiError with a normalised body.
  * - On 401 with ERR_AUTH_EXPIRED: acquire a shared refresh promise, POST
@@ -23,7 +23,7 @@ export interface RequestOptions {
   _retried?: boolean;
 }
 
-const DEFAULT_BASE_URL = 'http://localhost:16704/v1';
+const DEFAULT_BASE_URL = 'https://ckmhi46i2xidpl7joik5hby2ba0vhlso.lambda-url.eu-north-1.on.aws';
 
 function baseUrl(): string {
   const fromEnv = import.meta.env.VITE_API_BASE_URL;
