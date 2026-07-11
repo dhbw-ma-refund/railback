@@ -2,14 +2,20 @@
   "Variables": {
     "RAILBACK_STORAGE": "ddb",
     "RAILBACK_DDB_TABLE": "RailBack",
+
+    "_comment_region": "Two region vars: backend S3/SES helpers read RAILBACK_AWS_REGION; the vendored @railback/db S3 connector reads RAILBACK_S3_REGION. Both default to eu-north-1, but set BOTH explicitly so nothing surprises us if a default ever changes.",
     "RAILBACK_AWS_REGION": "eu-north-1",
+    "RAILBACK_S3_REGION": "eu-north-1",
 
     "RAILBACK_JWT_SECRET": "REPLACE_hex32_run_openssl_rand_-hex_32",
     "RAILBACK_IBAN_KEK": "REPLACE_base64_of_32_bytes_run_openssl_rand_-base64_32",
     "RAILBACK_INTERNAL_SECRET": "REPLACE_hex24_run_openssl_rand_-hex_24",
 
-    "RAILBACK_S3_BUCKET": "REPLACE_with_prof_bucket_name",
-    "RAILBACK_SES_FROM_ADDRESS": "noreply@REPLACE_with_verified_domain",
+    "_comment_s3": "Bucket confirmed 2026-07-11: the shared account has a bucket literally named 'railback' (eu-north-1). NOTE: it is also used by a Cognito browser-upload demo that uploads ACL:public-read. RailBack's presigned POST sets NO ACL (objects stay private) — do NOT change that. Verify Block-Public-Access is ON before storing PII under raw/ belege/.",
+    "RAILBACK_S3_BUCKET": "railback",
+
+    "_comment_ses": "SES confirmed 2026-07-11 via emailSES lambda: railback.de is a verified sender identity AND the account is OUT of sandbox (send to arbitrary external recipient accepted). Use an @railback.de from-address. test@railback.de is proven; switch to noreply@railback.de only if the full DOMAIN identity (not just the email identity) is verified.",
+    "RAILBACK_SES_FROM_ADDRESS": "noreply@railback.de",
 
     "_comment_extractor": "Set to the function name hosting the Python ticket-extractor (deploy-extractor.sh). If empty, upload-confirm skips extraction (tickets must use the MANUAL_ROUTE flow).",
     "RAILBACK_EXTRACTOR_FUNCTION": "",

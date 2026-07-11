@@ -67,9 +67,30 @@ zip-upload limit, but only just.)
   These are genuinely periodic/background jobs, not part of the happy path — the
   first email send is inline, so a normal refund demo needs no manual step.
 
-Blockers still pending from the prof: **S3 bucket name** + **SES from-address**
-(and SES out of sandbox). Fill those into `environment.json` before the refund/
-email path will work end-to-end. See `SES_STRATO_SETUP.md`.
+**S3 + SES are CONFIRMED (probed 2026-07-11) — no longer blockers:**
+- **Bucket:** literally `railback` (eu-north-1). Set `RAILBACK_S3_BUCKET=railback`.
+  Caveat: that bucket is shared with a Cognito browser-upload demo that uploads
+  `ACL: public-read`. RailBack's presigned POST sets **no ACL** so its objects
+  stay private — keep it that way, and verify Block-Public-Access is ON before
+  storing PII under `raw/`/`belege/`.
+- **SES:** the shared Lambda role can send (proven via the pre-existing
+  `emailSES` lambda), `railback.de` is a verified sender identity, and the
+  account is **out of sandbox** (a send to an arbitrary external address was
+  accepted). Set `RAILBACK_SES_FROM_ADDRESS` to an `@railback.de` address.
+  RailBack sends SES **directly** from its own code (`lib/src/email/send-email.ts`,
+  SESv2 raw MIME + PDF attachment) — it does NOT route through `emailSES` (that
+  lambda has no PDF-attachment path and is another owner's function).
+- **Region:** set BOTH `RAILBACK_AWS_REGION=eu-north-1` and
+  `RAILBACK_S3_REGION=eu-north-1` — the backend helpers read the former, the
+  vendored `@railback/db` S3 connector reads the latter. Both default to
+  eu-north-1 anyway, but set them explicitly.
+
+Remaining before the FULL email→webhook loop works (not needed for a basic
+refund-email demo): a **SES Configuration Set + SNS event destination** wired to
+`/_internal/email-webhook`. Without it, sends still succeed but tickets sit in
+`EMAIL_SENDING` until the 24h watchdog force-fails them. Leave
+`RAILBACK_SES_CONFIGURATION_SET` **unset** until a config set is confirmed to
+exist (a nonexistent one makes SES reject every send). See `SES_STRATO_SETUP.md`.
 
 ---
 
