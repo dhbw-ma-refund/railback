@@ -1,6 +1,5 @@
 /* All aliases now map to documented brand tokens — no raw hex escapes. */
 .wizard-page:has(.rl-search) {
-  --rl-pill: var(--color-surface-subtle);
   --rl-ink: var(--color-text-primary);
   --rl-muted: var(--color-text-secondary);
   --rl-cta: var(--color-deep-trust-blue);
@@ -18,164 +17,82 @@
 .rl-search {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-1);
+  gap: var(--spacing-2);
 }
 
-/* Row 1 — Datum + Uhrzeit; date takes the larger share. */
-.rl-when {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: var(--spacing-1);
-}
-
-/* Row 2 — origin + swap + destination. */
+/* Row 1 — origin / destination stacked full-width. */
 .rl-where {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: var(--spacing-1);
-  align-items: center;
-}
-
-.rl-pill {
-  position: relative;
   display: flex;
-  align-items: center;
-  gap: var(--spacing-1);
-  padding: var(--spacing-1) var(--spacing-4) var(--spacing-1) var(--spacing-3);
-  background: var(--rl-pill);
-  border-radius: 999px;
-  min-height: 56px;
-  cursor: text;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  align-items: stretch;
 }
 
-.rl-pill--priority {
-  background: rgba(9, 67, 137, 0.06);
-  outline: 1.5px solid rgba(9, 67, 137, 0.35);
+/* Custom "Zielbahnhof" block: label row + input, so we can right-align the
+   swap action next to the label without touching the shared Input component. */
+.rl-to {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* matches .rb-input-wrapper's inner gap */
 }
 
-.rl-pill--narrow {
-  padding-right: var(--spacing-2);
+.rl-to__labelrow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-2);
 }
 
-.rl-pill__label {
-  position: absolute;
-  top: var(--spacing-1);
-  left: var(--spacing-3);
-  font-size: var(--font-size-caption);
-  color: var(--rl-muted);
-  pointer-events: none;
-  line-height: 1;
-}
-
-.rl-pill__input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: var(--font-size-body);
-  color: var(--rl-ink);
-  font-family: inherit;
+/* Mirrors .rb-input-label so the "Zielbahnhof" text visually matches the
+   Startbahnhof label above it. */
+.rl-to__label {
+  font-family: var(--font-family-primary);
   font-weight: var(--font-weight-semibold);
-  padding: var(--spacing-2) 0 0;
-  min-width: 0;
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
 }
 
-.rl-pill__input::placeholder {
-  color: var(--rl-muted);
-  font-weight: var(--font-weight-regular);
-}
-
-.rl-pill__dot,
-.rl-pill__glyph {
-  position: absolute;
-  left: var(--spacing-1);
-  top: 50%;
-  transform: translateY(-50%);
-  width: var(--spacing-3);
-  height: var(--spacing-3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--rl-ink);
-}
-
-.rl-pill__dot {
-  border: 2px solid var(--rl-ink);
-  border-radius: 50%;
-  background: transparent;
-  width: 18px;
-  height: 18px;
-}
-
-/* Clear button hits the 44 px target via padding — the visible dot stays small. */
-.rl-pill__clear {
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: var(--touch-target-min);
-  height: var(--touch-target-min);
-  border-radius: 50%;
-  border: none;
-  background: none;
-  color: var(--rl-muted);
-  cursor: pointer;
-  font-size: 20px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.rl-pill__clear:hover {
-  color: var(--rl-ink);
-}
-
-/* Swap button — expanded to full 44 px target. */
+/* Swap — a small text-link sitting on the same line as the Zielbahnhof label,
+   right-aligned. Icon + label pattern per §6 + §10.3. */
 .rl-swap {
-  width: var(--touch-target-min);
-  height: var(--touch-target-min);
-  border-radius: 50%;
-  border: 1.5px solid rgba(74, 107, 130, 0.3);
-  background: white;
-  color: var(--rl-ink);
-  cursor: pointer;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  background: none;
+  border: 0;
+  color: var(--color-deep-trust-blue);
+  font-family: inherit;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 6px;
   transition: background 0.1s ease;
 }
 
 .rl-swap:hover {
-  background: rgba(9, 67, 137, 0.05);
-  border-color: var(--rl-cta);
-  color: var(--rl-cta);
+  background: rgba(9, 67, 137, 0.06);
 }
 
-/* Primary CTA — pill-shaped per brand §9.1. */
-.rl-search-btn {
+.rl-swap:focus-visible {
+  outline: 2px solid var(--color-deep-trust-blue);
+  outline-offset: 2px;
+}
+
+/* Row 2 — date + time side by side, date takes the larger share. */
+.rl-when {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: var(--spacing-2);
+}
+
+/* The shared Button already handles the primary pill styling; we just need to
+   make it span the full form width and sit tight against the fields. */
+.rl-search-btn.rb-button {
   width: 100%;
-  padding: var(--spacing-2) var(--spacing-3);
-  border-radius: var(--radius-button);
-  border: none;
-  background: var(--rl-cta);
-  color: white;
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-bold);
-  cursor: pointer;
-  min-height: 52px;
-  margin-top: 4px;
-  transition: background 0.1s ease;
-}
-
-.rl-search-btn:hover:not(:disabled) {
-  background: var(--rl-cta-press);
-}
-
-.rl-search-btn:disabled {
-  background: var(--color-disabled-grey);
-  color: var(--color-text-disabled);
-  cursor: not-allowed;
+  margin-top: var(--spacing-1);
 }
 
 /* --- Results --------------------------------------------------- */
@@ -263,8 +180,6 @@
   justify-content: center;
   padding: 0 var(--spacing-2) 0 var(--spacing-1);
   color: var(--rl-muted);
-  font-size: var(--font-size-h2);
-  line-height: 1;
 }
 
 .rl-card__hit:hover .rl-card__chev {
@@ -368,8 +283,6 @@
 
 .rl-status__icon,
 .rl-status__ok {
-  font-size: var(--font-size-h3);
-  font-weight: var(--font-weight-bold);
   width: var(--spacing-3);
   height: var(--spacing-3);
   border-radius: 50%;
@@ -379,19 +292,21 @@
   flex-shrink: 0;
 }
 
+/* Cancelled: red disc, white X on top. */
 .rl-status__icon {
   background: var(--rl-red);
   color: white;
 }
 
+/* On-time: green disc (inherits currentColor from .rl-status--ontime = green
+   ink), white check on top. */
 .rl-status__ok {
   background: currentColor;
+  color: var(--rl-green);
 }
 
-.rl-status__ok::before {
-  content: '✓';
+.rl-status__ok svg {
   color: white;
-  font-size: var(--font-size-caption);
 }
 
 /* Row 3 — station names, small anchor ---------------------------- */
@@ -409,35 +324,10 @@
   font-weight: var(--font-weight-semibold);
 }
 
-/* Fallback link ------------------------------------------------ */
-
-.rl-manual-link {
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--rl-cta);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  font-size: var(--font-size-caption);
-}
-
-.rl-manual-link:hover {
-  text-decoration: underline;
-}
-
 /* Narrow phones ------------------------------------------------ */
 @media (max-width: 420px) {
-  .rl-where {
+  .rl-when {
     grid-template-columns: 1fr;
-    position: relative;
-  }
-  .rl-swap {
-    position: absolute;
-    top: 60px;
-    right: var(--spacing-1);
-    transform: rotate(90deg);
-    z-index: 1;
-    background: white;
   }
   .rl-status__delta {
     font-size: var(--font-size-h2);

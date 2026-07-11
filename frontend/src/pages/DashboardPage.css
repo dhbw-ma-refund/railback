@@ -117,10 +117,6 @@
   color: var(--color-deep-trust-blue);
 }
 
-.claim-card__dot {
-  color: var(--color-text-secondary);
-}
-
 .claim-card__details {
   margin-left: auto;
   background: none;

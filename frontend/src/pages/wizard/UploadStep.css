@@ -44,8 +44,10 @@
 }
 
 .upload-drop__icon {
-  font-size: 32px;
   color: var(--color-deep-trust-blue);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .upload-drop__label {
@@ -79,14 +81,18 @@
 .upload-chip__remove {
   background: none;
   border: none;
-  font-size: 20px;
-  line-height: 1;
   color: var(--color-text-secondary);
   cursor: pointer;
-  padding: 4px 8px;
-  min-height: 32px;
+  padding: var(--spacing-1);
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
 }
 
 .upload-chip__remove:hover {
   color: var(--color-error-red);
+  background: rgba(217, 48, 37, 0.08);
 }

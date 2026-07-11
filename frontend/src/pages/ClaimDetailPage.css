@@ -26,6 +26,9 @@
   color: var(--color-deep-trust-blue);
   cursor: pointer;
   min-height: var(--touch-target-min);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .claim-detail__back:hover {

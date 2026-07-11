@@ -84,7 +84,6 @@ export const DashboardPage = () => {
                 <li key={ticket.ticketId} className="claim-card">
                   <div className="claim-card__row claim-card__row--head">
                     <span className="claim-card__id">{formatClaimId(ticket.ticketId)}</span>
-                    <span className="claim-card__dot" aria-hidden="true">•</span>
                     <StatusChip state={ticket.ticket_state} />
                     <button
                       type="button"

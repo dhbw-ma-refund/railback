@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Input, Button } from '@shared/components';
 import { useLanguage } from '../../lib/LanguageContext';
 import { WizardLayout } from './WizardLayout';
 import { WizardStepButtons } from './WizardStepButtons';
@@ -84,112 +85,70 @@ export const LookupStep = () => {
     <WizardLayout title={t.wizard.lookup.title}>
       <p className="wizard-helper">{t.wizard.lookup.hint}</p>
 
-      {/* Search — date-led, since that's the point of a past-trip lookup. */}
+      {/* Search — plain guide-conformant Inputs. Order mirrors how users think
+          about a past trip: where from/to first, then when. */}
       <div className="rl-search">
-        {/* Row 1: Date + time window take the top slot. */}
-        <div className="rl-when">
-          <label className="rl-pill rl-pill--priority">
-            <span className="rl-pill__glyph" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-            </span>
-            <span className="rl-pill__label">{t.wizard.lookup.date}</span>
-            <input
-              className="rl-pill__input"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </label>
-
-          <label className="rl-pill rl-pill--narrow">
-            <span className="rl-pill__glyph" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="9" />
-                <polyline points="12 7 12 12 15 14" />
-              </svg>
-            </span>
-            <span className="rl-pill__label">{t.wizard.lookup.aroundTime}</span>
-            <input
-              className="rl-pill__input"
-              type="time"
-              value={aroundTime}
-              onChange={(e) => setAroundTime(e.target.value)}
-            />
-          </label>
-        </div>
-
-        {/* Row 2: Origin / destination, with a swap button between them. */}
         <div className="rl-where">
-          <label className="rl-pill">
-            <span className="rl-pill__dot" aria-hidden="true" />
-            <span className="rl-pill__label">{t.wizard.lookup.from}</span>
-            <input
-              className="rl-pill__input"
-              placeholder="z.B. Mannheim Hbf"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-            />
-            {from && (
+          <Input
+            label={t.wizard.lookup.from}
+            placeholder="z.B. Mannheim Hbf"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+          />
+          {/* Swap sits inline with the "Zielbahnhof" label row, right-aligned.
+              This avoids the centering problem that comes from putting a circle
+              button between two label+input units. */}
+          <div className="rl-to">
+            <div className="rl-to__labelrow">
+              <span className="rl-to__label">{t.wizard.lookup.to}</span>
               <button
                 type="button"
-                className="rl-pill__clear"
-                onClick={() => setFrom('')}
-                aria-label="Löschen"
+                className="rl-swap"
+                onClick={swap}
+                aria-label={t.wizard.lookup.swap}
               >
-                ×
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points="17 1 21 5 17 9" />
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                  <polyline points="7 23 3 19 7 15" />
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                </svg>
+                <span>{t.wizard.lookup.swap}</span>
               </button>
-            )}
-          </label>
-
-          <button type="button" className="rl-swap" onClick={swap} aria-label="Start und Ziel tauschen">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="17 1 21 5 17 9" />
-              <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-              <polyline points="7 23 3 19 7 15" />
-              <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-            </svg>
-          </button>
-
-          <label className="rl-pill">
-            <span className="rl-pill__glyph" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s-7-7-7-13a7 7 0 1 1 14 0c0 6-7 13-7 13z" />
-                <circle cx="12" cy="9" r="2.5" />
-              </svg>
-            </span>
-            <span className="rl-pill__label">{t.wizard.lookup.to}</span>
-            <input
-              className="rl-pill__input"
+            </div>
+            <Input
               placeholder="z.B. Karlsruhe Hbf"
               value={to}
               onChange={(e) => setTo(e.target.value)}
+              aria-label={t.wizard.lookup.to}
             />
-            {to && (
-              <button
-                type="button"
-                className="rl-pill__clear"
-                onClick={() => setTo('')}
-                aria-label="Löschen"
-              >
-                ×
-              </button>
-            )}
-          </label>
+          </div>
         </div>
 
-        <button
-          type="button"
-          className="rl-search-btn"
+        <div className="rl-when">
+          <Input
+            label={t.wizard.lookup.date}
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+          <Input
+            label={t.wizard.lookup.aroundTime}
+            type="time"
+            value={aroundTime}
+            onChange={(e) => setAroundTime(e.target.value)}
+          />
+        </div>
+
+        <Button
+          variant="primary"
+          size="large"
           onClick={runSearch}
           disabled={!from || !to || !date}
+          className="rl-search-btn"
         >
           {t.wizard.lookup.search}
-        </button>
+        </Button>
       </div>
 
       {searched && (
@@ -224,7 +183,12 @@ export const LookupStep = () => {
                       <div className={`rl-status rl-status--${tone}`}>
                         {c.cancelled ? (
                           <>
-                            <span className="rl-status__icon" aria-hidden="true">×</span>
+                            <span className="rl-status__icon" aria-hidden="true">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                              </svg>
+                            </span>
                             <span className="rl-status__main">{t.wizard.lookup.cancelled}</span>
                           </>
                         ) : c.delayMinutes > 0 ? (
@@ -239,7 +203,11 @@ export const LookupStep = () => {
                           </>
                         ) : (
                           <>
-                            <span className="rl-status__ok" aria-hidden="true">✓</span>
+                            <span className="rl-status__ok" aria-hidden="true">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            </span>
                             <span className="rl-status__main">{t.wizard.lookup.onTime}</span>
                           </>
                         )}
@@ -253,23 +221,16 @@ export const LookupStep = () => {
                       </div>
                     </div>
 
-                    <span className="rl-card__chev" aria-hidden="true">›</span>
+                    <span className="rl-card__chev" aria-hidden="true">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 6 15 12 9 18" />
+                      </svg>
+                    </span>
                   </button>
                 </li>
               );
             })}
           </ul>
-
-          <p className="wizard-helper">
-            {t.wizard.lookup.noMatchHint}{' '}
-            <button
-              type="button"
-              className="rl-manual-link"
-              onClick={() => navigate('/antrag/neu/reise')}
-            >
-              {t.wizard.lookup.manualLink}
-            </button>
-          </p>
         </div>
       )}
 

@@ -68,13 +68,12 @@
 }
 
 .entry-choice__icon {
-  font-size: 24px;
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: var(--spacing-1);
   background: rgba(9, 67, 137, 0.08);
   color: var(--color-deep-trust-blue);
   flex-shrink: 0;

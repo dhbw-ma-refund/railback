@@ -26,7 +26,11 @@ export const SubmittedStep = () => {
     <div className="submitted-page">
       <Header />
       <main className="submitted-container">
-        <div className="submitted-check" aria-hidden="true">✓</div>
+        <div className="submitted-check" aria-hidden="true">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
         <h1 className="submitted-title">{t.wizard.submitted.title}</h1>
         <p className="submitted-body">{t.wizard.submitted.body}</p>
         <Button variant="primary" onClick={done}>
