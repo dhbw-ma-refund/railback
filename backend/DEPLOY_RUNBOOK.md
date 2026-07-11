@@ -17,13 +17,12 @@ separate functions the "Mental model" / provisioning sections below describe.
 (Those sections are kept for reference / if broader access is ever granted.)
 
 **Which functions to deploy into.** This deploy uses TWO function slots: the
-Node dispatcher goes on your own `s241539`; the Python extractor goes on a
-second slot you designate at deploy time (`RAILBACK_EXTRACTOR_FN`). The slot
-must be one you've been granted — the correct granted list is TBD (the first
-list provided did not match any existing function names). Deploying **replaces
-all code** on the target function (`update-function-code` overwrites the
-zip wholesale), so "clearing its old content" happens automatically — but only
-point the scripts at functions you're allowed to clobber.
+Node dispatcher goes on your own `s241539`; the Python extractor goes on
+**`s243184`** (granted, Python-runtime, update-permission verified 2026-07-11 —
+`RAILBACK_EXTRACTOR_FN=s243184`). Deploying **replaces all code** on the target
+function (`update-function-code` overwrites the zip wholesale), so "clearing its
+old content" happens automatically — but only point the scripts at functions
+you're allowed to clobber.
 
 **How it works:** `lambdas/_deploy/src/index.ts` is a dispatcher that routes
 `/auth`, `/users`, `/admin` to the real handlers (they self-route internally),
@@ -45,9 +44,9 @@ export AWS_PROFILE=railback
 cd railback/backend
 cp scripts/environment.example.json scripts/environment.json   # then fill in secrets + prof's bucket/SES
 
-# 1. deploy the Python extractor to a dedicated Python slot
-RAILBACK_EXTRACTOR_FN=<a-python-slot> scripts/deploy-extractor.sh
-# 2. set RAILBACK_EXTRACTOR_FUNCTION=<that slot> in scripts/environment.json
+# 1. deploy the Python extractor to its granted Python slot
+RAILBACK_EXTRACTOR_FN=s243184 scripts/deploy-extractor.sh
+# 2. RAILBACK_EXTRACTOR_FUNCTION=s243184 is already set in environment.json
 # 3. deploy the dispatcher (main function)
 scripts/deploy-single.sh
 ```

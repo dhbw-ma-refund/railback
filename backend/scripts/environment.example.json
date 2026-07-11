@@ -17,8 +17,8 @@
     "_comment_ses": "SES confirmed 2026-07-11 via emailSES lambda: railback.de is a verified sender identity AND the account is OUT of sandbox (send to arbitrary external recipient accepted). Use an @railback.de from-address. test@railback.de is proven; switch to noreply@railback.de only if the full DOMAIN identity (not just the email identity) is verified.",
     "RAILBACK_SES_FROM_ADDRESS": "noreply@railback.de",
 
-    "_comment_extractor": "Set to the function name hosting the Python ticket-extractor (deploy-extractor.sh). If empty, upload-confirm skips extraction (tickets must use the MANUAL_ROUTE flow).",
-    "RAILBACK_EXTRACTOR_FUNCTION": "",
+    "_comment_extractor": "Extractor slot confirmed 2026-07-11: s243184 (granted, Python, update-permission verified). deploy-extractor.sh deploys the Python ticket-extractor here. If empty, upload-confirm skips extraction (tickets must use the MANUAL_ROUTE flow).",
+    "RAILBACK_EXTRACTOR_FUNCTION": "s243184",
 
     "_comment_optional": "Below are optional. Omit SES config set if no SNS wiring. Add the 4 RAILBACK_SEPA_* only if demoing pain.008.",
     "RAILBACK_SES_CONFIGURATION_SET": "",
