@@ -137,7 +137,7 @@ export function UserDetailPage() {
           <h2 className="rb-detail__section-title">Letzte Tickets</h2>
           <ul className="rb-detail__ticket-list">
             {user.recent_tickets.map((t) => (
-              <li key={t.ticketId} className="rb-detail__ticket">
+              <li key={t.ticketId} className="rb-detail__ticket rb-detail__ticket--recent">
                 <Link to={`/admin-panel/tickets/${encodeURIComponent(t.ticketId)}`}>
                   {t.ticketId}
                 </Link>

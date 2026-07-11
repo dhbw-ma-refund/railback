@@ -103,3 +103,49 @@
 .rb-detail__ticket a:hover {
   text-decoration: underline;
 }
+
+/*
+ * `--recent` is the shape used on UserDetailPage's "Letzte Tickets": four
+ * cells (id link | state | date | amount). Fixed trailing tracks keep the
+ * state/date/amount columns aligned regardless of ticket-id length; the id
+ * cell truncates with ellipsis instead of pushing siblings sideways.
+ */
+.rb-detail__ticket--recent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px 120px 120px;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+  align-items: center;
+}
+
+.rb-detail__ticket--recent > span:nth-child(3),
+.rb-detail__ticket--recent > span:nth-child(4) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rb-detail__ticket--recent > a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+@media (max-width: 560px) {
+  .rb-detail__ticket--recent {
+    /* Collapse the fixed trailing tracks on phones: id + amount stay on the
+       first row, state + date wrap underneath as secondary metadata. */
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 4px;
+  }
+  .rb-detail__ticket--recent > span:nth-child(2),
+  .rb-detail__ticket--recent > span:nth-child(3) {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-caption);
+  }
+  .rb-detail__ticket--recent > span:nth-child(3) {
+    text-align: left;
+  }
+}

@@ -36,3 +36,19 @@
   margin-top: 8px;
   min-height: 1em;
 }
+
+/*
+ * Admin forms use a heavier body weight than the public site: on the warm
+ * off-white background the regular weight of the shared Input component was
+ * reported as too thin to read. Scoping to `.rb-admin-*` keeps the public
+ * landing/user forms unaffected.
+ */
+.rb-admin-shell .rb-input,
+.rb-admin-login .rb-input {
+  font-weight: var(--font-weight-semibold);
+}
+
+.rb-admin-shell .rb-input-label,
+.rb-admin-login .rb-input-label {
+  font-weight: var(--font-weight-bold);
+}
