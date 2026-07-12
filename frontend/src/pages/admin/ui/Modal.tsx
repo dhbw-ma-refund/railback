@@ -60,7 +60,7 @@ export function Modal({
         <h2 id="rb-modal-title" className="rb-modal__title">
           {title}
         </h2>
-        <div>{children}</div>
+        <div className="rb-modal__body">{children}</div>
         <div className="rb-modal__actions">
           <Button type="button" variant="secondary" onClick={onClose}>
             Schließen
