@@ -8,6 +8,7 @@ import { Button } from '../ui-library';
 import { useToast } from '../ui/useToast';
 import '../admin.css';
 import './DetailPage.css';
+import './SepaBatchesPage.css';
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -97,6 +98,12 @@ export function SepaBatchesPage() {
     setUploadFile(f);
   }
 
+  function clearUploadFile() {
+    setUploadFile(null);
+    const input = document.getElementById('rb-sepa-upload') as HTMLInputElement | null;
+    if (input) input.value = '';
+  }
+
   async function onUpload() {
     if (!uploadFile) return;
     if (uploadFile.size > SEPA_REPORT_MAX_BYTES) {
@@ -113,10 +120,8 @@ export function SepaBatchesPage() {
       });
       const res = await sepaApi.uploadReportToS3(envelope, uploadFile);
       if (res.ok || res.status === 204) {
-        toast.show('Report hochgeladen — der Verarbeitungs-Lambda meldet sich.', 'info');
-        setUploadFile(null);
-        const input = document.getElementById('rb-sepa-upload') as HTMLInputElement | null;
-        if (input) input.value = '';
+        toast.show('Report hochgeladen.', 'info');
+        clearUploadFile();
       } else {
         toast.show(`Upload fehlgeschlagen (S3 ${res.status}).`, 'error');
       }
@@ -153,9 +158,9 @@ export function SepaBatchesPage() {
                   <Field label="Summe" value={fmtEUR(batch.total_eur)} />
                   <Field label="Gebaut am" value={fmtDateTime(batch.built_at)} />
                 </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+                <div className="rb-sepa-batch__actions">
                   <a
-                    className="rb-detail__back"
+                    className="rb-button rb-button--secondary rb-button--medium"
                     href={batch.downloadUrl}
                     target="_blank"
                     rel="noreferrer"
@@ -179,26 +184,47 @@ export function SepaBatchesPage() {
 
       <section className="rb-detail__section">
         <h2 className="rb-detail__section-title">Bank-Report hochladen</h2>
-        <p style={{ margin: '0 0 12px' }}>
-          XML-Report der Hausbank (max. {SEPA_REPORT_MAX_BYTES / 1024 / 1024} MB). Der Upload
-          landet direkt in S3 und wird asynchron verarbeitet — kein Feedback pro Zeile in der UI.
-        </p>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <input
-            id="rb-sepa-upload"
-            type="file"
-            accept=".xml,application/xml,text/xml"
-            onChange={onFileChange}
-            disabled={uploading}
-          />
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={!uploadFile || uploading}
-            onClick={onUpload}
-          >
-            {uploading ? 'Läuft …' : 'Hochladen'}
-          </Button>
+        <div className="rb-sepa-upload">
+          <p className="rb-sepa-upload__helper">
+            pain.008-XML von der Hausbank (max. {SEPA_REPORT_MAX_BYTES / 1024 / 1024} MB).
+          </p>
+          <div className="rb-sepa-upload__row">
+            <label className="rb-button rb-button--secondary rb-button--medium rb-sepa-upload__trigger">
+              <input
+                id="rb-sepa-upload"
+                className="rb-sepa-upload__native"
+                type="file"
+                accept=".xml,application/xml,text/xml"
+                onChange={onFileChange}
+                disabled={uploading}
+              />
+              Datei auswählen
+            </label>
+            {uploadFile && (
+              <span className="rb-sepa-upload__chip">
+                <span className="rb-sepa-upload__chip-name" title={uploadFile.name}>
+                  {uploadFile.name}
+                </span>
+                <button
+                  type="button"
+                  className="rb-sepa-upload__chip-clear"
+                  onClick={clearUploadFile}
+                  aria-label="Datei entfernen"
+                  disabled={uploading}
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            <Button
+              type="button"
+              variant="primary"
+              disabled={!uploadFile || uploading}
+              onClick={onUpload}
+            >
+              {uploading ? 'Läuft …' : 'Hochladen'}
+            </Button>
+          </div>
         </div>
       </section>
     </div>
