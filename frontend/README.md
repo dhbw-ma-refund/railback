@@ -1,45 +1,36 @@
 # RailBack Frontend
 
-Multi-app frontend setup for RailBack project.
+Vite + React + TypeScript. Ships two surfaces from a single dev server:
 
-## Structure
+- **Landing + user forms** — `/`, `/user`, `/faq`, `/legal`, etc.
+- **Admin panel** — `/admin-panel/*` (see `src/pages/admin/README.md` for
+  routes, contracts, and admin actions).
 
-- **Main App** (React + Vite) - Landing page and user forms
-- **Admin Panel** (SolidJS + Vite) - Admin dashboard
-- **Shared** - Design system components and styles
-
-## Running the Apps
-
-### Main App (Landing + User Forms)
-```bash
-npm run dev
-```
-Runs on http://localhost:5173
-
-### Admin Panel
-```bash
-cd admin-panel
-npm install
-npm run dev
-```
-Runs on http://localhost:5174
+Both share the design tokens and primitives in `shared/`.
 
 ## Development
 
-Both apps share the same design system from `/shared` folder:
-- Styles: `@shared/styles/global.css`
-- Components: `@shared/components` (Button, Input, Card, StatusBadge)
-- Based on RailBack Brand Guide
+```bash
+cp .env.example .env.local
+bun install
+bun run dev        # http://localhost:5173
+bun run lint       # eslint on src/pages/admin/**
+bun run build      # tsc --noEmit && vite build
+bun run test       # vitest run
+```
 
-## Routes
+`VITE_API_BASE_URL` points the admin panel at the backend Lambda. The
+default in `.env.example` is the prod URL so `bun run dev` works without
+extra setup.
 
-### Main App
-- `/` - Landing page
-- `/user` - User ticket submission form
+## Admin panel
 
-### Admin Panel  
-- `/login` - Admin login
-- `/` - Dashboard
-- `/overview` - Overview
-- `/users` - User management
-- `/tickets` - Ticket management
+Under `/admin-panel/*`:
+
+- `/admin-panel/login` — admin login (role-gated).
+- `/admin-panel` — dashboard with KPIs and state drill-down.
+- `/admin-panel/users` and `/users/:email` — user list + detail.
+- `/admin-panel/tickets` and `/tickets/:ticketId` — ticket list + detail
+  with a state-override dialog and delay drill-down.
+
+See `src/pages/admin/README.md` for the full contract.
