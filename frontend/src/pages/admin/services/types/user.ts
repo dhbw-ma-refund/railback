@@ -2,8 +2,11 @@
  * User type mirrored from BACKEND_CONTRACT.md §User management.
  *
  * Money fields are strings (decimals never round-tripped through JS number).
- * `iban` and `bic` are deliberately absent from the type so they can never
- * leak into the DOM by accident.
+ *
+ * IBAN/BIC visibility to admin was reversed on 2026-07-07: both list and
+ * detail projections now return plaintext `iban` / `bic` (decrypted from
+ * the encrypted-at-rest columns). Frontend surfaces them read-only — they
+ * are still NOT accepted on PATCH.
  */
 export type UserState = 'ACTIVE' | 'SUSPENDED' | 'DELETION_SCHEDULED';
 
@@ -35,6 +38,8 @@ export interface User {
   ticket_count: number;
   total_refunded: string;
   recent_tickets?: RecentTicket[];
+  iban: string | null;
+  bic: string | null;
 }
 
 export interface UsersPage {

@@ -24,6 +24,8 @@ function makeUser(state: UserState, overrides: Partial<User> = {}): User {
     created_at: '2026-01-01T10:00:00+02:00',
     ticket_count: 3,
     total_refunded: '42.00',
+    iban: null,
+    bic: null,
     ...overrides,
   };
 }

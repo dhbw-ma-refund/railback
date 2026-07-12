@@ -139,6 +139,14 @@ export function UserDetailPage() {
       </section>
 
       <section className="rb-detail__section">
+        <h2 className="rb-detail__section-title">Bankverbindung</h2>
+        <div className="rb-detail__grid">
+          <Field label="IBAN" value={user.iban} />
+          <Field label="BIC" value={user.bic} />
+        </div>
+      </section>
+
+      <section className="rb-detail__section">
         <h2 className="rb-detail__section-title">Status</h2>
         <div className="rb-detail__grid">
           <Field label="Status" value={<UserStateBadge state={user.user_state} />} />

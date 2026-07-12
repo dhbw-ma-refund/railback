@@ -63,15 +63,24 @@ describe('usersApi.listUsers', () => {
     expect(url).toContain('cursor=x');
   });
 
-  it('skips iban/bic and any unmodeled fields silently', async () => {
+  it('carries iban/bic plaintext through the parser (post 2026-07-07 rollout)', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
-      jsonResponse(200, { items: [{ ...USER_RAW, iban: 'DE1', bic: 'BIC' }] }),
+      jsonResponse(200, {
+        items: [{ ...USER_RAW, iban: 'DE89370400440532013000', bic: 'COBADEFFXXX' }],
+      }),
     );
     const page = await usersApi.listUsers();
-    // iban/bic aren't in User's type; asserting absence at runtime for safety.
     const first = page.items[0];
-    expect('iban' in first).toBe(false);
-    expect('bic' in first).toBe(false);
+    expect(first.iban).toBe('DE89370400440532013000');
+    expect(first.bic).toBe('COBADEFFXXX');
+  });
+
+  it('returns null iban/bic when absent (mandate not yet issued)', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, { items: [USER_RAW] }));
+    const page = await usersApi.listUsers();
+    const first = page.items[0];
+    expect(first.iban).toBeNull();
+    expect(first.bic).toBeNull();
   });
 });
 

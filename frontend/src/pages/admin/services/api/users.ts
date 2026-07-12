@@ -78,6 +78,8 @@ function parseUser(raw: unknown): User {
     ticket_count: readNumber(raw, 'ticket_count'),
     total_refunded: readString(raw, 'total_refunded') ?? '0',
     recent_tickets: 'recent_tickets' in raw ? recent : undefined,
+    iban: readString(raw, 'iban'),
+    bic: readString(raw, 'bic'),
   };
 }
 
