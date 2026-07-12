@@ -83,6 +83,10 @@ export interface Ticket extends TicketListItem {
   email_status: string | null;
   email_provider_id: string | null;
   email_failed_reason: string | null;
+  mandate_id: string | null;
+  pain008_batch_id: string | null;
+  pain008_built_at: string | null;
+  pain008_s3_key: string | null;
 }
 
 export interface TicketsPage {

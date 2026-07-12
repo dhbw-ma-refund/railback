@@ -28,6 +28,7 @@ export function AdminHeader() {
           </NavLink>
           <NavLink to="/admin-panel/users">Benutzer</NavLink>
           <NavLink to="/admin-panel/tickets">Tickets</NavLink>
+          <NavLink to="/admin-panel/sepa">SEPA</NavLink>
         </nav>
         <Button variant="secondary" className="rb-admin-header__logout" onClick={onLogout}>
           Abmelden

@@ -23,6 +23,9 @@ management surface backed by the prod Lambda at
   extraction, status timeline, admin actions).
 - `/admin-panel/tickets/:ticketId/delays?trainNr=&datum=` — segment-level
   delay drill-down against `GET /admin/trains/{trainNr}/{date}/delays`.
+- `/admin-panel/sepa` — SEPA operator queue: lists pending pain.008 batches
+  with a presigned XML download, mark-submitted per batch, and a bank-report
+  upload that goes directly to S3 via presigned POST.
 
 ## Admin actions
 
@@ -48,8 +51,9 @@ User profile + status editing lives in `UserEditDialog` on the user-detail
 page and PATCHes `/admin/users/{email}`:
 
 - Editable fields: `vorname`, `nachname`, `telefon`, `adresse` (whole
-  object), `user_state`. `iban` / `bic` are deliberately not editable — the
-  backend rejects them.
+  object), `user_state`. `iban` / `bic` are read-only — the user detail
+  page surfaces them under a Bankverbindung section, but the PATCH
+  endpoint continues to reject those keys and always will.
 - Only reachable transitions from `services/transitions.ts` are rendered;
   same-state saves are blocked because the backend replies `400 no-op patch
   — at least one field must change`.

@@ -50,6 +50,10 @@ function makeTicket(state: TicketState, overrides: Partial<Ticket> = {}): Ticket
     email_status: null,
     email_provider_id: null,
     email_failed_reason: null,
+    mandate_id: null,
+    pain008_batch_id: null,
+    pain008_built_at: null,
+    pain008_s3_key: null,
     ...overrides,
   };
 }

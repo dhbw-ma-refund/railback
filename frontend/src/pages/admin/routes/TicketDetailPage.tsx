@@ -3,12 +3,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAdminGoBack } from '../services/hooks/useAdminGoBack';
 import { ApiError } from '../services/api/errors';
 import { ticketsApi } from '../services/api/tickets';
+import { sepaApi } from '../services/api/sepa';
 import type { Ticket } from '../services/types/ticket';
 import { fmtDate, fmtDateTime } from '../services/format/date';
 import { fmtEUR } from '../services/format/money';
 import { TicketStateBadge } from '../ui/TicketStateBadge';
 import { StateOverrideDialog } from './StateOverrideDialog';
 import { Button } from '../ui-library';
+import { useToast } from '../ui/useToast';
 import './DetailPage.css';
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
@@ -29,6 +31,8 @@ export function TicketDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [rebuilding, setRebuilding] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     if (!ticketId) return;
@@ -52,6 +56,47 @@ export function TicketDetailPage() {
       });
     return () => controller.abort();
   }, [ticketId]);
+
+  async function onRebuildPain008() {
+    if (!ticket) return;
+    const ok = window.confirm(
+      `pain.008 für Ticket ${ticket.ticketId} neu erzeugen? Nur ausführen, ` +
+        `wenn der ursprüngliche Genehmigungslauf abgebrochen ist.`,
+    );
+    if (!ok) return;
+    setRebuilding(true);
+    try {
+      await sepaApi.rebuildPain008(ticket.ticketId);
+      const fresh = await ticketsApi.getTicket(ticket.ticketId);
+      setTicket(fresh);
+      toast.show('pain.008 wurde neu erzeugt.', 'info');
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        if (err.status === 409) {
+          const details = err.body.details;
+          const from =
+            details && typeof details === 'object' && 'from' in details
+              ? String((details as Record<string, unknown>).from)
+              : null;
+          if (from) {
+            toast.show(`Rebuild abgelehnt: State ist ${from}, benötigt APPROVED.`, 'error');
+          } else {
+            toast.show('Rebuild abgelehnt: pain.008 existiert bereits.', 'error');
+          }
+        } else if (err.status === 404) {
+          toast.show('Kein SEPA-Mandat vorhanden (z. B. Waiver-Ticket).', 'error');
+        } else if (err.status >= 500) {
+          toast.show('Rebuild fehlgeschlagen — ein Operator meldet sich.', 'error');
+        } else {
+          toast.show(err.message, 'error');
+        }
+      } else {
+        toast.show('Rebuild fehlgeschlagen.', 'error');
+      }
+    } finally {
+      setRebuilding(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -116,6 +161,25 @@ export function TicketDetailPage() {
           }}
         >
           Verspätungen anzeigen
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={
+            rebuilding ||
+            ticket.ticket_state !== 'APPROVED' ||
+            ticket.pain008_built_at !== null
+          }
+          title={
+            ticket.ticket_state !== 'APPROVED'
+              ? 'Nur im State APPROVED zulässig.'
+              : ticket.pain008_built_at !== null
+                ? 'pain.008 bereits erzeugt.'
+                : undefined
+          }
+          onClick={onRebuildPain008}
+        >
+          {rebuilding ? 'Läuft …' : 'pain.008 neu erzeugen'}
         </Button>
       </div>
 
@@ -206,6 +270,18 @@ export function TicketDetailPage() {
           <Field label="Admin-Notiz" value={ticket.admin_note} />
         </div>
       </section>
+
+      {(ticket.mandate_id || ticket.pain008_batch_id) && (
+        <section className="rb-detail__section">
+          <h2 className="rb-detail__section-title">SEPA / pain.008</h2>
+          <div className="rb-detail__grid">
+            <Field label="Mandat" value={ticket.mandate_id} />
+            <Field label="Batch" value={ticket.pain008_batch_id} />
+            <Field label="Gebaut am" value={fmtDateTime(ticket.pain008_built_at)} />
+            <Field label="S3-Key" value={ticket.pain008_s3_key} />
+          </div>
+        </section>
+      )}
 
       {(ticket.antragsgrund.length > 0 || ticket.antragsart) && (
         <section className="rb-detail__section">

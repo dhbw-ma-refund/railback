@@ -133,6 +133,10 @@ function parseTicket(raw: unknown): Ticket {
     email_status: readNullableString(raw, 'email_status'),
     email_provider_id: readNullableString(raw, 'email_provider_id'),
     email_failed_reason: readNullableString(raw, 'email_failed_reason'),
+    mandate_id: readNullableString(raw, 'mandate_id'),
+    pain008_batch_id: readNullableString(raw, 'pain008_batch_id'),
+    pain008_built_at: readNullableString(raw, 'pain008_built_at'),
+    pain008_s3_key: readNullableString(raw, 'pain008_s3_key'),
   };
 }
 
