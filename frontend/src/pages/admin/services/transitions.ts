@@ -1,4 +1,5 @@
 import type { TicketState } from './types/ticket';
+import type { UserState } from './types/user';
 
 /**
  * Admin-side allowed state transitions per BACKEND_CONTRACT.md
@@ -53,4 +54,28 @@ export const TERMINAL_TICKET_STATES: Readonly<Partial<Record<TicketState, true>>
   COMPLETED: true,
   REJECTED: true,
   INVALID: true,
+};
+
+/**
+ * Admin-side allowed user-state transitions. Backend accepts every pairing,
+ * but three of them have real semantics:
+ *
+ *   - `ACTIVE → SUSPENDED` requires a non-empty `suspended_reason` per the
+ *     backend (audit trail).
+ *   - `DELETION_SCHEDULED → ACTIVE` is a reactivation.
+ *   - `SUSPENDED → ACTIVE` is an unsuspend; `suspended_reason` is cleared.
+ *
+ * Same-state no-ops are omitted — the backend responds 400 with
+ * `no-op patch — at least one field must change`.
+ */
+export const ADMIN_USER_TRANSITIONS: Readonly<Record<UserState, readonly UserState[]>> = {
+  ACTIVE: ['SUSPENDED', 'DELETION_SCHEDULED'],
+  SUSPENDED: ['ACTIVE', 'DELETION_SCHEDULED'],
+  DELETION_SCHEDULED: ['ACTIVE'],
+};
+
+export const USER_STATE_LABELS: Readonly<Record<UserState, string>> = {
+  ACTIVE: 'Aktiv',
+  SUSPENDED: 'Gesperrt',
+  DELETION_SCHEDULED: 'Löschung geplant',
 };

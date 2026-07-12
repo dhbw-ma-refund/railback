@@ -15,7 +15,8 @@ management surface backed by the prod Lambda at
   breakdown that deep-links into the pre-filtered ticket list.
 - `/admin-panel/users` — user list with email + state filters, cursor
   pagination.
-- `/admin-panel/users/:email` — user detail with recent tickets.
+- `/admin-panel/users/:email` — user detail with recent tickets and an
+  `Bearbeiten` action for profile + status edits.
 - `/admin-panel/tickets` — ticket list with state / email / train / date
   filters and cursor pagination.
 - `/admin-panel/tickets/:ticketId` — ticket detail (journey plan vs. actual,
@@ -42,6 +43,23 @@ and PATCHes `/admin/tickets/{ticketId}`. Rules:
 `Verspätungen anzeigen` on the ticket detail is disabled when the ticket
 payload lacks `fahrt_zugnummer_plan` or `fahrt_abreisedatum` so the button
 never navigates to a dead page.
+
+User profile + status editing lives in `UserEditDialog` on the user-detail
+page and PATCHes `/admin/users/{email}`:
+
+- Editable fields: `vorname`, `nachname`, `telefon`, `adresse` (whole
+  object), `user_state`. `iban` / `bic` are deliberately not editable — the
+  backend rejects them.
+- Only reachable transitions from `services/transitions.ts` are rendered;
+  same-state saves are blocked because the backend replies `400 no-op patch
+  — at least one field must change`.
+- `ACTIVE → SUSPENDED` requires a `Sperrgrund` textarea; Save stays
+  disabled until it is filled (client-side mirror of the backend rule).
+- PATCH payload is the *diff*: unchanged fields are never sent, so a
+  no-change save is impossible.
+- 400 from the backend surfaces its own message verbatim so admins see
+  which field the server rejected; 409 / 403 / 5xx map to the same copy
+  as the ticket dialog.
 
 ## Contract drift
 

@@ -7,6 +7,8 @@ import { fmtDate, fmtDateTime } from '../services/format/date';
 import { fmtEUR } from '../services/format/money';
 import { useAdminGoBack } from '../services/hooks/useAdminGoBack';
 import { UserStateBadge } from '../ui/UserStateBadge';
+import { UserEditDialog } from './UserEditDialog';
+import { Button } from '../ui-library';
 import './DetailPage.css';
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
@@ -22,6 +24,7 @@ export function UserDetailPage() {
   const { email } = useParams<{ email: string }>();
   const goBack = useAdminGoBack('/admin-panel/users');
   const [user, setUser] = useState<User | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
@@ -96,6 +99,21 @@ export function UserDetailPage() {
       <h1 className="rb-detail__title">
         {user.vorname} {user.nachname}
       </h1>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '12px 0' }}>
+        <Button type="button" variant="secondary" onClick={() => setEditOpen(true)}>
+          Bearbeiten
+        </Button>
+      </div>
+
+      <UserEditDialog
+        user={user}
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        onSaved={(updated) => {
+          setUser(updated);
+          setEditOpen(false);
+        }}
+      />
 
       <section className="rb-detail__section">
         <h2 className="rb-detail__section-title">Kontakt</h2>

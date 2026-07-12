@@ -111,3 +111,48 @@ describe('usersApi.getUser', () => {
     expect(user.recent_tickets?.[0].ticketId).toBe('T1');
   });
 });
+
+describe('usersApi.patchUser', () => {
+  beforeEach(() => {
+    setTokens('a', 'r', 9999);
+    vi.stubGlobal('fetch', vi.fn());
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    clearTokens();
+  });
+
+  it('PATCHes /admin/users/{email} with the payload and parses the response', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      jsonResponse(200, { ...USER_RAW, vorname: 'New' }),
+    );
+    const updated = await usersApi.patchUser(USER_RAW.email, { vorname: 'New' });
+    expect(updated.vorname).toBe('New');
+    const [url, init] = vi.mocked(fetch).mock.calls[0];
+    expect(String(url)).toContain('/admin/users/a%40b.example');
+    expect(init?.method).toBe('PATCH');
+    expect(JSON.parse(String(init?.body))).toEqual({ vorname: 'New' });
+  });
+
+  it('URL-encodes the email in the path', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, USER_RAW));
+    await usersApi.patchUser('a+b@c.example', { nachname: 'X' });
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).toContain('/admin/users/a%2Bb%40c.example');
+  });
+
+  it('surfaces the ERR_VALIDATION message when the backend rejects a no-op patch', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      jsonResponse(400, {
+        error: {
+          code: 'ERR_VALIDATION',
+          message: 'no-op patch — at least one field must change',
+        },
+      }),
+    );
+    await expect(usersApi.patchUser(USER_RAW.email, { vorname: 'Ada' })).rejects.toMatchObject({
+      status: 400,
+      message: expect.stringContaining('no-op patch'),
+    });
+  });
+});

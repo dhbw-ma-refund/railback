@@ -1,6 +1,14 @@
 import { apiClient } from './client';
 import { isRecord, readArray, readNumber, readRecord, readString, warnMissingField } from './parse';
-import type { RecentTicket, User, UserAddress, UserState, UsersPage } from '../types/user';
+import type {
+  RecentTicket,
+  User,
+  UserAddress,
+  UserAddressPatch,
+  UserPatchPayload,
+  UserState,
+  UsersPage,
+} from '../types/user';
 
 function asUserState(v: unknown): UserState {
   return v === 'SUSPENDED' || v === 'DELETION_SCHEDULED' ? v : 'ACTIVE';
@@ -107,4 +115,20 @@ export const usersApi = {
     });
     return parseUser(raw);
   },
+
+  /**
+   * PATCH /admin/users/{email}. Backend rejects empty patches with 400
+   * ERR_VALIDATION and requires `suspended_reason` on ACTIVE → SUSPENDED —
+   * both surfaced through the standard ApiError path so the dialog can map
+   * them to specific inline copy.
+   */
+  async patchUser(email: string, payload: UserPatchPayload): Promise<User> {
+    const raw = await apiClient.patch<unknown>(
+      `/admin/users/${encodeURIComponent(email)}`,
+      payload,
+    );
+    return parseUser(raw);
+  },
 };
+
+export type { UserAddressPatch, UserPatchPayload };

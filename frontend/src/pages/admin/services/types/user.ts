@@ -41,3 +41,31 @@ export interface UsersPage {
   items: User[];
   nextCursor?: string;
 }
+
+/**
+ * PATCH /admin/users/{email} payload. Every field is optional but the
+ * backend rejects an empty patch with 400 ERR_VALIDATION.
+ *
+ * `iban` / `bic` are NOT accepted by the endpoint — the type omits them so
+ * they can never leak into a request accidentally.
+ *
+ * `suspended_reason` is required by the backend on `ACTIVE → SUSPENDED`;
+ * the dialog enforces it client-side too so admins get a clear error inline
+ * instead of round-tripping to a 400.
+ */
+export interface UserAddressPatch {
+  strasse: string;
+  hausnr: string;
+  plz: string;
+  ort: string;
+  land: string;
+}
+
+export interface UserPatchPayload {
+  vorname?: string;
+  nachname?: string;
+  telefon?: string | null;
+  adresse?: UserAddressPatch;
+  user_state?: UserState;
+  suspended_reason?: string | null;
+}
