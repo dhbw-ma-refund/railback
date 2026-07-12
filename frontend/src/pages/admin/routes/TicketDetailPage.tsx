@@ -92,20 +92,24 @@ export function TicketDetailPage() {
       </button>
       <h1 className="rb-detail__title">Ticket {ticket.ticketId}</h1>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '12px 0' }}>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => setStateDialogOpen(true)}
-        >
+        <Button type="button" variant="secondary" onClick={() => setStateDialogOpen(true)}>
           State ändern
         </Button>
         <Button
           type="button"
           variant="secondary"
+          disabled={!ticket.fahrt_zugnummer_plan || !ticket.fahrt_abreisedatum}
+          title={
+            !ticket.fahrt_zugnummer_plan || !ticket.fahrt_abreisedatum
+              ? 'Zugnummer und Datum fehlen in den Ticket-Daten.'
+              : undefined
+          }
           onClick={() => {
-            const q = new URLSearchParams();
-            if (ticket.fahrt_zugnummer_plan) q.set('trainNr', ticket.fahrt_zugnummer_plan);
-            if (ticket.fahrt_abreisedatum) q.set('datum', ticket.fahrt_abreisedatum);
+            if (!ticket.fahrt_zugnummer_plan || !ticket.fahrt_abreisedatum) return;
+            const q = new URLSearchParams({
+              trainNr: ticket.fahrt_zugnummer_plan,
+              datum: ticket.fahrt_abreisedatum,
+            });
             navigate(
               `/admin-panel/tickets/${encodeURIComponent(ticket.ticketId)}/delays?${q.toString()}`,
             );
@@ -184,9 +188,7 @@ export function TicketDetailPage() {
           <Field
             label="Confidence"
             value={
-              ticket.extraction_confidence !== null
-                ? ticket.extraction_confidence.toFixed(3)
-                : null
+              ticket.extraction_confidence !== null ? ticket.extraction_confidence.toFixed(3) : null
             }
           />
           <Field label="Barcode UID" value={ticket.barcode_uid} />

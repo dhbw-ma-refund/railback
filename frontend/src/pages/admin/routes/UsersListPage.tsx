@@ -106,6 +106,7 @@ export function UsersListPage() {
         },
         { replace: true },
       ),
+    pageItemCount: rows.length,
   });
 
   useEffect(() => {

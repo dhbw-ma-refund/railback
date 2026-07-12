@@ -25,6 +25,12 @@ export interface UseCursorPaginationOptions {
   nextCursorFromLoad: string | undefined;
   resetKey: string;
   onCursorChange: (cursor: string | undefined) => void;
+  /**
+   * Number of items on the currently-rendered page. Guards against the
+   * backend returning `items: []` alongside a `nextCursor` — without this,
+   * "Weiter" stays enabled and paginates through empty pages forever.
+   */
+  pageItemCount?: number;
 }
 
 export function useCursorPagination({
@@ -32,6 +38,7 @@ export function useCursorPagination({
   nextCursorFromLoad,
   resetKey,
   onCursorChange,
+  pageItemCount,
 }: UseCursorPaginationOptions): CursorPaginationHandle {
   const [stack, setStack] = useState<Array<string | undefined>>(() => [urlCursor]);
   const cursorRef = useRef<string | undefined>(urlCursor);
@@ -49,7 +56,8 @@ export function useCursorPagination({
 
   const currentCursor = stack[stack.length - 1];
   const hasPrev = stack.length > 1;
-  const hasNext = nextCursorFromLoad !== undefined;
+  const hasNext =
+    nextCursorFromLoad !== undefined && (pageItemCount === undefined || pageItemCount > 0);
 
   const advance = useCallback((next: string | undefined) => {
     // Called by the caller after a page load. Nothing to do here — the

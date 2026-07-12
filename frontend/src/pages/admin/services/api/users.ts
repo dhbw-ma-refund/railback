@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { isRecord, readArray, readNumber, readRecord, readString } from './parse';
+import { isRecord, readArray, readNumber, readRecord, readString, warnMissingField } from './parse';
 import type { RecentTicket, User, UserAddress, UserState, UsersPage } from '../types/user';
 
 function asUserState(v: unknown): UserState {
@@ -19,6 +19,9 @@ function parseAddress(r: Record<string, unknown> | null): UserAddress | null {
 
 function parseRecentTicket(raw: unknown): RecentTicket | null {
   if (!isRecord(raw)) return null;
+  for (const field of RECENT_TICKET_REQUIRED_FIELDS) {
+    warnMissingField('GET /admin/users/{email} recent_ticket', field, raw);
+  }
   const id = readString(raw, 'ticketId');
   if (!id) return null;
   return {
@@ -29,8 +32,28 @@ function parseRecentTicket(raw: unknown): RecentTicket | null {
   };
 }
 
+const USER_REQUIRED_FIELDS: readonly string[] = [
+  'email',
+  'vorname',
+  'nachname',
+  'user_state',
+  'created_at',
+  'ticket_count',
+  'total_refunded',
+];
+
+const RECENT_TICKET_REQUIRED_FIELDS: readonly string[] = [
+  'ticketId',
+  'ticket_state',
+  'abreisedatum',
+  'erwartete_erstattung',
+];
+
 function parseUser(raw: unknown): User {
   if (!isRecord(raw)) throw new Error('Malformed user payload');
+  for (const field of USER_REQUIRED_FIELDS) {
+    warnMissingField('GET /admin/users(/{email})', field, raw);
+  }
   const recent = readArray(raw, 'recent_tickets')
     .map(parseRecentTicket)
     .filter((t): t is RecentTicket => t !== null);

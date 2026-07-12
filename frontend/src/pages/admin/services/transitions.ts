@@ -36,3 +36,21 @@ export const TICKET_STATE_LABELS: Readonly<Record<TicketState, string>> = {
   INVALID: 'Ungültig',
   EMAIL_FAILED: 'E-Mail fehlgeschlagen',
 };
+
+/**
+ * Category tables for the state-override dialog copy. Static per state, so
+ * a plain lookup record beats a Set here (no dynamic membership).
+ */
+export const SYSTEM_OWNED_TICKET_STATES: Readonly<Partial<Record<TicketState, true>>> = {
+  VALIDATING: true,
+  READY: true,
+  EMAIL_SENDING: true,
+  EMAIL_FAILED: true,
+};
+
+/** Terminal states — no further transitions in either direction. */
+export const TERMINAL_TICKET_STATES: Readonly<Partial<Record<TicketState, true>>> = {
+  COMPLETED: true,
+  REJECTED: true,
+  INVALID: true,
+};

@@ -28,3 +28,30 @@ export function readRecord(
   const v = source[key];
   return isRecord(v) ? v : null;
 }
+
+/**
+ * Dev-mode warning when the backend drops a field our types depend on.
+ * Silent in production so we do not spam paying admins over network hiccups;
+ * loud in `import.meta.env.DEV` so contract drift shows up on `bun run dev`.
+ *
+ * Deduped per (context, field) so a 50-row list emits one warn per field,
+ * not fifty.
+ */
+const warnedKeys: Record<string, true> = {};
+
+export function warnMissingField(
+  context: string,
+  field: string,
+  raw: Record<string, unknown>,
+): void {
+  if (!import.meta.env.DEV) return;
+  if (field in raw) return;
+  const key = `${context}:${field}`;
+  if (warnedKeys[key]) return;
+  warnedKeys[key] = true;
+  // eslint-disable-next-line no-console
+  console.warn(
+    `[api] contract drift: ${context} is missing required field "${field}". ` +
+      `Backend payload keys: ${Object.keys(raw).join(', ')}`,
+  );
+}

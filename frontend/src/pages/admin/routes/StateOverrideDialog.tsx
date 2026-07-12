@@ -2,7 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Modal } from '../ui/Modal';
 import { Input } from '../ui-library';
 import { TicketStateBadge } from '../ui/TicketStateBadge';
-import { ADMIN_TICKET_TRANSITIONS, TICKET_STATE_LABELS } from '../services/transitions';
+import {
+  ADMIN_TICKET_TRANSITIONS,
+  SYSTEM_OWNED_TICKET_STATES,
+  TERMINAL_TICKET_STATES,
+  TICKET_STATE_LABELS,
+} from '../services/transitions';
 import { ticketsApi, type TicketPatchPayload } from '../services/api/tickets';
 import { ApiError } from '../services/api/errors';
 import type { Ticket, TicketState } from '../services/types/ticket';
@@ -72,9 +77,7 @@ export function StateOverrideDialog({ ticket, open, onClose, onSaved }: StateOve
   const originalNote = (ticket.admin_note ?? '').trim();
   const noteChanged = adminNote.trim() !== originalNote;
   const canSubmit =
-    !busy &&
-    (targetState !== '' || noteChanged) &&
-    (!noteRequired || adminNote.trim().length > 0);
+    !busy && (targetState !== '' || noteChanged) && (!noteRequired || adminNote.trim().length > 0);
 
   async function handleSubmit() {
     if (!canSubmit) return;
@@ -132,9 +135,11 @@ export function StateOverrideDialog({ ticket, open, onClose, onSaved }: StateOve
 
         {allowedTargets.length === 0 ? (
           <p className="rb-state-override__locked">
-            Aus dem aktuellen Zustand sind keine Übergänge zulässig.
-            {' '}
-            Sie können lediglich die Admin-Notiz aktualisieren.
+            {SYSTEM_OWNED_TICKET_STATES[ticket.ticket_state]
+              ? 'Dieser Zustand wird vom System verwaltet. Sobald die Pipeline (Validator / Mail-Worker) den nächsten Schritt ausgeführt hat, sind Übergänge möglich. Bis dahin kann nur die Admin-Notiz aktualisiert werden.'
+              : TERMINAL_TICKET_STATES[ticket.ticket_state]
+                ? 'Endzustand — es sind keine weiteren Übergänge mehr möglich. Sie können nur die Admin-Notiz aktualisieren.'
+                : 'Aus dem aktuellen Zustand sind keine Übergänge zulässig. Sie können lediglich die Admin-Notiz aktualisieren.'}
           </p>
         ) : (
           <fieldset className="rb-state-override__fieldset">

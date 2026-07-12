@@ -114,8 +114,7 @@ export function TicketsListPage() {
     setParams({}, { replace: true });
   }
 
-  const hasActiveFilters =
-    activeEmail !== '' || activeTrain !== '' || state !== '' || date !== '';
+  const hasActiveFilters = activeEmail !== '' || activeTrain !== '' || state !== '' || date !== '';
 
   const [rows, setRows] = useState<TicketListItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
@@ -142,6 +141,7 @@ export function TicketsListPage() {
         },
         { replace: true },
       ),
+    pageItemCount: rows.length,
   });
 
   useEffect(() => {
@@ -254,9 +254,7 @@ export function TicketsListPage() {
             columns={COLUMNS}
             rows={rows}
             rowKey={(t) => t.ticketId}
-            onRowClick={(t) =>
-              navigate(`/admin-panel/tickets/${encodeURIComponent(t.ticketId)}`)
-            }
+            onRowClick={(t) => navigate(`/admin-panel/tickets/${encodeURIComponent(t.ticketId)}`)}
             loading={loading}
             error={error}
             emptyMessage={

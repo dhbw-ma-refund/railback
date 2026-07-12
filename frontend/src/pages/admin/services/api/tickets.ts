@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { isRecord, readArray, readString } from './parse';
+import { isRecord, readArray, readString, warnMissingField } from './parse';
 import {
   TICKET_STATES,
   type Ticket,
@@ -31,8 +31,34 @@ function readOptionalNumber(source: Record<string, unknown>, key: string): numbe
   return typeof v === 'number' && Number.isFinite(v) ? v : null;
 }
 
+const LIST_ITEM_REQUIRED_FIELDS: readonly string[] = [
+  'ticketId',
+  'email',
+  'ticket_state',
+  'abreisedatum',
+  'abreisebahnhof',
+  'zielbahnhof',
+  'zugnummer_plan',
+  'fahrkartenpreis',
+  'erwartete_erstattung',
+  'submitted_at',
+  'updated_at',
+];
+
+const DETAIL_REQUIRED_FIELDS: readonly string[] = [
+  'fahrt_abreisedatum',
+  'fahrt_zugnummer_plan',
+  'fahrt_zielbahnhof',
+  'fahrt_abreisebahnhof',
+  'ticket_state',
+  'updated_at',
+];
+
 function parseListItem(raw: unknown): TicketListItem {
   if (!isRecord(raw)) throw new Error('Malformed ticket payload');
+  for (const field of LIST_ITEM_REQUIRED_FIELDS) {
+    warnMissingField('GET /admin/tickets item', field, raw);
+  }
   return {
     ticketId: readString(raw, 'ticketId') ?? '',
     email: readString(raw, 'email') ?? '',
@@ -71,6 +97,9 @@ function parseTimeline(raw: unknown): TicketTimelineEntry[] {
 
 function parseTicket(raw: unknown): Ticket {
   if (!isRecord(raw)) throw new Error('Malformed ticket payload');
+  for (const field of DETAIL_REQUIRED_FIELDS) {
+    warnMissingField('GET /admin/tickets/{id}', field, raw);
+  }
   const listItem = parseListItem(raw);
   return {
     ...listItem,
@@ -136,10 +165,7 @@ export interface TicketPatchPayload {
 }
 
 export const ticketsApi = {
-  async listTickets(
-    params: ListTicketsParams = {},
-    signal?: AbortSignal,
-  ): Promise<TicketsPage> {
+  async listTickets(params: ListTicketsParams = {}, signal?: AbortSignal): Promise<TicketsPage> {
     const raw = await apiClient.get<unknown>('/admin/tickets', {
       query: {
         state: params.state,
@@ -155,10 +181,9 @@ export const ticketsApi = {
   },
 
   async getTicket(ticketId: string, signal?: AbortSignal): Promise<Ticket> {
-    const raw = await apiClient.get<unknown>(
-      `/admin/tickets/${encodeURIComponent(ticketId)}`,
-      { signal },
-    );
+    const raw = await apiClient.get<unknown>(`/admin/tickets/${encodeURIComponent(ticketId)}`, {
+      signal,
+    });
     return parseTicket(raw);
   },
 
