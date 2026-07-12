@@ -1,6 +1,6 @@
 .rb-dashboard {
   padding: 24px;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   font-family: var(--font-family-primary);
   color: var(--color-text-primary);
@@ -195,5 +195,26 @@
   }
   .rb-state-list__row {
     grid-template-columns: 130px 50px 1fr;
+  }
+}
+
+/*
+ * Desktop-landscape: give KPI cards a bit more room and let the two-panel
+ * grid open up. 220 px min lets 5 KPIs sit on a 1440p monitor without
+ * squeezing labels, still degrading through 4-, 3-, 2- and 1-column on
+ * narrower screens via the same auto-fit rule.
+ */
+@media (min-width: 1024px) {
+  .rb-dashboard {
+    padding: 32px;
+  }
+
+  .rb-dashboard__kpis {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  .rb-dashboard__grid {
+    gap: 24px;
   }
 }

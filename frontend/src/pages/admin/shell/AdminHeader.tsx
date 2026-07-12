@@ -18,19 +18,21 @@ export function AdminHeader() {
 
   return (
     <header className="rb-admin-header">
-      <NavLink to="/admin-panel" end className="rb-admin-header__brand">
-        RailBack Admin
-      </NavLink>
-      <nav className="rb-admin-header__nav" aria-label="Admin-Navigation">
-        <NavLink to="/admin-panel" end>
-          Dashboard
+      <div className="rb-admin-header__inner">
+        <NavLink to="/admin-panel" end className="rb-admin-header__brand">
+          RailBack Admin
         </NavLink>
-        <NavLink to="/admin-panel/users">Benutzer</NavLink>
-        <NavLink to="/admin-panel/tickets">Tickets</NavLink>
-      </nav>
-      <Button variant="secondary" className="rb-admin-header__logout" onClick={onLogout}>
-        Abmelden
-      </Button>
+        <nav className="rb-admin-header__nav" aria-label="Admin-Navigation">
+          <NavLink to="/admin-panel" end>
+            Dashboard
+          </NavLink>
+          <NavLink to="/admin-panel/users">Benutzer</NavLink>
+          <NavLink to="/admin-panel/tickets">Tickets</NavLink>
+        </nav>
+        <Button variant="secondary" className="rb-admin-header__logout" onClick={onLogout}>
+          Abmelden
+        </Button>
+      </div>
     </header>
   );
 }

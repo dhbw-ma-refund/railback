@@ -69,6 +69,32 @@ dev`, silent in production. Wired into ticket + user list/detail parsers
 so a missing required field is loud during development. Deduped so a
 50-row list emits one warning per field, not fifty.
 
+## Layout
+
+The panel targets three viewport bands. The shared component library
+has no viewport rules of its own, so the admin panel owns its own
+responsive rules.
+
+- **Phone (up to 767 px wide)**: tables collapse to labelled card rows,
+  the filter bar stacks vertically with a collapse toggle, and the
+  header nav wraps under the brand + logout row. Rules live in
+  `mobile.css` and the `@media (max-width: 767px)` block inside each
+  screen's CSS.
+- **Tablet and small laptop (768 – 1023 px)**: default layout — 24 px
+  outer padding, auto-fit grids with 180 – 220 px minimum tracks,
+  detail pages capped at 1200 px, dashboard at 1400 px, list pages
+  filling the shell.
+- **Desktop landscape (1024 px and up)**: outer padding grows to 32 px
+  so content stops hugging the viewport edge, the detail field grid
+  widens to 240 px tracks (four columns on a 1440 px monitor), and the
+  dashboard KPI row widens to 220 px tracks. Every page container
+  (list shell, dashboard, detail, and the inner header row) caps at
+  1400 px and centers with `margin: 0 auto`, so the header nav aligns
+  with the first column of page content on ultra-wide monitors. The
+  deep-blue header bar itself stays full-bleed via a wrapper element
+  so it reaches the viewport edges on 2560 px displays without leaving
+  the nav marooned on the left.
+
 ## Development
 
 ```bash

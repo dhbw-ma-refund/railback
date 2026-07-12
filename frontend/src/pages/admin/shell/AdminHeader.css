@@ -1,12 +1,17 @@
 .rb-admin-header {
+  background: var(--color-deep-trust-blue);
+  color: var(--color-warm-off-white);
+}
+
+.rb-admin-header__inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 24px;
-  background: var(--color-deep-trust-blue);
-  color: var(--color-warm-off-white);
   min-height: 56px;
   gap: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .rb-admin-header__brand {
@@ -43,7 +48,7 @@
 }
 
 @media (max-width: 767px) {
-  .rb-admin-header {
+  .rb-admin-header__inner {
     flex-wrap: wrap;
     padding: 10px 12px;
   }
@@ -54,5 +59,11 @@
     width: 100%;
     overflow-x: auto;
     gap: 8px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .rb-admin-header__inner {
+    padding: 12px 32px;
   }
 }

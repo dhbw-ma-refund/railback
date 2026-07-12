@@ -1,6 +1,6 @@
 .rb-detail {
   padding: 24px;
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
   font-family: var(--font-family-primary);
   color: var(--color-text-primary);
@@ -147,5 +147,22 @@
   }
   .rb-detail__ticket--recent > span:nth-child(3) {
     text-align: left;
+  }
+}
+
+/*
+ * Desktop-landscape: outer breathing room mirrors the shell (32 px) and the
+ * field grid opens to a wider min-track so 3-4 columns render on 1440p and
+ * up instead of the mobile-friendly 2 columns. The existing auto-fit rule
+ * still collapses gracefully on narrower widths.
+ */
+@media (min-width: 1024px) {
+  .rb-detail {
+    padding: 32px;
+  }
+
+  .rb-detail__grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px 32px;
   }
 }
