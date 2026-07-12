@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useSmartBack } from '../hooks/useSmartBack';
 import { useLanguage } from '../lib/LanguageContext';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
@@ -106,7 +106,7 @@ const content: Record<string, Record<string, TopicContent>> = {
       img: 'Screenshot: Antrag-Freigabe & Status',
       qa: [
         { q: 'Wird der Antrag automatisch versendet?', a: ['Nein. Kein Antrag verlässt RailBack ohne deine ausdrückliche Freigabe. Du behältst die volle Kontrolle.'] },
-        { q: 'Was passiert nach der Freigabe?', a: ['Wir reichen deinen Antrag bei der Bahn ein. Die Prüfung dauert meist 3–5 Tage – du siehst den Status jederzeit in der App.'] },
+        { q: 'Was passiert nach der Freigabe?', a: ['Wir reichen deinen Antrag bei der Bahn ein. Die Prüfung dauert meist zwischen drei und fünf Tagen. Du siehst den Status jederzeit in der App.'] },
         { q: 'Wohin wird die Erstattung ausgezahlt?', a: ['Auf das von dir hinterlegte Konto (IBAN). Sobald die Auszahlung initiiert ist, bekommst du eine Benachrichtigung.'] },
       ],
     },
@@ -141,7 +141,7 @@ const content: Record<string, Record<string, TopicContent>> = {
       img: 'Screenshot: claim approval & status',
       qa: [
         { q: 'Is the claim sent automatically?', a: ['No. No claim leaves RailBack without your explicit approval. You stay in full control.'] },
-        { q: 'What happens after I approve?', a: ['We file your claim with the railway. Review usually takes 3–5 days – you can see the status in the app anytime.'] },
+        { q: 'What happens after I approve?', a: ['We file your claim with the railway. Review usually takes between three and five days. You can see the status in the app anytime.'] },
         { q: 'Where is the refund paid out?', a: ['To the account (IBAN) you provided. As soon as the payout is initiated, you get a notification.'] },
       ],
     },
@@ -155,7 +155,7 @@ const ImgPlaceholder = ({ label }: { label: string }) => (
 );
 
 export const FAQPage = () => {
-  const navigate = useNavigate();
+  const goBack = useSmartBack('/');
   const { lang, t } = useLanguage();
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [openQA, setOpenQA] = useState<number>(0);
@@ -171,13 +171,28 @@ export const FAQPage = () => {
       <div className="faq-page">
         <Header />
         <main className="faq-main">
-          <div className="wrap container page fade-in">
+          <div className="wrap container page page--detail fade-in">
             <div className="page__head">
               <button
                 className="rb-button rb-button--secondary rb-button--medium back"
                 onClick={() => setSelectedTopic(null)}
               >
-                <Icon name="arrowLeft" size={18} /> {t.menu.faq}
+                {/* Einheitliches Pfeil-Icon (identisch zu Preise/Rechtliches). */}
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="19" y1="12" x2="5" y2="12" />
+                  <polyline points="12 19 5 12 12 5" />
+                </svg>
+                {t.menu.faq}
               </button>
             </div>
             <h1 className="h1 title">{topic.t}</h1>
@@ -204,7 +219,7 @@ export const FAQPage = () => {
               ))}
             </div>
             {topicContent.img2 && (
-              <div style={{ maxWidth: 760, margin: '16px auto 0' }}>
+              <div className="faq-detail__secondary-image">
                 <ImgPlaceholder label={topicContent.img2} />
               </div>
             )}
@@ -219,13 +234,28 @@ export const FAQPage = () => {
     <div className="faq-page">
       <Header />
       <main className="faq-main">
-        <div className="wrap container page fade-in">
+        <div className="wrap container page page--overview fade-in">
           <div className="page__head">
             <button
               className="rb-button rb-button--secondary rb-button--medium back"
-              onClick={() => navigate('/')}
+              onClick={goBack}
             >
-              <Icon name="arrowLeft" size={18} /> {t.menu.back}
+              {/* Einheitliches Pfeil-Icon (identisch zu Preise/Rechtliches). */}
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="12 19 5 12 12 5" />
+              </svg>
+              {t.menu.back}
             </button>
           </div>
           <h1 className="h1 title">{t.faq.title}</h1>

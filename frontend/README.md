@@ -1,36 +1,49 @@
 # RailBack Frontend
 
-Vite + React + TypeScript. Ships two surfaces from a single dev server:
+Multi-app frontend setup for RailBack project.
 
-- **Landing + user forms** — `/`, `/user`, `/faq`, `/legal`, etc.
-- **Admin panel** — `/admin-panel/*` (see `src/pages/admin/README.md` for
-  routes, contracts, and admin actions).
+## Structure
 
-Both share the design tokens and primitives in `shared/`.
+- **Main App** (React + Vite) - Landing page and user forms
+- **Admin Panel** (SolidJS + Vite) - Admin dashboard
+- **Shared** - Design system components and styles
+
+## Running the Apps
+
+### Main App (Landing + User Forms)
+```bash
+npm run dev
+```
+Runs on http://localhost:5173
+
+### Admin Panel
+```bash
+cd admin-panel
+npm install
+npm run dev
+```
+Runs on http://localhost:5174
 
 ## Development
 
-```bash
-cp .env.example .env.local
-bun install
-bun run dev        # http://localhost:5173
-bun run lint       # eslint on src/pages/admin/**
-bun run build      # tsc --noEmit && vite build
-bun run test       # vitest run
-```
+Both apps share the same design system from `/shared` folder:
+- Styles: `@shared/styles/global.css`
+- Components: `@shared/components` (Button, Input, Card, StatusBadge)
+- Based on RailBack Brand Guide
 
-`VITE_API_BASE_URL` points the admin panel at the backend Lambda. The
-default in `.env.example` is the prod URL so `bun run dev` works without
-extra setup.
+## Design
 
-## Admin panel
+The full brand & design system is documented in **[`docs/BRAND_AND_DESIGN.md`](./docs/BRAND_AND_DESIGN.md)** — colours, typography, tone of voice, layout rules, accessibility. Read it before writing new UI. Design tokens live in [`shared/styles/tokens.css`](./shared/styles/tokens.css); always prefer the CSS variables over hardcoded values.
 
-Under `/admin-panel/*`:
+## Routes
 
-- `/admin-panel/login` — admin login (role-gated).
-- `/admin-panel` — dashboard with KPIs and state drill-down.
-- `/admin-panel/users` and `/users/:email` — user list + detail.
-- `/admin-panel/tickets` and `/tickets/:ticketId` — ticket list + detail
-  with a state-override dialog and delay drill-down.
+### Main App
+- `/` - Landing page
+- `/user` - User ticket submission form
 
-See `src/pages/admin/README.md` for the full contract.
+### Admin Panel  
+- `/login` - Admin login
+- `/` - Dashboard
+- `/overview` - Overview
+- `/users` - User management
+- `/tickets` - Ticket management

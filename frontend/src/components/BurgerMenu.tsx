@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../lib/LanguageContext';
+import { useAuth } from '../lib/AuthContext';
 import './BurgerMenu.css';
 
 // Simple Icon component
@@ -88,6 +89,16 @@ const Icon = ({
         <polyline points="6 9 12 15 18 9" />
       </svg>
     ),
+    list: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="8" y1="6" x2="21" y2="6" />
+        <line x1="8" y1="12" x2="21" y2="12" />
+        <line x1="8" y1="18" x2="21" y2="18" />
+        <line x1="3" y1="6" x2="3.01" y2="6" />
+        <line x1="3" y1="12" x2="3.01" y2="12" />
+        <line x1="3" y1="18" x2="3.01" y2="18" />
+      </svg>
+    ),
   };
 
   const icon = icons[name];
@@ -97,12 +108,16 @@ const Icon = ({
 interface BurgerMenuProps {
   open: boolean;
   onClose: () => void;
+  /** Overrides the primary menu item's CTA label (used by campaign pages). */
+  ctaLabel?: string;
 }
 
-export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
+export const BurgerMenu = ({ open, onClose, ctaLabel }: BurgerMenuProps) => {
   const navigate = useNavigate();
   const { lang, setLang, t } = useLanguage();
-  const [loggedIn, setLoggedIn] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
+
+  const cta = ctaLabel ?? t.hero.cta1;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -112,8 +127,19 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const toggleAuth = () => {
-    setLoggedIn(!loggedIn);
+  const handleAuthAction = () => {
+    if (isAuthenticated) {
+      logout();
+      navigate('/');
+    } else {
+      navigate('/login');
+    }
+    onClose();
+  };
+
+  const handleProfile = () => {
+    navigate('/profile');
+    onClose();
   };
 
   const goTo = (path: string) => {
@@ -126,25 +152,44 @@ export const BurgerMenu = ({ open, onClose }: BurgerMenuProps) => {
       <div className={'scrim' + (open ? ' open' : '')} onClick={onClose}></div>
       <nav className={'menu' + (open ? ' open' : '')} aria-hidden={!open}>
         <div className="menu__head">
-          <button className="menu__auth" onClick={toggleAuth}>
-            <Icon name={loggedIn ? 'logout' : 'login'} size={21} />
-            {loggedIn ? t.menu.logout : t.menu.login}
+          <button className="menu__auth" onClick={handleAuthAction}>
+            <Icon name={isAuthenticated ? 'logout' : 'login'} size={21} />
+            {isAuthenticated ? t.menu.logout : t.menu.login}
           </button>
           <button className="menu__close" onClick={onClose} aria-label="Zurück">
             <Icon name="close" size={18} />
           </button>
         </div>
         <div className="menu__list">
-          <button className="menu__item menu__item--primary" onClick={() => goTo('/user')}>
-            <span>{t.hero.cta1}</span>
+          {isAuthenticated ? (
+            <>
+              <button className="menu__item menu__item--primary" onClick={() => goTo('/antrag/neu')}>
+                <span>{cta}</span>
+                <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
+              </button>
+              <button className="menu__item" onClick={() => goTo('/dashboard')}>
+                <Icon name="list" size={21} />
+                <span>{t.dashboard.menu}</span>
+                <Icon name="chevronRight" size={18} color="var(--color-muted-gray-blue)" />
+              </button>
+              <button className="menu__item" onClick={handleProfile}>
+                <Icon name="user" size={21} className="ic" />
+                <span>{t.menu.profile}</span>
+                <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
+              </button>
+            </>
+          ) : (
+            <button className="menu__item menu__item--primary" onClick={() => goTo('/login')}>
+              <span>{cta}</span>
+              <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
+            </button>
+          )}
+          <button className="menu__item" onClick={() => goTo('/preise')}>
+            <span>{t.menu.prices}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
           <button className="menu__item" onClick={() => goTo('/faq')}>
             <span>{t.menu.faq}</span>
-            <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
-          </button>
-          <button className="menu__item" onClick={() => goTo('/preise')}>
-            <span>{t.menu.prices}</span>
             <Icon name="chevronRight" size={18} className="menu__arrow" color="var(--color-muted-gray-blue)" />
           </button>
           <a className="menu__item" href="mailto:support@railback.de?subject=Support-Anfrage%20RailBack">

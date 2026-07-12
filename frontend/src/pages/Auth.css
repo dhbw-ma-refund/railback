@@ -1,0 +1,209 @@
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-warm-off-white);
+}
+
+.auth-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-4);
+  background:
+    linear-gradient(180deg, rgba(9, 67, 137, 0.05) 0%, rgba(147, 205, 28, 0.04) 100%),
+    var(--color-warm-off-white);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 480px;
+  padding: var(--spacing-4);
+}
+
+.auth-card .h1 {
+  margin-bottom: var(--spacing-1);
+  text-align: center;
+}
+
+.auth-subtitle {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  margin: 0 0 var(--spacing-3);
+}
+
+.profile-subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  margin: 0 0 var(--spacing-3);
+  max-width: 60ch;
+}
+
+.auth-card .h2 {
+  margin-bottom: var(--spacing-3);
+  margin-top: 0;
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.auth-card form > div:last-of-type {
+  margin-top: var(--spacing-2);
+}
+
+.auth-link {
+  text-align: center;
+  margin-top: var(--spacing-3);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  color: var(--color-text-secondary);
+}
+
+.auth-link a {
+  color: var(--color-deep-trust-blue);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-link a:hover {
+  text-decoration: underline;
+}
+
+.auth-legal-link {
+  color: var(--color-deep-trust-blue);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.auth-legal-link:hover {
+  color: var(--color-muted-gray-blue);
+}
+
+.error-message {
+  padding: var(--spacing-2);
+  background: var(--color-error-red-soft);
+  border: 1px solid var(--color-error-red-border);
+  border-radius: var(--radius-card);
+  color: var(--color-error-red);
+  font-size: var(--font-size-caption);
+  margin-bottom: var(--spacing-2);
+}
+
+.success-message {
+  padding: var(--spacing-2);
+  background: var(--color-success-green-soft);
+  border: 1px solid var(--color-success-green-border);
+  border-radius: var(--radius-card);
+  color: var(--color-relief-green);
+  font-size: var(--font-size-caption);
+  margin-bottom: var(--spacing-2);
+}
+
+.wizard-progress {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-3);
+}
+
+.wizard-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.wizard-step-content .h2 {
+  margin-bottom: var(--spacing-2);
+}
+
+.wizard-step {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--color-input-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  background: white;
+}
+
+.wizard-step.active {
+  border-color: var(--color-deep-trust-blue);
+  background: var(--color-deep-trust-blue);
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(9, 67, 137, 0.15);
+}
+
+.wizard-step.completed {
+  border-color: var(--color-deep-trust-blue);
+  background: var(--color-deep-trust-blue);
+  color: #fff;
+}
+
+.button-group {
+  display: flex;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-3);
+}
+
+.profile-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-warm-off-white);
+}
+
+.profile-container {
+  flex: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--spacing-4);
+  width: 100%;
+}
+
+.profile-container .h1 {
+  margin-bottom: var(--spacing-1);
+}
+
+.profile-section {
+  margin-bottom: var(--spacing-3);
+  padding: var(--spacing-3);
+}
+
+.profile-section .h2 {
+  margin-bottom: 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-3);
+}
+
+.profile-data {
+  margin-top: var(--spacing-2);
+}
+
+.profile-data p {
+  margin-bottom: var(--spacing-1);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text-primary);
+}
+
+.profile-data strong {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+  margin-right: 4px;
+}

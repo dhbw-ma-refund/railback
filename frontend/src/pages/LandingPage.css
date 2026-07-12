@@ -5,20 +5,43 @@
 /* Landing page specific styles */
 .landing-page {
   --hero-header-offset: 112px;
+  --page-inline-padding: clamp(22px, 4vw, 96px);
   min-height: 100vh;
-  background: var(--color-warm-off-white);
+  background:
+    linear-gradient(
+      to bottom left,
+      rgba(147, 205, 28, 0.38) 0%,
+      rgba(250, 249, 245, 0) 46%
+    ),
+    linear-gradient(
+      to top right,
+      rgba(147, 205, 28, 0.18) 0%,
+      rgba(147, 205, 28, 0.1) 20%,
+      rgba(250, 249, 245, 0.92) 52%,
+      var(--color-warm-off-white) 78%
+    );
   display: flex;
   flex-direction: column;
 }
 
-.landing-page > .hero {
+.landing-page > .landing-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-main > .hero {
   flex: 1;
 }
 
-.wrap {
-  max-width: 1180px;
+.landing-page .wrap,
+.faq-page .wrap,
+.legal-page .wrap,
+.pricing-page .wrap {
+  max-width: 2560px;
   margin: 0 auto;
-  padding: 0 clamp(16px, 4vw, 40px);
+  padding-right: var(--page-inline-padding, clamp(22px, 4vw, 96px));
+  padding-left: var(--page-inline-padding, clamp(22px, 4vw, 96px));
 }
 
 .container {
@@ -40,17 +63,25 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  /* background: #eaf1f8; */
-  background: var(--color-warm-off-white);
+  background: transparent;
 }
 
 .hero__grid {
   position: relative;
   z-index: 1;
+  width: 100%;
+  /* Keep copy and visual connected instead of letting the empty first grid
+     track absorb all additional desktop width. */
+  max-width: clamp(1320px, 74vw, 2000px);
+  margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(380px, 480px);
   gap: clamp(56px, 7vw, 112px);
   align-items: center;
+}
+
+.hero__copy {
+  max-width: 720px;
 }
 
 .hero__claim {
@@ -183,6 +214,7 @@
   display: flex;
   justify-content: flex-end;
   position: relative;
+  isolation: isolate;
   margin-right: 0;
   max-width: 100%;
 }
@@ -191,6 +223,7 @@
   display: flex;
   justify-content: flex-end;
   position: relative;
+  isolation: isolate;
   margin-right: 0;
   max-width: 100%;
 }
@@ -203,11 +236,161 @@
   box-shadow: 0 30px 70px rgba(9, 67, 137, 0.22);
 }
 
-.hero-photo img {
+@media (min-width: 1200px) {
+  .hero__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 620px);
+    gap: clamp(48px, 5vw, 96px);
+  }
+
+  .hero__copy {
+    max-width: 840px;
+  }
+
+  .hero-photo {
+    width: clamp(460px, min(30vw, 60vh), 680px);
+  }
+}
+
+@media (min-width: 1440px) {
+  .hero__grid {
+    gap: clamp(72px, 6vw, 120px);
+  }
+
+  .hero .h1 {
+    max-width: 15ch;
+    font-size: clamp(52px, 3.55vw, 68px);
+  }
+
+  .hero__proof li {
+    font-size: clamp(24px, 1.4vw, 28px);
+  }
+
+  .hero__tag {
+    font-size: clamp(21px, 1.25vw, 24px);
+  }
+
+  .trust__item {
+    font-size: 16px;
+  }
+
+}
+
+@media (min-width: 2000px) {
+  .hero__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(700px, 820px);
+    gap: clamp(96px, 5vw, 130px);
+  }
+
+  .hero__copy {
+    max-width: 1040px;
+  }
+
+  .hero .h1 {
+    max-width: 15ch;
+    font-size: clamp(76px, 3.45vw, 88px);
+  }
+
+  .hero__proof {
+    gap: 9px;
+    padding-left: 28px;
+    margin-bottom: 30px;
+  }
+
+  .hero__proof li {
+    font-size: clamp(29px, 1.25vw, 32px);
+  }
+
+  .hero-photo {
+    width: clamp(740px, min(33vw, 65vh), 860px);
+    border-radius: 38px;
+  }
+
+  .landing-page--phone-visual.landing-page--default .phone-col {
+    justify-content: flex-start;
+    width: min(460px, calc(100vw - 48px));
+    margin-left: 0;
+    margin-right: auto;
+  }
+
+  .landing-page--phone-visual .phone {
+    width: clamp(380px, 18vw, 430px);
+  }
+
+  .hero__cta {
+    margin-bottom: 34px;
+  }
+
+  .hero__cta .rb-button--large {
+    height: 68px;
+    padding: 0 42px;
+    font-size: 22px;
+  }
+
+  .hero__tag {
+    font-size: clamp(26px, 1.1vw, 28px);
+  }
+
+  .trust {
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    align-items: flex-start;
+    column-gap: 34px;
+    row-gap: 14px;
+  }
+
+  .trust__item {
+    font-size: 18px;
+  }
+}
+
+/* Taller desktop formats need a tighter composition than widescreen layouts. */
+@media (min-width: 1200px) and (max-width: 1999px) and (max-aspect-ratio: 4 / 3) {
+  .hero__grid {
+    max-width: clamp(1280px, 70vw, 1400px);
+    gap: clamp(64px, 5vw, 96px);
+  }
+}
+
+.hero-photo img,
+.hero-photo svg {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* Campaign headlines use manual line breaks (\n) for exact wording control.
+   Lift the shared 15–16ch cap so each intended line stays on one line instead
+   of getting wrapped further. Scoped to campaign pages only — the main landing
+   page keeps its tighter measure. */
+.landing-page.landing-campaign .hero__title {
+  max-width: none;
+}
+
+/* Campaign pages that still show the compact phone mock (no hero image yet):
+   the phone is narrow and right-aligned, so the default wide visual track opens
+   a large empty gap between copy and phone (and strands the floating badge).
+   Pull the columns together and hand the freed width to the copy column.
+   When a hero image is set the root becomes `--default` and the standard
+   full-bleed layout applies again automatically. */
+@media (min-width: 1200px) {
+  .landing-page.landing-campaign.landing-page--campaign .hero__grid {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: clamp(48px, 5vw, 88px);
+    max-width: clamp(1140px, 84vw, 1520px);
+  }
+}
+
+@media (min-width: 2000px) {
+  .landing-page.landing-campaign.landing-page--campaign .hero__grid {
+    grid-template-columns: minmax(0, 1fr) 420px;
+    gap: 100px;
+    max-width: 1640px;
+  }
+
+  .landing-page.landing-campaign.landing-page--campaign .hero__copy {
+    max-width: 820px;
+  }
 }
 
 .landing-page--default .phone-col,
@@ -220,9 +403,53 @@
   display: flex;
 }
 
+.landing-page--phone-visual.landing-page--default .phone-col {
+  display: flex;
+  justify-content: flex-end;
+  width: min(420px, calc(100vw - 48px));
+  margin-left: auto;
+}
+
+.landing-page--phone-visual .phone {
+  width: clamp(300px, 19vw, 390px);
+  height: auto;
+  aspect-ratio: 330 / 674;
+}
+
+.landing-page--phone-visual .floating-badge {
+  left: -72px;
+  bottom: 112px;
+}
+
+.landing-page--phone-visual .floating-badge .infocard {
+  max-width: 470px;
+  padding: 26px 30px;
+  gap: 24px;
+  border-radius: 22px;
+}
+
+.landing-page--phone-visual .floating-badge .infocard__badge {
+  width: 98px;
+  height: 98px;
+  border-radius: 22px;
+  font-size: 31px;
+}
+
+.landing-page--phone-visual .floating-badge .infocard__title {
+  font-size: 24px;
+}
+
+.landing-page--phone-visual .floating-badge .infocard__sub {
+  font-size: 17px;
+}
+
 @media (max-width: 980px) and (min-width: 768px) {
   .landing-page {
     --hero-header-offset: 84px;
+  }
+
+  .landing-page .hdr__nav {
+    display: none;
   }
 
   .hero {
@@ -230,29 +457,62 @@
   }
 
   .hero__grid {
-    grid-template-columns: 1fr;
-    gap: 34px;
-    justify-items: start;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 280px);
+    gap: clamp(24px, 4vw, 36px);
+    max-width: 900px;
+    justify-items: stretch;
+  }
+
+  .landing-page--campaign .hero__grid {
+    grid-template-columns: minmax(0, 720px);
+    max-width: 720px;
+  }
+
+  .hero__copy {
+    max-width: 100%;
   }
 
   .hero .h1 {
     max-width: 17ch;
-    font-size: clamp(36px, 6vw, 48px);
+    font-size: clamp(34px, 4.5vw, 40px);
   }
 
   .hero__proof li {
-    font-size: clamp(19px, 2.5vw, 22px);
+    font-size: clamp(17px, 2.2vw, 19px);
   }
 
-  .phone-col,
-  .hero-photo-col {
+  .landing-page .phone-col {
+    display: none;
+  }
+
+  .landing-page--phone-visual.landing-page--default .phone-col {
+    display: flex;
     width: 100%;
-    justify-content: center;
+    justify-content: flex-end;
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .landing-page--phone-visual .phone {
+    width: min(250px, 100%);
+    height: auto;
+    aspect-ratio: 330 / 674;
+  }
+
+  .landing-page--phone-visual .floating-badge {
+    display: none;
+  }
+
+  .landing-page .hero-photo-col {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
     margin-right: 0;
   }
 
   .hero-photo {
-    width: min(430px, calc(100vw - 48px));
+    width: 100%;
+    max-width: 280px;
   }
 
   .phone {
@@ -283,7 +543,7 @@
   border-radius: 44px;
   background: #0b1a2b;
   padding: 12px;
-  box-shadow: 0 30px 70px rgba(9, 67, 137, 0.28), inset 0 0 0 2px rgba(255, 255, 255, 0.06);
+  box-shadow: var(--shadow-default), inset 0 0 0 2px rgba(255, 255, 255, 0.06);
 }
 
 .phone__notch {
@@ -481,8 +741,7 @@
 
 .eligibility {
   padding: clamp(48px, 7vh, 82px) 0 clamp(56px, 8vh, 96px);
-  /* background: #eaf1f8; */
-  background: var(--color-warm-off-white);
+  background: transparent;
   border-top: 0;
 }
 
@@ -566,6 +825,17 @@
   font-weight: 850;
 }
 
+.eligibility-card--percentage {
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(9, 67, 137, 0.1);
+}
+
+.eligibility-card--percentage .eligibility-card__amount {
+  color: var(--color-deep-trust-blue);
+  background: var(--color-relief-green);
+  box-shadow: 0 10px 22px rgba(105, 182, 0, 0.24);
+}
+
 .eligibility-card h3 {
   margin: 0 0 10px;
   color: var(--color-deep-trust-blue);
@@ -579,13 +849,20 @@
   line-height: 1.55;
 }
 
+@media (min-width: 1440px) {
+  .eligibility-card {
+    min-height: 270px;
+    padding: clamp(26px, 2vw, 34px);
+  }
+}
+
 /* Responsive */
 @media (max-width: 767px) {
   .landing-page {
     --hero-header-offset: 80px;
   }
 
-  .landing-page > .hero {
+  .landing-page > .landing-main > .hero {
     flex: 0 0 auto;
   }
 
@@ -595,8 +872,7 @@
     text-align: center;
     display: flex;
     align-items: center;
-    /* background: #eaf1f8; */
-    background: var(--color-warm-off-white);
+    background: transparent;
   }
 
   .hero__bg {
@@ -679,8 +955,10 @@
     margin-right: 0;
   }
 
+  .landing-page--phone-visual.landing-page--default .phone-col,
   .landing-page--campaign .phone-col {
     display: none;
+    margin-right: 0;
   }
 
   .hero-photo-col {
@@ -740,7 +1018,7 @@
     justify-content: center;
     min-height: 48px;
     height: 48px;
-    font-size: 16px;
+    font-size: 22px;
     font-weight: 800;
     border-radius: 8px;
     box-shadow: 0 8px 18px rgba(9, 67, 137, 0.18);
@@ -777,8 +1055,12 @@
     text-align: left;
   }
 
-  .wrap {
-    padding: 0 22px;
+  .landing-page .wrap,
+  .faq-page .wrap,
+  .legal-page .wrap,
+  .pricing-page .wrap {
+    padding-right: 22px;
+    padding-left: 22px;
   }
 
   .eligibility {

@@ -49,7 +49,7 @@
 .rb-button--disabled,
 .rb-button:disabled {
   background-color: var(--color-disabled-grey);
-  color: #9E9E9E;
+  color: var(--color-text-disabled);
   cursor: not-allowed;
   border: none;
 }
@@ -67,7 +67,7 @@
 }
 
 .rb-button--large {
-  font-size: 18px;
+  font-size: var(--font-size-h3);
   height: 52px;
   padding: 0 var(--spacing-4);
 }

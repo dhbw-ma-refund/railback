@@ -1,0 +1,170 @@
+.dashboard-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-warm-off-white);
+}
+
+.dashboard-container {
+  flex: 1;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--spacing-3) var(--margin-mobile) var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* --- Hero ------------------------------------------------------- */
+
+.dashboard-hero {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  align-items: center;
+}
+
+.dashboard-hero__title {
+  font-size: var(--font-size-h1);
+  line-height: var(--line-height-h1);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-deep-trust-blue);
+  margin: 0;
+}
+
+.dashboard-hero__sub {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 46ch;
+}
+
+.dashboard-hero .button,
+.dashboard-actions .button {
+  width: 100%;
+  max-width: 480px;
+}
+
+/* --- Claims panel ---------------------------------------------- */
+
+.dashboard-claims {
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-3) var(--spacing-2) var(--spacing-2);
+  position: relative;
+}
+
+.dashboard-claims__title {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-warm-off-white);
+  padding: 0 var(--spacing-2);
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-deep-trust-blue);
+  margin: 0;
+}
+
+.dashboard-claims__empty {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  padding: var(--spacing-3) var(--spacing-2);
+  margin: 0;
+}
+
+.dashboard-claims__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+/* --- Claim card ------------------------------------------------ */
+
+.claim-card {
+  background: white;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-default);
+  padding: var(--spacing-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.claim-card__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.claim-card__row--head {
+  justify-content: flex-start;
+}
+
+.claim-card__id {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-body);
+  color: var(--color-deep-trust-blue);
+}
+
+.claim-card__details {
+  margin-left: auto;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-deep-trust-blue);
+  cursor: pointer;
+  min-height: var(--touch-target-min);
+}
+
+.claim-card__details:hover {
+  text-decoration: underline;
+}
+
+.claim-card__body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.claim-card__body > div {
+  display: flex;
+  gap: 6px;
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-body);
+}
+
+.claim-card__body dt {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+  align-self: center;
+  margin: 0;
+}
+
+.claim-card__body dd {
+  margin: 0;
+}
+
+/* --- Bottom actions ------------------------------------------- */
+
+.dashboard-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  align-items: center;
+}

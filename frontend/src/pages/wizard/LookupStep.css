@@ -1,0 +1,336 @@
+/* All aliases now map to documented brand tokens — no raw hex escapes. */
+.wizard-page:has(.rl-search) {
+  --rl-ink: var(--color-text-primary);
+  --rl-muted: var(--color-text-secondary);
+  --rl-cta: var(--color-deep-trust-blue);
+  --rl-cta-press: var(--color-button-pressed);
+  --rl-red: var(--color-error-red);
+  --rl-red-soft: var(--color-error-red-soft);
+  --rl-amber: var(--color-warning-ink);
+  --rl-amber-soft: rgba(242, 153, 0, 0.14);
+  --rl-green: var(--color-landing-green-ink);
+  --rl-green-soft: var(--color-success-green-soft);
+}
+
+/* --- Search form ------------------------------------------------ */
+
+.rl-search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+/* Row 1 — origin / destination stacked full-width. */
+.rl-where {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  align-items: stretch;
+}
+
+/* Custom "Zielbahnhof" block: label row + input, so we can right-align the
+   swap action next to the label without touching the shared Input component. */
+.rl-to {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* matches .rb-input-wrapper's inner gap */
+}
+
+.rl-to__labelrow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-2);
+}
+
+/* Mirrors .rb-input-label so the "Zielbahnhof" text visually matches the
+   Startbahnhof label above it. */
+.rl-to__label {
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+/* Swap — a small text-link sitting on the same line as the Zielbahnhof label,
+   right-aligned. Icon + label pattern per §6 + §10.3. */
+.rl-swap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  background: none;
+  border: 0;
+  color: var(--color-deep-trust-blue);
+  font-family: inherit;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.1s ease;
+}
+
+.rl-swap:hover {
+  background: rgba(9, 67, 137, 0.06);
+}
+
+.rl-swap:focus-visible {
+  outline: 2px solid var(--color-deep-trust-blue);
+  outline-offset: 2px;
+}
+
+/* Row 2 — date + time side by side, date takes the larger share. */
+.rl-when {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: var(--spacing-2);
+}
+
+/* The shared Button already handles the primary pill styling; we just need to
+   make it span the full form width and sit tight against the fields. */
+.rl-search-btn.rb-button {
+  width: 100%;
+  margin-top: var(--spacing-1);
+}
+
+/* --- Results --------------------------------------------------- */
+
+.rl-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  margin-top: var(--spacing-2);
+}
+
+.rl-results__title {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-bold);
+  color: var(--rl-cta);
+  margin: 0;
+}
+
+.rl-results__hint {
+  margin: 0 0 4px;
+}
+
+.rl-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.rl-card {
+  background: white;
+  border: 0;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: var(--shadow-default);
+  transition: box-shadow 0.1s ease, transform 0.1s ease;
+}
+
+.rl-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-1px);
+}
+
+/* Left rail — color-codes the whole row at a glance. */
+.rl-card__hit {
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  font-family: inherit;
+  min-height: 96px;
+}
+
+.rl-card__rail {
+  width: 6px;
+  flex-shrink: 0;
+  background: rgba(74, 107, 130, 0.25);
+}
+
+.rl-card--severe    .rl-card__rail { background: var(--rl-red); }
+.rl-card--moderate  .rl-card__rail { background: var(--color-warning-yellow); }
+.rl-card--minor     .rl-card__rail { background: var(--color-warning-yellow); opacity: 0.7; }
+.rl-card--cancelled .rl-card__rail { background: var(--rl-red); }
+.rl-card--ontime    .rl-card__rail { background: rgba(74, 107, 130, 0.25); }
+
+.rl-card__body {
+  flex: 1;
+  padding: var(--spacing-2) var(--spacing-1) var(--spacing-2) var(--spacing-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  min-width: 0;
+}
+
+.rl-card__chev {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-2) 0 var(--spacing-1);
+  color: var(--rl-muted);
+}
+
+.rl-card__hit:hover .rl-card__chev {
+  color: var(--rl-cta);
+}
+
+.rl-card__hit:focus-visible {
+  outline: 2px solid var(--rl-cta);
+  outline-offset: -2px;
+}
+
+/* Row 1 — train badge + planned times ---------------------------- */
+
+.rl-card__idrow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  flex-wrap: wrap;
+}
+
+.rl-badge {
+  padding: 4px var(--spacing-1);
+  border-radius: 4px;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  color: white;
+  letter-spacing: 0.02em;
+}
+
+/* Train-category badge colours. Pulled from the transit-map palette (S-Bahn
+   green, IC/ICE dark) rather than the brand blue — they carry line identity,
+   not brand meaning. Approved brand-adjacent colour set for this use only. */
+.rl-badge--s   { background: #2E7D32; }
+.rl-badge--re  { background: #607D8B; }
+.rl-badge--ic  { background: #23364A; }
+.rl-badge--ice { background: #1A1F2B; }
+
+.rl-card__times {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--rl-ink);
+  letter-spacing: 0.01em;
+}
+
+/* Row 2 — STATUS: the loud one. Delay minutes read at a glance. */
+
+.rl-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1);
+  border-radius: var(--radius-input);
+  min-height: 40px;
+}
+
+.rl-status--severe,
+.rl-status--cancelled {
+  background: var(--rl-red-soft);
+  color: var(--rl-red);
+}
+
+.rl-status--moderate,
+.rl-status--minor {
+  background: var(--rl-amber-soft);
+  color: var(--rl-amber);
+}
+
+.rl-status--ontime {
+  background: var(--rl-green-soft);
+  color: var(--rl-green);
+}
+
+.rl-status__delta {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  min-width: 46px;
+  text-align: right;
+}
+
+.rl-status__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.rl-status__main {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+}
+
+.rl-status__sub {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-regular);
+  color: var(--rl-ink);
+  opacity: 0.75;
+  line-height: 1.2;
+}
+
+.rl-status__icon,
+.rl-status__ok {
+  width: var(--spacing-3);
+  height: var(--spacing-3);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Cancelled: red disc, white X on top. */
+.rl-status__icon {
+  background: var(--rl-red);
+  color: white;
+}
+
+/* On-time: green disc (inherits currentColor from .rl-status--ontime = green
+   ink), white check on top. */
+.rl-status__ok {
+  background: currentColor;
+  color: var(--rl-green);
+}
+
+.rl-status__ok svg {
+  color: white;
+}
+
+/* Row 3 — station names, small anchor ---------------------------- */
+
+.rl-card__stations {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-caption);
+  color: var(--rl-muted);
+}
+
+.rl-card__stations span:first-child,
+.rl-card__stations span:last-child {
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Narrow phones ------------------------------------------------ */
+@media (max-width: 420px) {
+  .rl-when {
+    grid-template-columns: 1fr;
+  }
+  .rl-status__delta {
+    font-size: var(--font-size-h2);
+    min-width: 40px;
+  }
+}

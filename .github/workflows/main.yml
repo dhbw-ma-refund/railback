@@ -1,0 +1,68 @@
+name: Build and Deploy Frontend to Strato
+
+on:
+  pull_request:
+    branches:
+      - frontend
+  push:
+    branches:
+      # - landingpage
+      - frontend
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Rollup native package for GitHub runner
+        run: |
+          ROLLUP_VERSION=$(node -p "require('rollup/package.json').version")
+          npm install --no-save --no-package-lock "@rollup/rollup-linux-x64-gnu@${ROLLUP_VERSION}"
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Verify SPA fallback
+        run: test -f dist/.htaccess
+
+      - name: SFTP Deploy
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+        with:
+          server: ${{ secrets.STRATO_FTP_HOST }}
+          username: ${{ secrets.STRATO_FTP_USERNAME }}
+          password: ${{ secrets.STRATO_FTP_PASSWORD }}
+          port: 22
+          local_path: './frontend/dist/*'
+          remote_path: '/'
+          sftp_only: true
+
+      # The glob above intentionally deploys the regular build files, but shell
+      # globs do not include dotfiles. Upload the Apache SPA fallback explicitly.
+      - name: SFTP Deploy SPA fallback
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+        with:
+          server: ${{ secrets.STRATO_FTP_HOST }}
+          username: ${{ secrets.STRATO_FTP_USERNAME }}
+          password: ${{ secrets.STRATO_FTP_PASSWORD }}
+          port: 22
+          local_path: './frontend/dist/.htaccess'
+          remote_path: '/'
+          sftp_only: true
