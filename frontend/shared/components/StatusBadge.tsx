@@ -9,19 +9,24 @@ export interface StatusBadgeProps {
   icon?: React.ReactNode;
 }
 
+const LUCIDE_BASE = 'https://cdn.jsdelivr.net/npm/lucide-static@1.24.0/icons';
+
 const statusConfig = {
   pending: {
     color: 'var(--color-muted-gray-blue)',
-    icon: '🕐'
+    // Lucide "clock" (ISC) — https://lucide.dev/icons/clock
+    icon: <span className="rb-status-badge-icon-svg" style={{ maskImage: `url(${LUCIDE_BASE}/clock.svg)`, WebkitMaskImage: `url(${LUCIDE_BASE}/clock.svg)` }} />,
   },
   approved: {
     color: 'var(--color-relief-green)',
-    icon: '✓'
+    // Lucide "check-circle-2" (ISC) — https://lucide.dev/icons/check-circle-2
+    icon: <span className="rb-status-badge-icon-svg" style={{ maskImage: `url(${LUCIDE_BASE}/check-circle-2.svg)`, WebkitMaskImage: `url(${LUCIDE_BASE}/check-circle-2.svg)` }} />,
   },
   rejected: {
     color: 'var(--color-error-red)',
-    icon: '⚠'
-  }
+    // Lucide "x-circle" (ISC) — https://lucide.dev/icons/x-circle
+    icon: <span className="rb-status-badge-icon-svg" style={{ maskImage: `url(${LUCIDE_BASE}/x-circle.svg)`, WebkitMaskImage: `url(${LUCIDE_BASE}/x-circle.svg)` }} />,
+  },
 };
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({

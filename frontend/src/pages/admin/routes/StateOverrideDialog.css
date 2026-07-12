@@ -1,0 +1,93 @@
+.rb-state-override {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.rb-state-override__current {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.rb-state-override__label {
+  color: var(--color-text-secondary, #4a4a4a);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.rb-state-override__locked {
+  background: var(--color-surface-muted, #f3f4f6);
+  border-radius: 8px;
+  color: var(--color-text-secondary, #4a4a4a);
+  margin: 0;
+  padding: 12px 16px;
+}
+
+.rb-state-override__fieldset {
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 16px;
+}
+
+.rb-state-override__legend {
+  color: var(--color-text-secondary, #4a4a4a);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0 6px;
+}
+
+.rb-state-override__option {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  min-height: 44px;
+}
+
+.rb-state-override__option input[type='radio'] {
+  cursor: pointer;
+  height: 20px;
+  width: 20px;
+}
+
+.rb-state-override__option-label {
+  color: var(--color-text-primary, #111827);
+}
+
+.rb-state-override__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rb-state-override__textarea {
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: var(--font-size-body, 16px);
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.rb-state-override__textarea:focus {
+  border-color: var(--color-deep-trust-blue, #0055a4);
+  outline: none;
+}
+
+.rb-state-override__textarea:disabled {
+  background: var(--color-surface-muted, #f3f4f6);
+  cursor: not-allowed;
+}
+
+.rb-state-override__error {
+  background: rgba(176, 0, 32, 0.08);
+  border: 1px solid var(--color-error-red, #b00020);
+  border-radius: 8px;
+  color: var(--color-error-red, #b00020);
+  padding: 10px 12px;
+}

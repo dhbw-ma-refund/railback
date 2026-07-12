@@ -1,0 +1,168 @@
+.rb-detail {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: var(--font-family-primary);
+  color: var(--color-text-primary);
+}
+
+.rb-detail__back {
+  background: none;
+  border: none;
+  color: var(--color-deep-trust-blue);
+  cursor: pointer;
+  padding: 8px 0;
+  font-size: var(--font-size-body);
+  min-height: 44px;
+}
+
+.rb-detail__back:hover {
+  text-decoration: underline;
+}
+
+.rb-detail__title {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-h1);
+  margin: 8px 0 16px 0;
+}
+
+.rb-detail__section {
+  padding: 16px 0;
+  border-top: 1px solid var(--color-input-border);
+}
+
+.rb-detail__section-title {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 12px 0;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: var(--font-size-caption);
+}
+
+.rb-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px 24px;
+}
+
+.rb-detail__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rb-detail__label {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+}
+
+.rb-detail__value {
+  font-size: var(--font-size-body);
+  word-break: break-word;
+}
+
+.rb-detail__loading,
+.rb-detail__error {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.rb-detail__error {
+  color: var(--color-error-red);
+}
+
+.rb-detail__ticket-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rb-detail__ticket {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+  align-items: center;
+}
+
+.rb-detail__ticket a {
+  color: var(--color-deep-trust-blue);
+  text-decoration: none;
+  font-weight: var(--font-weight-semibold);
+}
+
+.rb-detail__ticket a:hover {
+  text-decoration: underline;
+}
+
+/*
+ * `--recent` is the shape used on UserDetailPage's "Letzte Tickets": four
+ * cells (id link | state | date | amount). Fixed trailing tracks keep the
+ * state/date/amount columns aligned regardless of ticket-id length; the id
+ * cell truncates with ellipsis instead of pushing siblings sideways.
+ */
+.rb-detail__ticket--recent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px 120px 120px;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+  align-items: center;
+}
+
+.rb-detail__ticket--recent > span:nth-child(3),
+.rb-detail__ticket--recent > span:nth-child(4) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rb-detail__ticket--recent > a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+@media (max-width: 560px) {
+  .rb-detail__ticket--recent {
+    /* Collapse the fixed trailing tracks on phones: id + amount stay on the
+       first row, state + date wrap underneath as secondary metadata. */
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 4px;
+  }
+  .rb-detail__ticket--recent > span:nth-child(2),
+  .rb-detail__ticket--recent > span:nth-child(3) {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-caption);
+  }
+  .rb-detail__ticket--recent > span:nth-child(3) {
+    text-align: left;
+  }
+}
+
+/*
+ * Desktop-landscape: outer breathing room mirrors the shell (32 px) and the
+ * field grid opens to a wider min-track so 3-4 columns render on 1440p and
+ * up instead of the mobile-friendly 2 columns. The existing auto-fit rule
+ * still collapses gracefully on narrower widths.
+ */
+@media (min-width: 1024px) {
+  .rb-detail {
+    padding: 32px;
+  }
+
+  .rb-detail__grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px 32px;
+  }
+}

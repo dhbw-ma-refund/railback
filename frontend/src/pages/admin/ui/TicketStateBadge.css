@@ -1,0 +1,42 @@
+.rb-ticket-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.4;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.rb-ticket-badge--info {
+  background: rgba(74, 107, 130, 0.14);
+  color: var(--color-muted-gray-blue);
+  border-color: rgba(74, 107, 130, 0.4);
+}
+
+.rb-ticket-badge--warn {
+  background: rgba(242, 153, 0, 0.14);
+  color: var(--color-warning-yellow);
+  border-color: rgba(242, 153, 0, 0.5);
+}
+
+.rb-ticket-badge--success {
+  background: rgba(147, 205, 28, 0.18);
+  color: var(--color-landing-green-ink);
+  border-color: rgba(147, 205, 28, 0.6);
+}
+
+.rb-ticket-badge--neutral {
+  background: rgba(30, 37, 48, 0.08);
+  color: var(--color-text-primary);
+  border-color: rgba(30, 37, 48, 0.15);
+}
+
+.rb-ticket-badge--danger {
+  background: rgba(217, 48, 37, 0.12);
+  color: var(--color-error-red);
+  border-color: rgba(217, 48, 37, 0.4);
+}

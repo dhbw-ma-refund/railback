@@ -1,0 +1,73 @@
+.rb-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-input-border);
+  margin-bottom: 16px;
+}
+
+.rb-filter-bar__field {
+  min-width: 180px;
+  flex: 1 1 180px;
+}
+
+.rb-filter-bar__actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.rb-filter-bar__select {
+  padding: 10px 12px;
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+  background: var(--color-warm-off-white);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-body);
+  min-height: 44px;
+  color: var(--color-text-primary);
+}
+
+.rb-filter-bar__select:focus {
+  outline: 2px solid var(--color-deep-trust-blue);
+  outline-offset: 2px;
+}
+
+.rb-filter-bar__label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+  flex: 1 1 180px;
+  font-family: var(--font-family-primary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-caption);
+}
+
+.rb-filter-bar__toggle {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .rb-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rb-filter-bar__field,
+  .rb-filter-bar__label {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .rb-filter-bar[data-collapsed='true'] > *:not(.rb-filter-bar__toggle) {
+    display: none;
+  }
+
+  .rb-filter-bar__toggle {
+    display: inline-flex;
+    align-self: flex-start;
+  }
+}

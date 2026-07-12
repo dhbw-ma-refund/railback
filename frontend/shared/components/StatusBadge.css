@@ -22,6 +22,24 @@
   justify-content: center;
 }
 
+/*
+ * Lucide icon rendered via CSS mask so it inherits the badge's currentColor
+ * palette. URLs live in StatusBadge.tsx (one per status) to keep the icon
+ * choice next to the semantics.
+ */
+.rb-status-badge-icon-svg {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+
 .rb-status-badge--pending {
   background-color: rgba(74, 107, 130, 0.1);
   color: var(--color-muted-gray-blue);
