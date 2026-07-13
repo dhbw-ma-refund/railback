@@ -150,11 +150,13 @@ const content: Record<string, Record<string, TopicContent>> = {
   },
 };
 
+/*
 const ImgPlaceholder = ({ label }: { label: string }) => (
   <div className="imgph">
     <div className="label">{label}</div>
   </div>
 );
+*/
 
 export const FAQPage = () => {
   const goBack = useSmartBack('/');
@@ -200,7 +202,7 @@ export const FAQPage = () => {
             <h1 className="h1 title">{topic.t}</h1>
             <p className="page__lead">{topic.d}</p>
 
-            <ImgPlaceholder label={topicContent.img} />
+            {/* <ImgPlaceholder label={topicContent.img} /> */}
             <div className="qa-wrap">
               {topicContent.qa.map((item, i) => (
                 <div className={`qa${openQA === i ? ' open' : ''}`} key={i}>
@@ -220,11 +222,11 @@ export const FAQPage = () => {
                 </div>
               ))}
             </div>
-            {topicContent.img2 && (
+            {/* {topicContent.img2 && (
               <div className="faq-detail__secondary-image">
                 <ImgPlaceholder label={topicContent.img2} />
               </div>
-            )}
+            )} */}
           </div>
         </main>
         <Footer />
