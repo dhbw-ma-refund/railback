@@ -80,7 +80,7 @@ const content: Record<string, Record<string, TopicContent>> = {
     ticket: {
       img: 'Screenshot: Ticket-Upload-Screen',
       qa: [
-        { q: 'Wie füge ich ein Ticket hinzu?', a: ['Tippe auf „Anspruch prüfen", fotografiere dein Ticket oder lade ein PDF hoch. RailBack liest Strecke, Datum und Zugnummer automatisch aus.'] },
+        { q: 'Wie füge ich ein Ticket hinzu?', a: ['Tippe auf „Lass dich entschädigen!“, fotografiere dein Ticket oder lade ein PDF hoch. RailBack liest Strecke, Datum und Zugnummer automatisch aus.'] },
         { q: 'Welche Tickets werden unterstützt?', a: ['Einzel- und Sparpreis-Tickets im Fernverkehr sowie viele Nahverkehrstickets. Du brauchst nur den QR-Code oder die Buchungsnummer.'] },
         { q: 'Was, wenn die Daten falsch erkannt wurden?', a: ['Du kannst jedes Feld vor dem Absenden korrigieren. Wir zeigen dir die erkannten Werte immer zur Kontrolle an.'] },
       ],
@@ -90,6 +90,7 @@ const content: Record<string, Record<string, TopicContent>> = {
       qa: [
         { q: 'Wie wird die Verspätung geprüft?', a: ['Wir gleichen deine Zugverbindung mit den offiziellen Ist-Fahrplandaten ab und ermitteln die tatsächliche Ankunftsverspätung in Minuten.'] },
         { q: 'Ab wann habe ich Anspruch?', a: ['Ab 60 Minuten Verspätung erhältst du in der Regel 25 %, ab 120 Minuten 50 % des Ticketpreises. RailBack rechnet das automatisch für dich aus.'] },
+        { q: 'Was gilt für Zeitkarten?', a: ['Bei Zeitkarten sammeln wir berechtigte Fälle, bis die Auszahlungsgrenze von 4 € erreicht ist.'] },
         { q: 'Muss ich die Verspätung selbst nachweisen?', a: ['Nein. Wir dokumentieren die Verspätung automatisch und hinterlegen den Nachweis für deinen Antrag.'] },
       ],
     },
@@ -99,7 +100,7 @@ const content: Record<string, Record<string, TopicContent>> = {
       qa: [
         { q: 'Wie wird meine Erstattung berechnet?', a: ['Grundlage ist dein Ticketpreis multipliziert mit der gesetzlichen Erstattungsstufe (25 % oder 50 %), die sich aus der erkannten Verspätung ergibt.'] },
         { q: 'Was bedeutet „mögliche Erstattung"?', a: ['Das ist der voraussichtliche Betrag auf Basis der aktuellen Daten. Der final bewilligte Betrag wird von der Bahn bestätigt.'] },
-        { q: 'Fallen für mich Kosten an?', a: ['Die Prüfung und Berechnung sind kostenlos. Eventuelle Servicegebühren werden dir immer transparent vor der Freigabe angezeigt.'] },
+        { q: 'Fallen für mich Kosten an?', a: ['Die Prüfung, ob du berechtigt bist, ist kostenlos. Nur bei einem erfolgreichen Antrag fällt eine Servicegebühr von 0,75 € an.'] },
       ],
     },
     antrag: {
@@ -115,7 +116,7 @@ const content: Record<string, Record<string, TopicContent>> = {
     ticket: {
       img: 'Screenshot: ticket upload screen',
       qa: [
-        { q: 'How do I add a ticket?', a: ['Tap "Check claim", take a photo of your ticket or upload a PDF. RailBack reads route, date and train number automatically.'] },
+        { q: 'How do I add a ticket?', a: ['Tap "Get compensated!", take a photo of your ticket or upload a PDF. RailBack reads route, date and train number automatically.'] },
         { q: 'Which tickets are supported?', a: ['Single and saver fares on long-distance trains plus many regional tickets. All we need is the QR code or booking number.'] },
         { q: 'What if the data was read incorrectly?', a: ['You can correct every field before submitting. We always show you the detected values for review.'] },
       ],
@@ -125,6 +126,7 @@ const content: Record<string, Record<string, TopicContent>> = {
       qa: [
         { q: 'How is the delay verified?', a: ['We match your connection against the official actual timetable data and determine the real arrival delay in minutes.'] },
         { q: 'When am I entitled to a refund?', a: ['From 60 minutes you usually get 25 %, from 120 minutes 50 % of the ticket price. RailBack calculates this automatically.'] },
+        { q: 'What applies to season tickets?', a: ['For season tickets, we combine eligible cases until the €4 payout threshold is reached.'] },
         { q: 'Do I have to prove the delay myself?', a: ['No. We document the delay automatically and store the evidence for your claim.'] },
       ],
     },
@@ -134,7 +136,7 @@ const content: Record<string, Record<string, TopicContent>> = {
       qa: [
         { q: 'How is my refund calculated?', a: ['It is based on your ticket price multiplied by the statutory refund tier (25 % or 50 %) derived from the detected delay.'] },
         { q: 'What does "possible refund" mean?', a: ['It is the expected amount based on current data. The final approved amount is confirmed by the railway.'] },
-        { q: 'Are there any costs for me?', a: ['Checking and calculating are free. Any service fees are always shown transparently before you approve.'] },
+        { q: 'Are there any costs for me?', a: ['Checking whether you are eligible is free. We only charge a €0.75 service fee if your claim is successful.'] },
       ],
     },
     antrag: {
