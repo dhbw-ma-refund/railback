@@ -126,6 +126,17 @@
   flex: none;
 }
 
+.faq-tile__ic > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.faq-tile__ic svg {
+  display: block;
+}
+
 .faq-tile__t {
   font-family: var(--font-family-primary);
   font-weight: 700;
