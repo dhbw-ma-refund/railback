@@ -6,7 +6,7 @@ import { ADMIN_USER_TRANSITIONS, USER_STATE_LABELS } from '../services/transitio
 import { usersApi, type UserPatchPayload } from '../services/api/users';
 import { ApiError } from '../services/api/errors';
 import type { User, UserAddress, UserState } from '../services/types/user';
-import './StateOverrideDialog.css';
+import './UserEditDialog.css';
 
 export interface UserEditDialogProps {
   user: User;
