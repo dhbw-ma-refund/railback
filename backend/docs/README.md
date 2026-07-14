@@ -1,8 +1,8 @@
 # RailBack API — Examples
 
 Request/response example for every endpoint. Authoritative shapes live in
-`../schema/openapi.yaml`; the full rendered reference is `api.html`
-(`npm run docs:html` to regenerate). This file is examples only.
+`../schema/openapi.yaml`; the full rendered reference is `api.html`. 
+This file is examples only.
 
 - **Base URL:** `https://{apiId}.execute-api.eu-north-1.amazonaws.com`
 - **Auth:** `Authorization: Bearer <accessToken>` on everything except the
