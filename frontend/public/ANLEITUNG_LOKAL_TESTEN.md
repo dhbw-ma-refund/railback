@@ -38,9 +38,3 @@ python3 -m http.server 8080
 ```
 
 Die Anwendung ist dann unter <http://localhost:8080> erreichbar.
-
-## Hinweis
-
-Die Datei `index.html` sollte nicht direkt per Doppelklick geöffnet werden.
-Der lokale Webserver stellt sicher, dass JavaScript-, CSS- und Bilddateien
-korrekt geladen werden.
