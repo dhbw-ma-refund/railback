@@ -51,14 +51,42 @@
   .rb-admin-header__inner {
     flex-wrap: wrap;
     padding: 10px 12px;
+    gap: 8px 12px;
+  }
+
+  .rb-admin-header__brand {
+    font-size: var(--font-size-h4, 18px);
   }
 
   .rb-admin-header__nav {
     order: 3;
     margin-left: 0;
+    /* Force wrap onto its own row; flex:1 (basis 0) alone leaves the nav */
+    /* squeezed next to the logout button, hiding items behind an invisible */
+    /* horizontal scroll. */
+    flex: 0 0 100%;
     width: 100%;
+    gap: 4px;
     overflow-x: auto;
-    gap: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .rb-admin-header__nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .rb-admin-header__nav a {
+    padding: 6px 10px;
+    min-height: 40px;
+    white-space: nowrap;
+    font-size: var(--font-size-caption, 14px);
+  }
+
+  .rb-admin-header__logout {
+    min-height: 36px;
+    padding: 6px 12px;
+    font-size: var(--font-size-caption, 14px);
   }
 }
 

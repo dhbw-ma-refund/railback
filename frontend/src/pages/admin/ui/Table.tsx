@@ -46,29 +46,31 @@ export function Table<T>({
   }
 
   return (
-    <table className="rb-table">
-      <thead>
-        <tr>
-          {columns.map((c) => (
-            <th key={c.key}>{c.header}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => (
-          <tr
-            key={rowKey(row)}
-            data-clickable={onRowClick ? 'true' : 'false'}
-            onClick={onRowClick ? () => onRowClick(row) : undefined}
-          >
+    <div className="rb-table-scroll">
+      <table className="rb-table">
+        <thead>
+          <tr>
             {columns.map((c) => (
-              <td key={c.key} data-label={c.header}>
-                {c.render(row)}
-              </td>
+              <th key={c.key}>{c.header}</th>
             ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={rowKey(row)}
+              data-clickable={onRowClick ? 'true' : 'false'}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+            >
+              {columns.map((c) => (
+                <td key={c.key} data-label={c.header}>
+                  {c.render(row)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
