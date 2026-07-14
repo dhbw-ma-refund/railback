@@ -99,7 +99,13 @@ describe("TicketConnector", () => {
     await db.ticket.put(i);
     const r = await db.ticket.checkBarcodeDuplicate(uid);
     expect(r.isOk()).toBe(true);
-    expect(r.unwrap()).not.toBeNull();
+    const row = r.unwrap() as Record<string, unknown> | null;
+    expect(row).not.toBeNull();
+    // GSI2 is KEYS_ONLY — the connector must refetch the full item. Assert a
+    // NON-key attribute is present (undefined if we returned the raw index
+    // hit). Guards the P1b regression.
+    expect(row!["ticket_state"]).toBe("READY");
+    expect(row!["uploaded_at"]).toBe(NOW);
     await db.ticket._delete(`USER#${e}`, `TICKET#${tid}`);
   });
 
@@ -115,7 +121,13 @@ describe("TicketConnector", () => {
     await db.ticket.put(i);
     const r = await db.ticket.listEmailPending(25);
     expect(r.isOk()).toBe(true);
-    expect((r.unwrap() as any[]).some((x) => x["sk"] === `TICKET#${tid}`)).toBe(true);
+    const rows = r.unwrap() as Record<string, unknown>[];
+    const found = rows.find((x) => x["sk"] === `TICKET#${tid}`);
+    expect(found).toBeDefined();
+    // GSI_EMAIL_PENDING is KEYS_ONLY — full item must be refetched so the
+    // sweeper gets email / ticket_state / attempts. Guards P1b.
+    expect(found!["ticket_state"]).toBe("EMAIL_SENDING");
+    expect(found!["pk"]).toBe(`USER#${e}`);
     await db.ticket._delete(`USER#${e}`, `TICKET#${tid}`);
   });
 });

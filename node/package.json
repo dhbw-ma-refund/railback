@@ -16,27 +16,59 @@
     "./types": {
       "import": "./dist/types.js",
       "types": "./dist/types.d.ts"
+    },
+    "./dtos": {
+      "import": "./dist/dtos/index.js",
+      "types": "./dist/dtos/index.d.ts"
+    },
+    "./dtos/dto": {
+      "import": "./dist/dtos/dto.js",
+      "types": "./dist/dtos/dto.d.ts"
+    },
+    "./dtos/enums": {
+      "import": "./dist/dtos/enums.js",
+      "types": "./dist/dtos/enums.d.ts"
+    },
+    "./dtos/items": {
+      "import": "./dist/dtos/items.js",
+      "types": "./dist/dtos/items.d.ts"
     }
   },
   "scripts": {
+    "prepare": "tsc || true",
     "build": "tsc",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
+    "test:integration": "RAILBACK_RUN_INTEGRATION=1 node --experimental-vm-modules node_modules/.bin/jest tests/integration.test.ts"
   },
   "jest": {
     "preset": "ts-jest/presets/default-esm",
     "testEnvironment": "node",
-    "testMatch": ["**/tests/**/*.test.ts"],
-    "extensionsToTreatAsEsm": [".ts"],
+    "globalSetup": "<rootDir>/scripts/jest-global-setup.mjs",
+    "testMatch": [
+      "**/tests/**/*.test.ts"
+    ],
+    "extensionsToTreatAsEsm": [
+      ".ts"
+    ],
     "moduleNameMapper": {
       "^(\\.{1,2}/.*)\\.js$": "$1"
     },
     "transform": {
-      "^.+\\.tsx?$": ["ts-jest", { "useESM": true }]
+      "^.+\\.tsx?$": [
+        "ts-jest",
+        {
+          "useESM": true
+        }
+      ]
     }
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.0.0",
-    "@aws-sdk/lib-dynamodb": "^3.0.0"
+    "@aws-sdk/client-s3": "^3.1080.0",
+    "@aws-sdk/credential-providers": "^3.1080.0",
+    "@aws-sdk/lib-dynamodb": "^3.0.0",
+    "@aws-sdk/s3-presigned-post": "^3.1080.0"
   },
   "devDependencies": {
     "@types/jest": "^29.0.0",

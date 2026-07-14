@@ -1,0 +1,48 @@
+# Docker-Compose for local integration testing.
+#
+# Brings up DynamoDB Local + LocalStack S3 on ports matching the endpoints
+# our test helpers expect. Consumers set:
+#   DYNAMODB_ENDPOINT_URL=http://localhost:8000
+#   S3_ENDPOINT_URL=http://localhost:4566
+#   RAILBACK_S3_BUCKET=railback-test
+#   RAILBACK_S3_REGION=eu-north-1
+#
+# Bring up:
+#   docker compose -f test/infra/docker-compose.yml up -d
+#   docker compose -f test/infra/docker-compose.yml down -v
+#
+# Table + bucket are created by test bootstrap (see integration.test.ts).
+#
+# If docker is unavailable, the integration tests skip themselves — this
+# file is here for humans and CI runners with docker present.
+
+services:
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: railback-ddb-local
+    command: ["-jar", "DynamoDBLocal.jar", "-inMemory", "-sharedDb"]
+    ports:
+      - "8000:8000"
+    working_dir: /home/dynamodblocal
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000 || exit 1"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  localstack-s3:
+    image: localstack/localstack:latest
+    container_name: railback-localstack-s3
+    environment:
+      - SERVICES=s3
+      - DEFAULT_REGION=eu-north-1
+      - AWS_ACCESS_KEY_ID=fake
+      - AWS_SECRET_ACCESS_KEY=fake
+      - PERSISTENCE=0
+    ports:
+      - "4566:4566"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4566/_localstack/health || exit 1"]
+      interval: 2s
+      timeout: 2s
+      retries: 15

@@ -8,7 +8,10 @@ const TRAIN = "ICE8";
 function seg(trainNr: string, date: string, segId: string, extra: Record<string, unknown> = {}) {
   return {
     pk: `TRAIN#${trainNr}#${date}`, sk: `SEG#${segId}`,
-    gsi1_pk: `STATION#8000105#${date}`, gsi1_sk: `08:00#${trainNr}`,
+    // Route-lookup rides GSI3 (STATION#<eva>#<date> / <plannedDeparture>#<trainNr>).
+    // The ingest-delays poller writes gsi3_sk as `<date>T<HH:MM>#<trainNr>`
+    // (full ISO planned_departure) — these fixtures mirror that exactly.
+    gsi3_pk: `STATION#8000105#${date}`, gsi3_sk: `${date}T08:00#${trainNr}`,
     dep_station: 8000105, arr_station: 8000261,
     dep_time_plan: "08:00", delay_min: 5,
     ...extra,
@@ -40,17 +43,17 @@ describe("TrainSegmentDelayConnector", () => {
 
   test("routeLookup finds segments in time window", async () => {
     const segs = [
-      seg(TRAIN, DATE, "S_RL0", { gsi1_sk: `08:00#${TRAIN}` }),
-      seg(TRAIN, DATE, "S_RL1", { gsi1_sk: `09:00#${TRAIN}` }),
-      seg(TRAIN, DATE, "S_RL2", { gsi1_sk: `14:00#${TRAIN}` }),
+      seg(TRAIN, DATE, "S_RL0", { gsi3_sk: `${DATE}T08:00#${TRAIN}` }),
+      seg(TRAIN, DATE, "S_RL1", { gsi3_sk: `${DATE}T09:00#${TRAIN}` }),
+      seg(TRAIN, DATE, "S_RL2", { gsi3_sk: `${DATE}T14:00#${TRAIN}` }),
     ];
     for (const s of segs) await db.trainDelay.put(s);
     const r = await db.trainDelay.routeLookup(8000105, DATE, "07:00", "10:00");
     expect(r.isOk()).toBe(true);
-    const sks = (r.unwrap() as any[]).map((i) => i["gsi1_sk"]);
-    expect(sks).toContain(`08:00#${TRAIN}`);
-    expect(sks).toContain(`09:00#${TRAIN}`);
-    expect(sks).not.toContain(`14:00#${TRAIN}`);
+    const sks = (r.unwrap() as any[]).map((i) => i["gsi3_sk"]);
+    expect(sks).toContain(`${DATE}T08:00#${TRAIN}`);
+    expect(sks).toContain(`${DATE}T09:00#${TRAIN}`);
+    expect(sks).not.toContain(`${DATE}T14:00#${TRAIN}`);
     for (const s of segs) await db.trainDelay._delete(s["pk"] as string, s["sk"] as string);
   });
 });

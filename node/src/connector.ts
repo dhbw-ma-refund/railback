@@ -1,11 +1,22 @@
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { BaseConnector, ConflictError, Ok, Result, createClient } from "./base.js";
-
-const ADMIN_STRIPPED = new Set(["iban_enc", "bic_enc"]);
+import { BaseConnector, ConflictError, Ok, Result, createClient, normaliseEmail } from "./base.js";
+import { S3BlobConnector } from "./connectors/s3.js";
 
 function isPlainTicketSk(sk: string): boolean {
   const tail = sk.slice("TICKET#".length);
   return sk.startsWith("TICKET#") && tail !== "" && !tail.includes("#");
+}
+
+// Email → USER# key. Trim + lowercase so mixed-case input maps into the
+// same partition. See F7 (2026-07-08) — the backend layer already
+// normalises via @railback/lib/storage/ddb/keys#normaliseEmail; without
+// this the two systems would split partitions on any mixed-case input.
+function userPk(email: string): string {
+  return `USER#${normaliseEmail(email)}`;
+}
+
+function adminPk(email: string): string {
+  return `ADMIN#${normaliseEmail(email)}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -13,26 +24,28 @@ function isPlainTicketSk(sk: string): boolean {
 // ---------------------------------------------------------------------------
 
 export class UserConnector extends BaseConnector {
-  get(email: string) { return this._get(`USER#${email}`, "PROFILE"); }
+  get(email: string) { return this._get(userPk(email), "PROFILE"); }
+  // 2026-07-07 reversal (DECISIONS.md): admin sees the full row including
+  // iban_enc / bic_enc. Decryption to plaintext happens in admin-handler
+  // (backend layer) — the adapter just returns the raw row. Encryption at
+  // rest is still enforced; admin authority to decrypt is a separate concern.
   getForAdmin(email: string): Promise<Result<Record<string, unknown> | null>> {
-    return this._get(`USER#${email}`, "PROFILE").then((r) => {
+    return this._get(userPk(email), "PROFILE").then((r) => {
       if (r.isErr() || r.value === null) return r;
-      const stripped = Object.fromEntries(
-        Object.entries(r.value).filter(([k]) => !ADMIN_STRIPPED.has(k))
-      );
-      return new Ok(stripped);
+      return new Ok(r.value);
     });
   }
   getForAuth(email: string): Promise<Result<Record<string, unknown> | null>> {
-    return this._get(`USER#${email}`, "PROFILE").then((r) => {
+    const norm = normaliseEmail(email);
+    return this._get(userPk(norm), "PROFILE").then((r) => {
       if (r.isErr() || r.value === null) return r;
       const { hashed_password, user_state } = r.value;
-      return new Ok({ email, hashed_password, user_state });
+      return new Ok({ email: norm, hashed_password, user_state });
     });
   }
   put(item: Record<string, unknown>) { return this._put(item); }
   update(email: string, updates: Record<string, unknown>) {
-    return this._updateFields(`USER#${email}`, "PROFILE", updates);
+    return this._updateFields(userPk(email), "PROFILE", updates);
   }
   listAll(limit?: number) {
     return this._query({ IndexName: "gsi1", KeyConditionExpression: "gsi1_pk = :v", ExpressionAttributeValues: { ":v": "USER" }, ...(limit !== undefined ? { Limit: limit } : {}) });
@@ -44,10 +57,10 @@ export class UserConnector extends BaseConnector {
 // ---------------------------------------------------------------------------
 
 export class AdminConnector extends BaseConnector {
-  get(email: string) { return this._get(`ADMIN#${email}`, "PROFILE"); }
+  get(email: string) { return this._get(adminPk(email), "PROFILE"); }
   put(item: Record<string, unknown>) { return this._put(item); }
   update(email: string, updates: Record<string, unknown>) {
-    return this._updateFields(`ADMIN#${email}`, "PROFILE", updates);
+    return this._updateFields(adminPk(email), "PROFILE", updates);
   }
   listAll(limit?: number) {
     return this._query({ IndexName: "gsi1", KeyConditionExpression: "gsi1_pk = :v", ExpressionAttributeValues: { ":v": "ADMIN" }, ...(limit !== undefined ? { Limit: limit } : {}) });
@@ -59,15 +72,15 @@ export class AdminConnector extends BaseConnector {
 // ---------------------------------------------------------------------------
 
 export class TicketConnector extends BaseConnector {
-  get(email: string, ticketId: string) { return this._get(`USER#${email}`, `TICKET#${ticketId}`); }
+  get(email: string, ticketId: string) { return this._get(userPk(email), `TICKET#${ticketId}`); }
   put(item: Record<string, unknown>) { return this._put(item); }
   update(email: string, ticketId: string, updates: Record<string, unknown>) {
-    return this._updateFields(`USER#${email}`, `TICKET#${ticketId}`, updates);
+    return this._updateFields(userPk(email), `TICKET#${ticketId}`, updates);
   }
   async listForUser(email: string, limit?: number): Promise<Result<Record<string, unknown>[]>> {
     const r = await this._query({
       KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
-      ExpressionAttributeValues: { ":pk": `USER#${email}`, ":prefix": "TICKET#" },
+      ExpressionAttributeValues: { ":pk": userPk(email), ":prefix": "TICKET#" },
     });
     if (r.isErr()) return r;
     const items = r.value.filter((i) => isPlainTicketSk(i["sk"] as string));
@@ -84,16 +97,30 @@ export class TicketConnector extends BaseConnector {
       Limit: 1,
     });
     if (r.isErr()) return r;
-    return new Ok(r.value[0] ?? null);
+    const hit = r.value[0];
+    if (!hit) return new Ok(null);
+    // GSI2 is KEYS_ONLY (DB_SCHEMA.md) — the hit carries only pk/sk/gsi2_*.
+    // Refetch the full ticket so callers get email/ticket_state/etc.
+    return this._get(hit["pk"] as string, hit["sk"] as string);
   }
-  listEmailPending(limit: number) {
-    return this._query({
+  async listEmailPending(limit: number): Promise<Result<Record<string, unknown>[]>> {
+    const r = await this._query({
       IndexName: "gsi_email_pending",
       KeyConditionExpression: "gsi_email_pending_pk = :v",
       ExpressionAttributeValues: { ":v": "EMAIL_PENDING" },
       ScanIndexForward: true,
       Limit: limit,
     });
+    if (r.isErr()) return r;
+    // GSI_EMAIL_PENDING is KEYS_ONLY — refetch each hit's full item by pk/sk.
+    // Oldest-first order from the index is preserved.
+    const full: Record<string, unknown>[] = [];
+    for (const hit of r.value) {
+      const one = await this._get(hit["pk"] as string, hit["sk"] as string);
+      if (one.isErr()) return one as unknown as Result<Record<string, unknown>[]>;
+      if (one.value !== null) full.push(one.value);
+    }
+    return new Ok(full);
   }
 }
 
@@ -114,10 +141,10 @@ export class TicketOwnerConnector extends BaseConnector {
 // ---------------------------------------------------------------------------
 
 export class RawUploadConnector extends BaseConnector {
-  get(email: string, ticketId: string) { return this._get(`USER#${email}`, `RAW#${ticketId}`); }
+  get(email: string, ticketId: string) { return this._get(userPk(email), `RAW#${ticketId}`); }
   put(item: Record<string, unknown>) { return this._put(item); }
   update(email: string, ticketId: string, updates: Record<string, unknown>) {
-    return this._updateFields(`USER#${email}`, `RAW#${ticketId}`, updates);
+    return this._updateFields(userPk(email), `RAW#${ticketId}`, updates);
   }
 }
 
@@ -126,10 +153,10 @@ export class RawUploadConnector extends BaseConnector {
 // ---------------------------------------------------------------------------
 
 export class RenderedPdfConnector extends BaseConnector {
-  get(email: string, ticketId: string) { return this._get(`USER#${email}`, `RENDERED#${ticketId}`); }
+  get(email: string, ticketId: string) { return this._get(userPk(email), `RENDERED#${ticketId}`); }
   put(item: Record<string, unknown>) { return this._put(item); }
   update(email: string, ticketId: string, updates: Record<string, unknown>) {
-    return this._updateFields(`USER#${email}`, `RENDERED#${ticketId}`, updates);
+    return this._updateFields(userPk(email), `RENDERED#${ticketId}`, updates);
   }
 }
 
@@ -139,16 +166,16 @@ export class RenderedPdfConnector extends BaseConnector {
 
 export class OriginalReceiptConnector extends BaseConnector {
   get(email: string, ticketId: string, belegId: string) {
-    return this._get(`USER#${email}`, `TICKET#${ticketId}#BELEG#${belegId}`);
+    return this._get(userPk(email), `TICKET#${ticketId}#BELEG#${belegId}`);
   }
   put(item: Record<string, unknown>) { return this._put(item); }
   update(email: string, ticketId: string, belegId: string, updates: Record<string, unknown>) {
-    return this._updateFields(`USER#${email}`, `TICKET#${ticketId}#BELEG#${belegId}`, updates);
+    return this._updateFields(userPk(email), `TICKET#${ticketId}#BELEG#${belegId}`, updates);
   }
   listForTicket(email: string, ticketId: string, limit?: number) {
     return this._query({
       KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
-      ExpressionAttributeValues: { ":pk": `USER#${email}`, ":prefix": `TICKET#${ticketId}#BELEG#` },
+      ExpressionAttributeValues: { ":pk": userPk(email), ":prefix": `TICKET#${ticketId}#BELEG#` },
       ...(limit !== undefined ? { Limit: limit } : {}),
     });
   }
@@ -160,15 +187,15 @@ export class OriginalReceiptConnector extends BaseConnector {
 
 export class SepaMandateConnector extends BaseConnector {
   get(email: string, ticketId: string) {
-    return this._get(`USER#${email}`, `TICKET#${ticketId}#MANDATE`);
+    return this._get(userPk(email), `TICKET#${ticketId}#MANDATE`);
   }
   put(item: Record<string, unknown>) { return this._put(item); }
   update(email: string, ticketId: string, updates: Record<string, unknown>) {
-    return this._updateFields(`USER#${email}`, `TICKET#${ticketId}#MANDATE`, updates);
+    return this._updateFields(userPk(email), `TICKET#${ticketId}#MANDATE`, updates);
   }
   stampPain008Built(email: string, ticketId: string, batchId: string, s3Key: string, builtAt: string) {
     return this._updateIf(
-      `USER#${email}`, `TICKET#${ticketId}#MANDATE`,
+      userPk(email), `TICKET#${ticketId}#MANDATE`,
       { pain008_built_at: builtAt, pain008_batch_id: batchId, pain008_s3_key: s3Key },
       "attribute_exists(pk) AND attribute_not_exists(pain008_built_at)",
     );
@@ -208,10 +235,24 @@ export class TrainSegmentDelayConnector extends BaseConnector {
     });
   }
   routeLookup(originEva: number, date: string, fromTime: string, toTime: string, limit?: number) {
+    // Route-lookup rides GSI3 (STATION#<eva>#<date> / <plannedDeparture>#<trainNr>),
+    // projection ALL — DB_SCHEMA.md "GSI3". NOT gsi1 (that's the train /
+    // admin-enumeration index and never carries STATION# keys).
+    //
+    // The ingest-delays poller writes gsi3_sk as `<date>T<HH:MM>#<trainNr>`
+    // (full ISO planned_departure), not the bare `<HH:MM>#…` the older spec
+    // assumed. Callers pass the window as bare HH:MM (API contract), so we
+    // date-prefix the bounds to the same `<date>T<HH:MM>` shape — otherwise
+    // every HH:MM bound sorts lexically below the ISO keys and BETWEEN
+    // matches nothing. `date` is already pinned by gsi3_pk, so prefixing with
+    // it keeps the range exact. `￿` on the upper bound sweeps the
+    // `#<trainNr>` suffix.
+    const from = `${date}T${fromTime}`;
+    const to = `${date}T${toTime}`;
     return this._query({
-      IndexName: "gsi1",
-      KeyConditionExpression: "gsi1_pk = :pk AND gsi1_sk BETWEEN :from AND :to",
-      ExpressionAttributeValues: { ":pk": `STATION#${originEva}#${date}`, ":from": fromTime, ":to": toTime + "￿" },
+      IndexName: "gsi3",
+      KeyConditionExpression: "gsi3_pk = :pk AND gsi3_sk BETWEEN :from AND :to",
+      ExpressionAttributeValues: { ":pk": `STATION#${originEva}#${date}`, ":from": from, ":to": to + "￿" },
       ...(limit !== undefined ? { Limit: limit } : {}),
     });
   }
@@ -222,15 +263,15 @@ export class TrainSegmentDelayConnector extends BaseConnector {
 // ---------------------------------------------------------------------------
 
 export class RouteTemplateConnector extends BaseConnector {
-  get(email: string, templateId: string) { return this._get(`USER#${email}`, `TEMPLATE#${templateId}`); }
+  get(email: string, templateId: string) { return this._get(userPk(email), `TEMPLATE#${templateId}`); }
   put(item: Record<string, unknown>) { return this._put(item); }
   update(email: string, templateId: string, updates: Record<string, unknown>) {
-    return this._updateFields(`USER#${email}`, `TEMPLATE#${templateId}`, updates);
+    return this._updateFields(userPk(email), `TEMPLATE#${templateId}`, updates);
   }
   listForUser(email: string, limit?: number) {
     return this._query({
       KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
-      ExpressionAttributeValues: { ":pk": `USER#${email}`, ":prefix": "TEMPLATE#" },
+      ExpressionAttributeValues: { ":pk": userPk(email), ":prefix": "TEMPLATE#" },
       ...(limit !== undefined ? { Limit: limit } : {}),
     });
   }
@@ -252,8 +293,9 @@ export class RailBackConnector {
   sepaReport: SepaReportConnector;
   trainDelay: TrainSegmentDelayConnector;
   routeTemplate: RouteTemplateConnector;
+  s3blob: S3BlobConnector;
 
-  constructor(client?: DynamoDBDocumentClient) {
+  constructor(client?: DynamoDBDocumentClient, opts?: { s3?: S3BlobConnector }) {
     const c = client ?? createClient();
     this.user = new UserConnector(c);
     this.admin = new AdminConnector(c);
@@ -266,10 +308,11 @@ export class RailBackConnector {
     this.sepaReport = new SepaReportConnector(c);
     this.trainDelay = new TrainSegmentDelayConnector(c);
     this.routeTemplate = new RouteTemplateConnector(c);
+    this.s3blob = opts?.s3 ?? new S3BlobConnector();
   }
 
   async deleteUser(email: string): Promise<Result<null>> {
-    const r = await this.user._query({ KeyConditionExpression: "pk = :v", ExpressionAttributeValues: { ":v": `USER#${email}` } });
+    const r = await this.user._query({ KeyConditionExpression: "pk = :v", ExpressionAttributeValues: { ":v": userPk(email) } });
     if (r.isErr()) return r;
     const keys: { pk: string; sk: string }[] = r.value.map((i) => ({ pk: i["pk"] as string, sk: i["sk"] as string }));
     r.value.forEach((i) => {
@@ -282,30 +325,32 @@ export class RailBackConnector {
   }
 
   async deleteTicket(email: string, ticketId: string): Promise<Result<null>> {
+    const norm = userPk(email);
     const r = await this.ticket._query({
       KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
-      ExpressionAttributeValues: { ":pk": `USER#${email}`, ":prefix": `TICKET#${ticketId}#` },
+      ExpressionAttributeValues: { ":pk": norm, ":prefix": `TICKET#${ticketId}#` },
     });
     if (r.isErr()) return r;
     const keys: { pk: string; sk: string }[] = r.value.map((i) => ({ pk: i["pk"] as string, sk: i["sk"] as string }));
     keys.push(
-      { pk: `USER#${email}`, sk: `TICKET#${ticketId}` },
+      { pk: norm, sk: `TICKET#${ticketId}` },
       { pk: `TICKET#${ticketId}`, sk: "OWNER" },
-      { pk: `USER#${email}`, sk: `RAW#${ticketId}` },
-      { pk: `USER#${email}`, sk: `RENDERED#${ticketId}` },
+      { pk: norm, sk: `RAW#${ticketId}` },
+      { pk: norm, sk: `RENDERED#${ticketId}` },
     );
     return this.ticket._batchDelete(keys);
   }
 
-  deleteAdmin(email: string) { return this.admin._delete(`ADMIN#${email}`, "PROFILE"); }
+  deleteAdmin(email: string) { return this.admin._delete(adminPk(email), "PROFILE"); }
   deleteTicketOwner(ticketId: string) { return this.ticketOwner._delete(`TICKET#${ticketId}`, "OWNER"); }
-  deleteRawUpload(email: string, ticketId: string) { return this.rawUpload._delete(`USER#${email}`, `RAW#${ticketId}`); }
-  deleteRenderedPdf(email: string, ticketId: string) { return this.renderedPdf._delete(`USER#${email}`, `RENDERED#${ticketId}`); }
-  deleteReceipt(email: string, ticketId: string, belegId: string) { return this.receipt._delete(`USER#${email}`, `TICKET#${ticketId}#BELEG#${belegId}`); }
-  deleteMandate(email: string, ticketId: string) { return this.mandate._delete(`USER#${email}`, `TICKET#${ticketId}#MANDATE`); }
+  deleteRawUpload(email: string, ticketId: string) { return this.rawUpload._delete(userPk(email), `RAW#${ticketId}`); }
+  deleteRenderedPdf(email: string, ticketId: string) { return this.renderedPdf._delete(userPk(email), `RENDERED#${ticketId}`); }
+  deleteReceipt(email: string, ticketId: string, belegId: string) { return this.receipt._delete(userPk(email), `TICKET#${ticketId}#BELEG#${belegId}`); }
+  deleteMandate(email: string, ticketId: string) { return this.mandate._delete(userPk(email), `TICKET#${ticketId}#MANDATE`); }
   deleteSepaReport(date: string, reportId: string) { return this.sepaReport._delete(`SEPA#REPORT#${date}`, `REPORT#${reportId}`); }
   deleteTrainDelay(trainNr: string, date: string, segId: string) { return this.trainDelay._delete(`TRAIN#${trainNr}#${date}`, `SEG#${segId}`); }
-  deleteRouteTemplate(email: string, templateId: string) { return this.routeTemplate._delete(`USER#${email}`, `TEMPLATE#${templateId}`); }
+  deleteRouteTemplate(email: string, templateId: string) { return this.routeTemplate._delete(userPk(email), `TEMPLATE#${templateId}`); }
 }
 
 export { ConflictError };
+export { S3BlobConnector };

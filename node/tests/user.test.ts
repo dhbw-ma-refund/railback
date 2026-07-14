@@ -64,14 +64,16 @@ describe("UserConnector", () => {
     await db.user._delete(`USER#${e}`, "PROFILE");
   });
 
-  test("getForAdmin strips sensitive fields", async () => {
+  test("getForAdmin returns full row including iban_enc/bic_enc", async () => {
+    // 2026-07-07 reversal (DECISIONS.md): admin sees IBAN/BIC ciphertext;
+    // decryption to plaintext lives in admin-handler (backend layer).
     const e = email("adminget");
     await db.user.put(item(e, { iban_enc: "ENC_IBAN", bic_enc: "ENC_BIC" }));
     const r = await db.user.getForAdmin(e);
     expect(r.isOk()).toBe(true);
     const data = r.unwrap() as Record<string, unknown>;
-    expect(data).not.toHaveProperty("iban_enc");
-    expect(data).not.toHaveProperty("bic_enc");
+    expect(data).toHaveProperty("iban_enc", "ENC_IBAN");
+    expect(data).toHaveProperty("bic_enc", "ENC_BIC");
     expect(data["vorname"]).toBe("Test");
     expect((await db.user.get(e)).unwrap() as any).toMatchObject({ iban_enc: "ENC_IBAN" });
     await db.user._delete(`USER#${e}`, "PROFILE");
@@ -81,5 +83,25 @@ describe("UserConnector", () => {
     const r = await db.user.getForAdmin("ghost.u001ts.admin@it.de");
     expect(r.isOk()).toBe(true);
     expect(r.unwrap()).toBeNull();
+  });
+
+  test("F7: mixed-case email is normalised — put(lower) + get(UPPER) hits same row", async () => {
+    // F7 (2026-07-08): raw email interpolated into USER# without lowercase
+    // used to split partitions on mixed-case input. Connector.get now
+    // normalises identically to @railback/lib/storage/ddb/keys#normaliseEmail.
+    const canonical = email("caseinsensitive");
+    // Seed the row with the canonical (lowercase) key.
+    await db.user.put(item(canonical));
+    // Read with a mixed-case variant — MUST resolve to the same row.
+    const mixed = canonical.toUpperCase();
+    const r1 = await db.user.get(mixed);
+    expect(r1.isOk()).toBe(true);
+    expect((r1.unwrap() as any)?.["vorname"]).toBe("Test");
+    // And with whitespace padding.
+    const padded = `  ${canonical}  `;
+    const r2 = await db.user.get(padded);
+    expect(r2.isOk()).toBe(true);
+    expect((r2.unwrap() as any)?.["vorname"]).toBe("Test");
+    await db.user._delete(`USER#${canonical}`, "PROFILE");
   });
 });
