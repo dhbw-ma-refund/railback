@@ -10,6 +10,10 @@ penalty is paid once per container, not on import.
 
 from __future__ import annotations
 
+import os
+import urllib.error
+import urllib.parse
+import urllib.request
 from typing import Any, Optional
 
 import boto3
@@ -53,6 +57,71 @@ def _set_client(client: Any) -> None:
     _client = client
 
 
+def _public_read_enabled() -> bool:
+    """True when the demo public-read fetch path is enabled.
+
+    In the student-sandbox deploy no principal (execution role, user, or the
+    Cognito pool role) has `s3:GetObject` on the raw/ belege/ prefixes, so a
+    boto3 GetObject always returns AccessDenied and the ticket can never leave
+    VALIDATING. But uploads are written with `ACL: public-read` (see
+    railback-db S3BlobConnector), so the object is fetchable anonymously over
+    its public HTTPS URL. Setting RAILBACK_S3_PUBLIC_READ=1 makes fetch_bytes
+    take that path. DEMO-ONLY; unset it in any deploy that grants real
+    GetObject so we go back through boto3 (signed, private).
+    """
+    return os.environ.get("RAILBACK_S3_PUBLIC_READ", "").strip() not in ("", "0", "false", "False")
+
+
+def _public_object_url(bucket: str, key: str) -> str:
+    """Virtual-hosted-style public URL for a bucket object.
+
+    Region comes from AWS_REGION (always set by the Lambda runtime) or
+    RAILBACK_AWS_REGION, defaulting to eu-north-1. The key is passed through
+    urllib quote so path segments with reserved chars are encoded, but "/" is
+    kept as a path separator.
+    """
+    region = (
+        os.environ.get("AWS_REGION")
+        or os.environ.get("RAILBACK_AWS_REGION")
+        or "eu-north-1"
+    )
+    quoted_key = urllib.parse.quote(key, safe="/")
+    return f"https://{bucket}.s3.{region}.amazonaws.com/{quoted_key}"
+
+
+def _fetch_bytes_public(bucket: str, key: str) -> tuple[bytes, Optional[str]]:
+    """Anonymous HTTPS GET of a public-read object → (body_bytes, content_type).
+
+    Mirrors the size-cap + content-type contract of the boto3 path. Raises
+    S3FetchError on any HTTP/URL error or when the object exceeds the cap.
+    """
+    url = _public_object_url(bucket, key)
+    req = urllib.request.Request(url, method="GET")
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:  # noqa: S310 (fixed https S3 URL)
+            # Reject oversize via Content-Length before reading, matching the
+            # boto3 branch's defense-in-depth.
+            cl = resp.headers.get("Content-Length")
+            if cl is not None and cl.isdigit() and int(cl) > MAX_OBJECT_BYTES:
+                raise S3FetchError(
+                    f"S3 public object {url} size {cl} exceeds cap {MAX_OBJECT_BYTES}"
+                )
+            body = resp.read(MAX_OBJECT_BYTES + 1)
+            content_type = resp.headers.get("Content-Type")
+    except urllib.error.HTTPError as exc:
+        raise S3FetchError(
+            f"S3 public GET failed for {url}: HTTP {exc.code} {exc.reason}"
+        ) from exc
+    except urllib.error.URLError as exc:
+        raise S3FetchError(f"S3 public GET failed for {url}: {exc}") from exc
+
+    if len(body) > MAX_OBJECT_BYTES:
+        raise S3FetchError(
+            f"S3 public object {url} body size exceeds cap {MAX_OBJECT_BYTES}"
+        )
+    return body, content_type
+
+
 def fetch_bytes(
     bucket: str,
     key: str,
@@ -77,6 +146,14 @@ def fetch_bytes(
             AccessDenied, etc.) OR when the object exceeds
             MAX_OBJECT_BYTES — the original exception is chained.
     """
+    # Demo public-read path: fetch anonymously over the object's public HTTPS
+    # URL when RAILBACK_S3_PUBLIC_READ is set (the account has no s3:GetObject
+    # on raw/ belege/, but objects are uploaded ACL: public-read). Skipped when
+    # a client is explicitly injected — tests DI a client and must keep
+    # exercising the boto3 branch.
+    if client is None and _public_read_enabled():
+        return _fetch_bytes_public(bucket, key)
+
     c = client if client is not None else _get_client()
     try:
         response = c.get_object(Bucket=bucket, Key=key)

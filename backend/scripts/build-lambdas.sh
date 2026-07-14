@@ -81,6 +81,7 @@ build_node() {
     cp lambdas/refund-pdf/assets/reimbursement-form_de.pdf "$stage/assets/"
   fi
 
+  rm -f "$OUT/$l.zip"
   ( cd "$stage" && zip -q -r -X "$OUT/$l.zip" . )
   rm -rf "$stage"
   echo "   -> $OUT/$l.zip"
@@ -95,12 +96,40 @@ build_python_extractor() {
   fi
   ( cd "lambdas/$l"
     rm -rf .build .venv-build
-    UV_PROJECT_ENVIRONMENT=.venv-build uv sync \
-      --no-dev --frozen --no-install-project \
-      --python 3.12 --python-preference managed
+    # CRITICAL: Lambda runs Amazon Linux x86_64, but this build host may be
+    # macOS/arm. Installing wheels for the HOST platform ships Mach-O .so
+    # files → "invalid ELF header" on Lambda import (pymupdf, zxing-cpp,
+    # pydantic-core, pillow all carry native extensions). We must fetch LINUX
+    # x86_64 (manylinux) wheels regardless of host. `uv pip install
+    # --python-platform x86_64-manylinux2014 --target` resolves + downloads
+    # cross-platform wheels into a flat dir. --only-binary=:all: fails loudly
+    # if any dep would need a source build (which would reintroduce
+    # host-native binaries silently). Keep this in sync with pyproject deps.
     mkdir -p .build
+    # NOTE: boto3/botocore are intentionally NOT installed here — the Lambda
+    # python3.12 runtime already provides them (~25 MB saved, which keeps the
+    # zip under the 70 MB direct-upload cap). Everything else carries native
+    # extensions and MUST be the Linux x86_64 build.
+    uv pip install \
+      --python-platform x86_64-manylinux2014 \
+      --python-version 3.12 \
+      --only-binary=:all: \
+      --target .build \
+      pydantic "zxing-cpp>=2.2" "pymupdf>=1.24" "pillow>=10.0" \
+      "pycryptodome>=3.20" "pyasn1>=0.6"
     cp -r src vendor .build/
-    cp -r .venv-build/lib/python3.12/site-packages/* .build/
+    # Some wheels (e.g. zxing-cpp, pydantic-core) bundle BOTH a macOS and a
+    # Linux .so. On Lambda only the *-linux-gnu.so is ever loaded, but the
+    # dead macOS/Windows binaries bloat the zip past the 70 MB direct-upload
+    # limit. Strip everything that can't run on Amazon Linux x86_64.
+    find .build \( -name "*-darwin.so" -o -name "*darwin.so" -o -name "*-win_amd64.pyd" \
+      -o -name "*.dylib" \) -delete
+    # Drop caches + dist-info that add weight but nothing runtime needs.
+    find .build -type d -name "__pycache__" -prune -exec rm -rf {} +
+    # zip -r APPENDS to an existing archive — a stale zip from a prior build
+    # would leave dead entries (incl. host-native binaries) inside. Remove it
+    # first so the archive is exactly this build's contents.
+    rm -f "$OUT/ticket-extractor.zip"
     ( cd .build && zip -q -r -X "$OUT/ticket-extractor.zip" . )
     rm -rf .build .venv-build
   )

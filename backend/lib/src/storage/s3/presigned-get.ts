@@ -12,20 +12,14 @@ import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { AppError } from "../../errors/index.js";
+import { s3ClientConfig } from "./credentials.js";
 
 let _client: S3Client | null = null;
 
-/** Lazy-init the S3 client. RAILBACK_AWS_REGION must be set. */
+/** Lazy-init the S3 client. See credentials.ts for region/creds resolution. */
 function getClient(): S3Client {
   if (_client) return _client;
-  const region = process.env.RAILBACK_AWS_REGION;
-  if (!region) {
-    throw new AppError(
-      "ERR_INTERNAL",
-      "RAILBACK_AWS_REGION not set; cannot presign S3 GETs",
-    );
-  }
-  _client = new S3Client({ region });
+  _client = new S3Client(s3ClientConfig("presign"));
   return _client;
 }
 

@@ -14,6 +14,9 @@
     "_comment_s3": "Bucket confirmed 2026-07-11: the shared account has a bucket literally named 'railback' (eu-north-1). NOTE: it is also used by a Cognito browser-upload demo that uploads ACL:public-read. RailBack's presigned POST sets NO ACL (objects stay private) — do NOT change that. Verify Block-Public-Access is ON before storing PII under raw/ belege/.",
     "RAILBACK_S3_BUCKET": "railback",
 
+    "_comment_cognito": "DEMO-ONLY (set by account owner 2026-07-11). Probed: the dispatcher's own IAM principal (s241539) is DENIED s3:PutObject on raw/ belege/, so a presigned POST it signs is rejected by S3. The Cognito unauth pool role IS allowed PutObject on those prefixes. Setting this makes upload-presign sign with the Cognito identity so the upload endpoint works over the Function URL. Scope is presign-signing only (see lib/src/storage/s3/credentials.ts); direct GetObject stays on the default chain because the Cognito role cannot GetObject. Unset to revert to the default credential chain.",
+    "RAILBACK_COGNITO_IDENTITY_POOL_ID": "eu-north-1:b9e14e8e-24e4-4e1e-ad49-69455e674d3a",
+
     "_comment_ses": "SES confirmed 2026-07-11 via emailSES lambda: railback.de is a verified sender identity AND the account is OUT of sandbox (send to arbitrary external recipient accepted). Use an @railback.de from-address. test@railback.de is proven; switch to noreply@railback.de only if the full DOMAIN identity (not just the email identity) is verified.",
     "RAILBACK_SES_FROM_ADDRESS": "noreply@railback.de",
 

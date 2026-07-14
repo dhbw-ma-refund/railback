@@ -711,7 +711,16 @@ const doc = generator.generateDocument({
     description:
       "OpenAPI contract for the RailBack backend. Generated from zod schemas via @asteasolutions/zod-to-openapi. Commit this file — CI drift-checks it.",
   },
-  servers: [],
+  servers: [
+    {
+      url: "https://{apiId}.execute-api.eu-north-1.amazonaws.com",
+      description:
+        "API Gateway HTTP API base. Replace {apiId} with the deployed API's id; region is eu-north-1.",
+      variables: {
+        apiId: { default: "example", description: "API Gateway HTTP API id" },
+      },
+    },
+  ],
 });
 
 const here = dirname(fileURLToPath(import.meta.url));

@@ -16,7 +16,8 @@
     "typecheck": "npm run typecheck --workspaces",
     "check": "npm run typecheck && npm run lint && npm test",
     "generate:openapi": "tsx scripts/generate-openapi.ts",
-    "check:openapi-drift": "npm run generate:openapi && git diff --exit-code schema/openapi.yaml"
+    "check:openapi-drift": "npm run generate:openapi && git diff --exit-code schema/openapi.yaml",
+    "docs:html": "npm run generate:openapi && npx --yes @redocly/cli@latest build-docs schema/openapi.yaml -o docs/api.html"
   },
   "engines": {
     "node": ">=20 <21"

@@ -56,9 +56,9 @@ if [[ $DO_CONFIG -eq 1 ]]; then
     --runtime python3.12 --handler src.handler.lambda_handler --memory-size 512 --timeout 30 \
     --query '{Runtime:Runtime,Handler:Handler,Mem:MemorySize,Timeout:Timeout}' --output json
   wait_settle
-  echo ">> env (extractor only needs the DDB table name; bucket+key come from the invoke event; region is Lambda-native)"
+  echo ">> env (DDB table + demo public-read fetch flag; bucket+key come from the invoke event; region is Lambda-native)"
   aws lambda update-function-configuration --region "$REGION" --function-name "$FN" \
-    --environment "Variables={RAILBACK_DDB_TABLE=${RAILBACK_DDB_TABLE:-RailBack}}" \
+    --environment "Variables={RAILBACK_DDB_TABLE=${RAILBACK_DDB_TABLE:-RailBack},RAILBACK_S3_PUBLIC_READ=${RAILBACK_S3_PUBLIC_READ:-1}}" \
     --query 'Environment.Variables | keys(@)' --output json
   wait_settle
 fi

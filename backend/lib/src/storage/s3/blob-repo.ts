@@ -50,6 +50,7 @@ import {
   RAW_UPLOAD_MAX_BYTES,
   presignPost,
 } from "./presigned-post.js";
+import { s3ClientConfig } from "./credentials.js";
 
 interface BaseItem {
   pk: string;
@@ -111,17 +112,10 @@ function getTable(): string {
 
 let _s3Client: S3Client | null = null;
 
-/** Lazy-init S3 client for GetObject. Mirrors presigned-get.ts pattern. */
+/** Lazy-init S3 client for GetObject/PutObject. See credentials.ts. */
 function getS3Client(): S3Client {
   if (_s3Client) return _s3Client;
-  const region = process.env.RAILBACK_AWS_REGION;
-  if (!region) {
-    throw new AppError(
-      "ERR_INTERNAL",
-      "RAILBACK_AWS_REGION not set; S3BlobRepo cannot GetObject"
-    );
-  }
-  _s3Client = new S3Client({ region });
+  _s3Client = new S3Client(s3ClientConfig());
   return _s3Client;
 }
 
