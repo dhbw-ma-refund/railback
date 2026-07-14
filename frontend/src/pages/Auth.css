@@ -76,6 +76,17 @@
   text-decoration: underline;
 }
 
+.auth-legal-link {
+  color: var(--color-deep-trust-blue);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.auth-legal-link:hover {
+  color: var(--color-muted-gray-blue);
+}
+
 .error-message {
   padding: var(--spacing-2);
   background: var(--color-error-red-soft);
@@ -153,6 +164,7 @@
 }
 
 .profile-container {
+  flex: 1;
   max-width: 800px;
   margin: 0 auto;
   padding: var(--spacing-4);

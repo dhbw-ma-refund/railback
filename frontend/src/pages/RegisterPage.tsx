@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { Button } from '@shared/components';
@@ -197,7 +197,20 @@ export const RegisterPage = () => {
                 })
               }
               required
-              label={t.auth.register.datenschutz}
+              label={
+                <>
+                  {t.auth.register.datenschutzPrefix}
+                  <Link
+                    className="auth-legal-link"
+                    to="/rechtliches#datenschutz"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    {t.auth.register.datenschutzLink}
+                  </Link>
+                </>
+              }
             />
             <Checkbox
               checked={formData.agb_akzeptiert}
@@ -208,7 +221,20 @@ export const RegisterPage = () => {
                 })
               }
               required
-              label={t.auth.register.agb}
+              label={
+                <>
+                  {t.auth.register.agbPrefix}
+                  <Link
+                    className="auth-legal-link"
+                    to="/rechtliches#agb"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    {t.auth.register.agbLink}
+                  </Link>
+                </>
+              }
             />
             {error && <div className="error-message">{error}</div>}
             <div className="button-group">

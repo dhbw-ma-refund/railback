@@ -1,0 +1,19 @@
+.rb-pagination {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 16px 0;
+}
+
+.rb-pagination__button {
+  min-width: 96px;
+}
+
+@media (max-width: 767px) {
+  .rb-pagination {
+    justify-content: space-between;
+  }
+  .rb-pagination__button {
+    flex: 1;
+  }
+}

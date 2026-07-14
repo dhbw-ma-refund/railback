@@ -115,7 +115,7 @@ interface BurgerMenuProps {
 export const BurgerMenu = ({ open, onClose, ctaLabel }: BurgerMenuProps) => {
   const navigate = useNavigate();
   const { lang, setLang, t } = useLanguage();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
 
   const cta = ctaLabel ?? t.hero.cta1;
 

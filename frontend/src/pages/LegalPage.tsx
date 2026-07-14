@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useSmartBack } from '../hooks/useSmartBack';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
@@ -273,7 +275,7 @@ const RechtlichesContent = ({ lang }: { lang: Language }) => {
     <article className="legal-card" lang={lang}>
       <h1>{copy.title}</h1>
 
-      <h2>{copy.termsTitle}</h2>
+      <h2 id="agb">{copy.termsTitle}</h2>
       <h3>{copy.validityTitle}</h3>
       <Paragraphs items={copy.validity} />
 
@@ -285,7 +287,7 @@ const RechtlichesContent = ({ lang }: { lang: Language }) => {
 
       <p className="legal-card__version">{copy.version}</p>
 
-      <h2>{copy.privacyTitle}</h2>
+      <h2 id="datenschutz">{copy.privacyTitle}</h2>
 
       <h3>{copy.personalDataTitle}</h3>
       <p>{copy.personalData}</p>
@@ -307,6 +309,13 @@ const RechtlichesContent = ({ lang }: { lang: Language }) => {
 export const LegalPage = ({ type }: LegalPageProps) => {
   const goBack = useSmartBack('/');
   const { lang, t } = useLanguage();
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    if (!hash) return;
+
+    document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' });
+  }, [hash]);
 
   return (
     <div className="legal-page">

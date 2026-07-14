@@ -170,6 +170,7 @@ cython_debug/
 # JavaScript
 node_modules/
 package-lock.json
+!frontend/package-lock.json
 
 # Claude Code local settings
 **/settings.local.json

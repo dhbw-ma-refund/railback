@@ -1,0 +1,45 @@
+.rb-toast-viewport {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.rb-toast {
+  min-width: 240px;
+  max-width: 360px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  color: var(--color-warm-off-white);
+  background: var(--color-text-primary);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  pointer-events: auto;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-body);
+}
+
+.rb-toast--error {
+  background: var(--color-error-red);
+}
+
+.rb-toast--warn {
+  background: var(--color-warning-yellow);
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 767px) {
+  .rb-toast-viewport {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    align-items: stretch;
+  }
+  .rb-toast {
+    min-width: 0;
+    max-width: none;
+  }
+}

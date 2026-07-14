@@ -1,0 +1,94 @@
+/*
+ * SEPA operator page — layout bits on top of DetailPage.css. Visual button
+ * styling is reused verbatim from the shared library
+ * (rb-button rb-button--secondary rb-button--medium); this file only owns
+ * the label-as-trigger interaction and file-chip layout.
+ */
+
+.rb-sepa-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rb-sepa-upload__helper {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+}
+
+.rb-sepa-upload__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Native <input type="file"> hidden but focusable — the <label> shows the UI.
+ * Focus ring is proxied onto the label via :focus-within below.
+ */
+.rb-sepa-upload__native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.rb-sepa-upload__trigger {
+  /* Reuses rb-button rb-button--secondary rb-button--medium; only cursor +
+   * focus-within proxy live here. */
+  cursor: pointer;
+}
+
+.rb-sepa-upload__trigger:focus-within {
+  outline: 2px solid var(--color-deep-trust-blue);
+  outline-offset: 2px;
+}
+
+.rb-sepa-upload__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: var(--radius-input);
+  border: 1px solid var(--color-input-border);
+  background: white;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-primary);
+  max-width: 100%;
+}
+
+.rb-sepa-upload__chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+
+.rb-sepa-upload__chip-clear {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+  font-size: 18px;
+}
+
+.rb-sepa-upload__chip-clear:hover {
+  color: var(--color-error-red);
+  background: rgba(217, 48, 37, 0.08);
+}
+
+.rb-sepa-batch__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}

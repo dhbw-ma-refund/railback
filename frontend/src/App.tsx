@@ -14,6 +14,7 @@ import { ClaimDetailPage } from './pages/ClaimDetailPage';
 import { FAQPage } from './pages/FAQPage';
 import { LegalPage } from './pages/LegalPage';
 import { PricingPage } from './pages/PricingPage';
+import { AdminApp } from './pages/admin/AdminApp';
 import { WizardProvider } from './pages/wizard/WizardContext';
 import { EntryStep } from './pages/wizard/EntryStep';
 import { UploadStep } from './pages/wizard/UploadStep';
@@ -99,6 +100,9 @@ function App() {
             />
             {/* Backwards-compat: old /user link redirects into the wizard. */}
             <Route path="/user" element={<Navigate to="/antrag/neu" replace />} />
+            {/* Admin panel has its own AdminGuard + session-scoped token store;
+                it does not use the marketing AuthProvider. */}
+            <Route path="/admin-panel/*" element={<AdminApp />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

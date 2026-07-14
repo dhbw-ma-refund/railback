@@ -58,11 +58,18 @@
   font-family: var(--font-family-primary);
 }
 
+/*
+ * Lucide "alert-circle" (ISC) — https://lucide.dev/icons/alert-circle
+ * Painted via CSS mask so it inherits the error text color.
+ */
 .rb-input-error-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
+  background-color: currentColor;
+  mask: url('https://cdn.jsdelivr.net/npm/lucide-static@1.24.0/icons/alert-circle.svg') no-repeat center / contain;
+  -webkit-mask: url('https://cdn.jsdelivr.net/npm/lucide-static@1.24.0/icons/alert-circle.svg') no-repeat center / contain;
 }
 
 .rb-input-helper {

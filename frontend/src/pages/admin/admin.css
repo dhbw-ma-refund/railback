@@ -1,0 +1,67 @@
+.rb-admin-shell {
+  min-height: 100vh;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: var(--color-warm-off-white);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-primary);
+}
+
+.rb-admin-shell__title {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-h1);
+  margin: 0 0 16px 0;
+}
+
+.rb-admin-shell__section {
+  margin-top: 24px;
+}
+
+.rb-admin-shell__section-title {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 12px 0;
+}
+
+.rb-admin-shell__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.rb-admin-shell__error {
+  color: var(--color-error-red);
+  font-size: var(--font-size-caption);
+  margin-top: 8px;
+  min-height: 1em;
+}
+
+/*
+ * Admin forms use a heavier body weight than the public site: on the warm
+ * off-white background the regular weight of the shared Input component was
+ * reported as too thin to read. Scoping to `.rb-admin-*` keeps the public
+ * landing/user forms unaffected.
+ */
+.rb-admin-shell .rb-input,
+.rb-admin-login .rb-input {
+  font-weight: var(--font-weight-semibold);
+}
+
+.rb-admin-shell .rb-input-label,
+.rb-admin-login .rb-input-label {
+  font-weight: var(--font-weight-bold);
+}
+
+/*
+ * Desktop-landscape: on wide screens (>= 1024px) the shell breathes a bit
+ * more and mirrors the header inner padding so header nav aligns with the
+ * first column of page content.
+ */
+@media (min-width: 1024px) {
+  .rb-admin-shell {
+    padding: 32px;
+  }
+}
