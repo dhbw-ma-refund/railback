@@ -29,23 +29,10 @@ management surface backed by the prod Lambda at
 
 ## Admin actions
 
-State override lives in `StateOverrideDialog` on the ticket-detail page
-and PATCHes `/admin/tickets/{ticketId}`. Rules:
-
-- Only transitions from `services/transitions.ts` are rendered — everything
-  else is either system-owned (`VALIDATING` / `READY` / `EMAIL_SENDING` /
-  `EMAIL_FAILED`) or terminal (`COMPLETED` / `REJECTED` / `INVALID`). Both
-  cases show distinct copy so admins know whether to wait for the pipeline
-  or accept a final state.
-- `db_paid_at` field appears only when the target is `APPROVED`.
-- Admin note is required for `REJECTED` / `INVALID` (audit trail — money
-  fields are immutable, so the note is the only recourse).
-- 409 from the backend surfaces as "Übergang nicht erlaubt" inline; 403 as
-  "Keine Berechtigung"; 5xx as a generic retry message.
-
 `Verspätungen anzeigen` on the ticket detail is disabled when the ticket
 payload lacks `fahrt_zugnummer_plan` or `fahrt_abreisedatum` so the button
-never navigates to a dead page.
+never navigates to a dead page. `pain.008 neu erzeugen` is enabled only
+when the ticket is `APPROVED` and no pain.008 has been built yet.
 
 User profile + status editing lives in `UserEditDialog` on the user-detail
 page and PATCHes `/admin/users/{email}`:
