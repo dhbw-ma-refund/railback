@@ -11,8 +11,6 @@ TABLE_NAME = os.environ.get("RAILBACK_DDB_TABLE", "RailBack")
 REGION = "eu-north-1"
 ENDPOINT_URL = os.environ.get("DYNAMODB_ENDPOINT_URL", None)
 
-_ADMIN_STRIPPED_FIELDS = frozenset({"iban_enc", "bic_enc"})
-
 
 def _is_plain_ticket_sk(sk: str) -> bool:
     tail = sk[len("TICKET#"):]
@@ -40,13 +38,11 @@ class UserConnector(BaseConnector):
         return self._get(f"USER#{email}", "PROFILE")
 
     def get_for_admin(self, email: str) -> Result:
-        result = self._get(f"USER#{email}", "PROFILE")
-        if result.is_err():
-            return result
-        item = result.unwrap()
-        if item:
-            item = {k: v for k, v in item.items() if k not in _ADMIN_STRIPPED_FIELDS}
-        return Ok(item)
+        # Admin-context read. Reversal 2026-07-07 (DB_SCHEMA.md): admin reads no
+        # longer strip iban_enc/bic_enc — the ciphertext is returned verbatim and
+        # decrypted at the API layer. This method stays as the admin-context
+        # signal (mirrors Node getForAdmin) but no longer projects fields away.
+        return self._get(f"USER#{email}", "PROFILE")
 
     def put(self, item: dict) -> Result:
         return self._put(item)
@@ -253,9 +249,16 @@ class TrainSegmentDelayConnector(BaseConnector):
         )
 
     def route_lookup(self, origin_eva: int, date: str, from_time: str, to_time: str, limit: int | None = None) -> Result:
+        # Route-lookup rides GSI3 (STATION#<eva>#<date> / <plannedDeparture>#<trainNr>).
+        # The ingest-delays poller writes gsi3_sk as `<date>T<HH:MM>#<trainNr>` (full
+        # ISO planned_departure) — see DB_SCHEMA.md 2026-07-11. Callers pass bare
+        # HH:MM bounds, so date-prefix them to the same `<date>T<HH:MM>` shape;
+        # otherwise every HH:MM bound sorts lexically below the ISO keys and BETWEEN
+        # matches nothing. `date` is already pinned by gsi3_pk, so prefixing keeps the
+        # range exact. `￿` on the upper bound sweeps the `#<trainNr>` suffix.
         return self._query(
-            IndexName="gsi1",
-            KeyConditionExpression=Key("gsi1_pk").eq(f"STATION#{origin_eva}#{date}") & Key("gsi1_sk").between(from_time, to_time + "￿"),
+            IndexName="gsi3",
+            KeyConditionExpression=Key("gsi3_pk").eq(f"STATION#{origin_eva}#{date}") & Key("gsi3_sk").between(f"{date}T{from_time}", f"{date}T{to_time}" + "￿"),
             **({"Limit": limit} if limit is not None else {}),
         )
 

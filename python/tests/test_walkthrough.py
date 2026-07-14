@@ -106,7 +106,7 @@ class TestFullWalkthrough:
                     "origin_eva": station_eva, "destination_eva": station_eva + 1,
                     "departure_time": dep_time, "arrival_time": arr_time,
                     "delay_minutes": 0, "recorded_at": NOW,
-                    "gsi1_pk": f"STATION#{station_eva}#{DATE}", "gsi1_sk": dep_time}
+                    "gsi3_pk": f"STATION#{station_eva}#{DATE}", "gsi3_sk": f"{DATE}T{dep_time}#{train_nr}"}
 
         db.train_delay.put(mk_seg(TRAIN_1, SEG_1A, STATION_A, "08:00", "08:55"))
         db.train_delay.put(mk_seg(TRAIN_1, SEG_1B, STATION_B, "09:10", "10:00"))

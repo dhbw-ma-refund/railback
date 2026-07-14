@@ -1,9 +1,14 @@
 # RailBack — DB Schema Alignment
 
-Single-table DynamoDB design. This document is the source of truth for the
-physical schema. Both the Python connector (`database` branch) and the
-TypeScript connector (to be written) must match it exactly. When the two
-implementations disagree, this document wins.
+Single-table DynamoDB design.
+
+> **STALE — not the source of truth (noted 2026-07-14).** The canonical
+> physical schema is the top-level `../DB_SCHEMA.md` (the backend repo's copy).
+> This file predates the 2026-07-07 admin-strip reversal and the 2026-07-11
+> GSI3/full-ISO route-lookup lock, and several rows below still describe the old
+> design. It is kept only for the integration-model / locked-decisions notes.
+> Where this file and `../DB_SCHEMA.md` disagree, **`../DB_SCHEMA.md` wins.**
+> The Python and TypeScript connectors both follow `../DB_SCHEMA.md`.
 
 **Table:** `RailBack`
 **Region:** `eu-north-1`
@@ -22,9 +27,10 @@ key attributes, GSI key attributes, and all regular item attributes.
 
 | Index | Partition key | Sort key | Purpose |
 |---|---|---|---|
-| `gsi1` | `gsi1_pk` (String) | `gsi1_sk` (String) | User list, admin list, train lookup, station route lookup |
+| `gsi1` | `gsi1_pk` (String) | `gsi1_sk` (String) | User list, admin list, train lookup |
 | `gsi2` | `gsi2_pk` (String) | `gsi2_sk` (String) | Barcode dedup |
 | `gsi_email_pending` | `gsi_email_pending_pk` (String) | `gsi_email_pending_sk` (String) | Email retry queue (sparse) |
+| `gsi3` | `gsi3_pk` (String) | `gsi3_sk` (String) | Station route lookup (sparse — only TrainSegmentDelay) |
 
 All GSIs use `ALL` projection.
 
@@ -110,13 +116,15 @@ based on attribute presence, not value.
 |---|---|
 | `pk` | `TRAIN#{trainNr}#{date}` |
 | `sk` | `SEG#{segId}` |
-| `gsi1_pk` | `STATION#{evaCode}#{date}` |
-| `gsi1_sk` | `{HH:MM}#{trainNr}` — departure time plus train number tiebreaker e.g. `08:00#ICE599` |
+| `gsi3_pk` | `STATION#{evaCode}#{date}` (sparse — only TrainSegmentDelay) |
+| `gsi3_sk` | `{date}T{HH:MM}#{trainNr}` — full-ISO planned departure + train number tiebreaker, e.g. `2026-05-12T08:00#ICE599` |
 
-The `gsi1_sk` format ensures deterministic ordering when multiple trains depart
-the same station at the same minute (which is a real case in the source data at
-minute resolution). The `BETWEEN` query on `gsi1_sk` uses `to_time + "~"` as
-the upper bound so all trains at the boundary minute are included.
+The `gsi3_sk` is full ISO (`<date>T<HH:MM>#<trainNr>`, locked 2026-07-11): the
+poller writes it that way, and the tiebreaker keeps ordering deterministic when
+multiple trains depart the same station in the same minute. `route_lookup`
+takes bare `HH:MM` bounds and date-prefixes them to `<date>T<HH:MM>` for the
+`BETWEEN` on `gsi3_sk` (`date` is already pinned by `gsi3_pk`, so the range
+stays exact); the upper bound appends `￿` to sweep the `#<trainNr>` suffix.
 
 ### Route template
 | Attribute | Value |
@@ -147,8 +155,9 @@ Both connectors are method-for-method mirrors of each other.
 | Decision | Detail |
 |---|---|
 | Attribute case | Lowercase on the wire |
-| GSI for station route lookup | GSI1 shared (not a separate GSI3) |
-| Route lookup SK tiebreaker | `HH:MM#{trainNr}` |
+| GSI for station route lookup | GSI3 (sparse, only TrainSegmentDelay) — locked 2026-07-11 |
+| Route lookup SK tiebreaker | `{date}T{HH:MM}#{trainNr}` (full ISO) |
+| Admin user read | returns `iban_enc`/`bic_enc` verbatim — no strip (reversed 2026-07-07) |
 | Email GSI sparse-write ownership | Calling Lambda owns the write/clear |
 | Input validation | DB layer trusts callers — validation at HTTP boundary only |
 | Region | `eu-north-1`, not changing |

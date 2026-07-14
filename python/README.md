@@ -62,7 +62,7 @@ uv run pytest tests/ -v
 | `train_delay` | `TRAIN#{nr}#{date}` | `SEG#{id}` |
 | `route_template` | `USER#{email}` | `TEMPLATE#{id}` |
 
-GSIs: `gsi1` (user/admin/train lookups + station route lookup), `gsi2` (barcode dedup), `gsi_email_pending` (email queue).
+GSIs: `gsi1` (user/admin/train lookups), `gsi2` (barcode dedup), `gsi_email_pending` (email queue), `gsi3` (station route lookup — sparse, only `train_delay`).
 
 ## Environment variables
 
