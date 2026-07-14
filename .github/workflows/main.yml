@@ -40,8 +40,10 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-      - name: Verify SPA fallback
-        run: test -f dist/.htaccess
+      - name: Verify deployment files
+        run: |
+          test -f dist/.htaccess
+          test -f dist/ANLEITUNG_LOKAL_TESTEN.md
 
       - name: SFTP Deploy
         uses: wlixcc/SFTP-Deploy-Action@v1.2.6
