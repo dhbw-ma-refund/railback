@@ -172,6 +172,13 @@
   margin-bottom: 0;
 }
 
+/* Account section has no .section-header wrapper, so the H2's margin-bottom:0
+   from the rule above leaves it flush against the delete button. Give the H2
+   here breathing room instead. */
+.profile-section--account .h2 {
+  margin-bottom: var(--spacing-3);
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;

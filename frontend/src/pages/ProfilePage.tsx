@@ -244,7 +244,7 @@ export const ProfilePage = () => {
           )}
         </Card>
 
-        <Card className="profile-section">
+        <Card className="profile-section profile-section--account">
           <h2 className="h2">{t.auth.profile.accountTitle}</h2>
           {!showDeleteConfirm ? (
             <Button variant="secondary" onClick={() => setShowDeleteConfirm(true)}>

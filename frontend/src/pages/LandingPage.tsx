@@ -118,11 +118,10 @@ export const LandingPage = () => {
       <section className="eligibility" id="eligibility" aria-labelledby="eligibility-title">
         <div className="wrap container">
           <div className="eligibility__head">
-            <span className="eligibility__eyebrow">{t.eligibility.eyebrow}</span>
             <h2 id="eligibility-title">{t.eligibility.title}</h2>
             <p>{t.eligibility.lead}</p>
           </div>
-          <div className="eligibility__rail" aria-label={t.eligibility.eyebrow}>
+          <div className="eligibility__rail" aria-label={t.eligibility.title}>
             {t.eligibility.items.map((item: { amount: string; title: string; text: string }) => (
               <article
                 className={`eligibility-card${item.amount.includes('%') ? ' eligibility-card--percentage' : ''}`}

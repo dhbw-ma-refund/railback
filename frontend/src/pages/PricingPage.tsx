@@ -8,7 +8,6 @@ import './PricingPage.css';
 
 const copy = {
   de: {
-    eyebrow: 'Preise',
     title: 'Erst prüfen, dann entscheiden.',
     lead: 'Die Anspruchsprüfung ist kostenlos. Du gibst einen Antrag erst frei, wenn du den möglichen Erstattungsbetrag und die Konditionen gesehen hast.',
     cardTitle: 'Anspruch prüfen',
@@ -23,7 +22,6 @@ const copy = {
     note: 'Mögliche Servicegebühren werden vor dem Absenden transparent angezeigt.',
   },
   en: {
-    eyebrow: 'Pricing',
     title: 'Check first, decide afterwards.',
     lead: 'The claim check is free. You only approve a claim after seeing the possible refund and conditions.',
     cardTitle: 'Check claim',
@@ -76,7 +74,6 @@ export const PricingPage = () => {
         </div>
         <section className="pricing-hero wrap container fade-in">
           <div className="pricing-hero__copy">
-            <span className="pricing-hero__eyebrow">{text.eyebrow}</span>
             <h1>{text.title}</h1>
             <p>{text.lead}</p>
           </div>

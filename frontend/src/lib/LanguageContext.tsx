@@ -69,7 +69,6 @@ const translations = {
       },
     },
     eligibility: {
-      eyebrow: 'Wann ist Entschädigung möglich?',
       title: 'Wenn die Bahn dich warten lässt, muss es nicht bei Ärger bleiben.',
       lead: 'Die Höhe hängt von Verspätung, Ticketpreis und Reisesituation ab. RailBack zeigt dir vor dem Antrag, was realistisch möglich ist.',
       items: [
@@ -338,7 +337,6 @@ const translations = {
       },
     },
     eligibility: {
-      eyebrow: 'When is compensation possible?',
       title: 'If the railway makes you wait, frustration does not have to be the end of it.',
       lead: 'The amount depends on delay, ticket price and trip situation. RailBack shows what is realistically possible before you file.',
       items: [
