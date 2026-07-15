@@ -25,7 +25,7 @@ export const Footer = () => {
           </div>
           <div className="footer__links">
             <Link to="/faq">{t.menu.faq}</Link>
-            <Link to="/preise">{t.menu.prices}</Link>
+            <Link to="/#preise">{t.menu.prices}</Link>
             <Link to="/impressum">{t.menu.imprint}</Link>
             <Link to="/rechtliches">{t.menu.legal}</Link>
           </div>

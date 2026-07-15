@@ -1,9 +1,11 @@
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@shared/components';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { useLanguage } from '../lib/LanguageContext';
 import { useAuth } from '../lib/AuthContext';
+import { pricingContent } from '../lib/pricingContent';
 import './LandingPage.css';
 import railbackLogo from '../../shared/assets/railback-logo.png';
 import homeHeroPassenger from '../../shared/assets/home-hero-passenger-2.png';
@@ -12,7 +14,16 @@ import homeHeroPassenger from '../../shared/assets/home-hero-passenger-2.png';
 const Icon = ({ name, size = 20, color }: { name: string; size?: number; color?: string }) => {
   const icons: Record<string, JSX.Element> = {
     euro: (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color || 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || 'currentColor'}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M4 10h12" />
         <path d="M4 14h12" />
         <path d="M19 6a8 8 0 0 0-8 8 8 8 0 0 0 8 8" />
@@ -20,23 +31,59 @@ const Icon = ({ name, size = 20, color }: { name: string; size?: number; color?:
       </svg>
     ),
     checkCircle: (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color || 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || 'currentColor'}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <circle cx="12" cy="12" r="10" />
         <path d="M9 12l2 2 4-4" />
       </svg>
     ),
     shield: (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color || 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || 'currentColor'}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       </svg>
     ),
     bolt: (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color || 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || 'currentColor'}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
       </svg>
     ),
     check: (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color || 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || 'currentColor'}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M20 6L9 17l-5-5" />
       </svg>
     ),
@@ -46,9 +93,21 @@ const Icon = ({ name, size = 20, color }: { name: string; size?: number; color?:
 };
 
 export const LandingPage = () => {
+  const location = useLocation();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   const { isAuthenticated } = useAuth();
+  const pricing = pricingContent[lang];
+
+  useEffect(() => {
+    if (location.hash !== '#preise') return;
+
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById('preise')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [location.hash, location.key]);
 
   const handleCheckClaim = () => {
     if (isAuthenticated) {
@@ -62,79 +121,120 @@ export const LandingPage = () => {
     <div className="landing-page landing-page--default">
       <Header />
       <main className="landing-main">
-      <section className="hero">
-        <div className="hero__bg"></div>
-        <div className="wrap container">
-          <div className="hero__grid">
-            <div className="hero__mobile-logo">
-              <div className="hero__mobile-logo-card">
-                <img src={railbackLogo} alt="RailBack Logo" />
+        <section className="hero">
+          <div className="hero__bg"></div>
+          <div className="wrap container">
+            <div className="hero__grid">
+              <div className="hero__mobile-logo">
+                <div className="hero__mobile-logo-card">
+                  <img src={railbackLogo} alt="RailBack Logo" />
+                </div>
+                <span className="hero__mobile-logo-name">RailBack</span>
               </div>
-              <span className="hero__mobile-logo-name">RailBack</span>
+              <div className="hero__copy fade-in">
+                <h1 className="h1 hero__title hero__title--desktop">{t.hero.title}</h1>
+                <h1 className="h1 hero__title hero__title--mobile">{t.hero.mobileTitle}</h1>
+                <ul className="hero__proof" aria-label="RailBack Vorteile">
+                  {t.hero.proof.map((item: string) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+                <p className="hero__sub hero__sub--mobile">{t.hero.mobileSub}</p>
+                <div className="hero__cta">
+                  <Button variant="primary" size="large" onClick={handleCheckClaim}>
+                    <span style={{ fontSize: '18px', fontWeight: 'bold' }}>€</span>
+                    <span className="hero__cta-label hero__cta-label--desktop">{t.hero.cta1}</span>
+                    <span className="hero__cta-label hero__cta-label--mobile">
+                      {t.hero.mobileCta}
+                    </span>
+                  </Button>
+                </div>
+                <div className="hero__tag">
+                  {t.hero.tag.map((w: string, i: number) => (
+                    <b
+                      key={i}
+                      style={{
+                        color:
+                          i === 1
+                            ? 'var(--color-landing-green-ink)'
+                            : 'var(--color-deep-trust-blue)',
+                      }}
+                    >
+                      {w}{' '}
+                    </b>
+                  ))}
+                </div>
+                <div className="trust">
+                  {t.hero.trust.map((tr: string, i: number) => (
+                    <span className="trust__item" key={i}>
+                      <Icon name={['shield', 'bolt', 'check'][i]} size={18} />
+                      {tr}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="hero-photo-col">
+                <div className="hero-photo">
+                  <img
+                    src={homeHeroPassenger}
+                    alt="Zufriedene Bahnreisende prüft ihre Entschädigung am Smartphone"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="hero__copy fade-in">
-              <h1 className="h1 hero__title hero__title--desktop">{t.hero.title}</h1>
-              <h1 className="h1 hero__title hero__title--mobile">{t.hero.mobileTitle}</h1>
-              <ul className="hero__proof" aria-label="RailBack Vorteile">
-                {t.hero.proof.map((item: string) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-              <p className="hero__sub hero__sub--mobile">{t.hero.mobileSub}</p>
-              <div className="hero__cta">
+          </div>
+        </section>
+        <section className="eligibility" id="eligibility" aria-labelledby="eligibility-title">
+          <div className="wrap container">
+            <div className="eligibility__head">
+              <h2 id="eligibility-title">{t.eligibility.title}</h2>
+              <p>{t.eligibility.lead}</p>
+            </div>
+            <div className="eligibility__rail" aria-label={t.eligibility.title}>
+              {t.eligibility.items.map((item: { amount: string; title: string; text: string }) => (
+                <article
+                  className={`eligibility-card${item.amount.includes('%') ? ' eligibility-card--percentage' : ''}`}
+                  key={item.title}
+                >
+                  <div className="eligibility-card__amount">{item.amount}</div>
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section id="preise" className="landing-pricing" aria-labelledby="landing-pricing-title">
+          <div className="wrap container">
+            <div className="landing-pricing__grid">
+              <div className="landing-pricing__copy">
+                <h2 id="landing-pricing-title">{pricing.title}</h2>
+                <p>{pricing.lead}</p>
+              </div>
+              <div className="landing-pricing-card" aria-label={pricing.cardTitle}>
+                <div className="landing-pricing-card__head">
+                  <h3>{pricing.cardTitle}</h3>
+                  <div>
+                    <div className="landing-pricing-card__price">{pricing.price}</div>
+                    <p className="landing-pricing-card__meta">{pricing.priceMeta}</p>
+                  </div>
+                </div>
+                <ul>
+                  {pricing.features.map((feature) => (
+                    <li key={feature}>
+                      <Icon name="check" size={18} color="var(--color-landing-green-ink)" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
                 <Button variant="primary" size="large" onClick={handleCheckClaim}>
-                  <span style={{ fontSize: '18px', fontWeight: 'bold' }}>€</span>
-                  <span className="hero__cta-label hero__cta-label--desktop">{t.hero.cta1}</span>
-                  <span className="hero__cta-label hero__cta-label--mobile">{t.hero.mobileCta}</span>
+                  {pricing.cta}
                 </Button>
-              </div>
-              <div className="hero__tag">
-                {t.hero.tag.map((w: string, i: number) => (
-                  <b key={i} style={{ color: i === 1 ? 'var(--color-landing-green-ink)' : 'var(--color-deep-trust-blue)' }}>
-                    {w}{' '}
-                  </b>
-                ))}
-              </div>
-              <div className="trust">
-                {t.hero.trust.map((tr: string, i: number) => (
-                  <span className="trust__item" key={i}>
-                    <Icon name={['shield', 'bolt', 'check'][i]} size={18} />
-                    {tr}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="hero-photo-col">
-              <div className="hero-photo">
-                <img
-                  src={homeHeroPassenger}
-                  alt="Zufriedene Bahnreisende prüft ihre Entschädigung am Smartphone"
-                />
+                <p className="landing-pricing-card__note">{pricing.note}</p>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-      <section className="eligibility" id="eligibility" aria-labelledby="eligibility-title">
-        <div className="wrap container">
-          <div className="eligibility__head">
-            <h2 id="eligibility-title">{t.eligibility.title}</h2>
-            <p>{t.eligibility.lead}</p>
-          </div>
-          <div className="eligibility__rail" aria-label={t.eligibility.title}>
-            {t.eligibility.items.map((item: { amount: string; title: string; text: string }) => (
-              <article
-                className={`eligibility-card${item.amount.includes('%') ? ' eligibility-card--percentage' : ''}`}
-                key={item.title}
-              >
-                <div className="eligibility-card__amount">{item.amount}</div>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
       </main>
       <Footer />
     </div>
