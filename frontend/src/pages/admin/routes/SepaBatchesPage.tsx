@@ -6,6 +6,7 @@ import { fmtDateTime } from '../services/format/date';
 import { fmtEUR } from '../services/format/money';
 import { Button } from '../ui-library';
 import { useToast } from '../ui/useToast';
+import { Skeleton } from '../ui/Skeleton';
 import '../admin.css';
 import './DetailPage.css';
 import './SepaBatchesPage.css';
@@ -143,7 +144,26 @@ export function SepaBatchesPage() {
 
       <section className="rb-detail__section">
         <h2 className="rb-detail__section-title">Offene pain.008-Batches</h2>
-        {loading && <div>Lade …</div>}
+        {loading && (
+          <ul className="rb-detail__ticket-list" aria-busy="true">
+            {Array.from({ length: 3 }, (_, i) => (
+              <li key={i} className="rb-detail__ticket rb-sepa-batch">
+                <div className="rb-detail__grid">
+                  {Array.from({ length: 4 }, (_, f) => (
+                    <div key={f} className="rb-detail__field">
+                      <Skeleton variant="text" width="10ch" />
+                      <Skeleton variant="text" width="16ch" height="1.1em" />
+                    </div>
+                  ))}
+                </div>
+                <div className="rb-sepa-batch__actions">
+                  <Skeleton width="200px" height="40px" radius="24px" />
+                  <Skeleton width="200px" height="40px" radius="24px" />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
         {error && <div className="rb-detail__error">{error}</div>}
         {!loading && !error && batches && batches.length === 0 && (
           <div>Keine offenen Batches. Alle Mandate sind entweder erledigt oder noch nicht gebaut.</div>

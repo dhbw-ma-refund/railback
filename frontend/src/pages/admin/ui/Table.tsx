@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Skeleton } from './Skeleton';
 import './Table.css';
 
 export interface TableColumn<T> {
@@ -32,7 +33,7 @@ export function Table<T>({
   emptyMessage = 'Keine Einträge.',
 }: TableProps<T>) {
   if (loading) {
-    return <div className="rb-table__loading">Lädt…</div>;
+    return <TableSkeleton columns={columns} rows={8} />;
   }
   if (error) {
     return (
@@ -65,6 +66,44 @@ export function Table<T>({
               {columns.map((c) => (
                 <td key={c.key} data-label={c.header}>
                   {c.render(row)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+interface TableSkeletonProps<T> {
+  columns: TableColumn<T>[];
+  rows: number;
+}
+
+/**
+ * Renders the real header row and `rows` placeholder rows with the same
+ * column layout, so the table width doesn't jump when data lands. Uses the
+ * card fallback automatically on narrow viewports because it reuses the
+ * exact same DOM shape and CSS classes as the populated table.
+ */
+function TableSkeleton<T>({ columns, rows }: TableSkeletonProps<T>) {
+  return (
+    <div className="rb-table-scroll" aria-busy="true">
+      <table className="rb-table">
+        <thead>
+          <tr>
+            {columns.map((c) => (
+              <th key={c.key}>{c.header}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: rows }, (_, r) => (
+            <tr key={r} data-clickable="false">
+              {columns.map((c) => (
+                <td key={c.key} data-label={c.header}>
+                  <Skeleton variant="text" width={`${8 + ((r + c.key.length) % 8)}ch`} />
                 </td>
               ))}
             </tr>

@@ -10,6 +10,7 @@ import { fmtEUR } from '../services/format/money';
 import { TicketStateBadge } from '../ui/TicketStateBadge';
 import { Button } from '../ui-library';
 import { useToast } from '../ui/useToast';
+import { DetailPageSkeleton } from '../ui/PageSkeletons';
 import './DetailPage.css';
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
@@ -97,11 +98,7 @@ export function TicketDetailPage() {
   }
 
   if (loading) {
-    return (
-      <div className="rb-detail">
-        <div className="rb-detail__loading">Lädt…</div>
-      </div>
-    );
+    return <DetailPageSkeleton sections={4} />;
   }
   if (notFound) {
     return (

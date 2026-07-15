@@ -5,6 +5,7 @@ import { trainDelaysApi } from '../services/api/delays';
 import { ApiError } from '../services/api/errors';
 import type { TrainDelays } from '../services/types/delay';
 import { fmtDate } from '../services/format/date';
+import { Skeleton } from '../ui/Skeleton';
 import '../admin.css';
 import './DetailPage.css';
 import './DelayDrilldownPage.css';
@@ -73,7 +74,13 @@ export function DelayDrilldownPage() {
         <strong>{datum ? fmtDate(datum) : '—'}</strong>
       </p>
 
-      {loading && <div className="rb-detail__loading">Lädt…</div>}
+      {loading && (
+        <div aria-busy="true" style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16 }}>
+          {Array.from({ length: 5 }, (_, i) => (
+            <Skeleton key={i} height="44px" />
+          ))}
+        </div>
+      )}
       {error && (
         <div className="rb-detail__error" role="alert">
           {error}
