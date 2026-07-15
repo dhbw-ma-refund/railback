@@ -217,6 +217,8 @@ const translations = {
       loading: 'Antrag wird geladen …',
       loadError: 'Antrag konnte nicht geladen werden.',
       notFound: 'Diesen Antrag gibt es nicht (oder er gehört nicht zu deinem Konto).',
+      fullId: 'Vorgangs-ID',
+      copied: 'Kopiert',
     },
     wizard: {
       back: 'Zurück',
@@ -593,6 +595,8 @@ const translations = {
       loading: 'Loading claim …',
       loadError: 'Could not load claim.',
       notFound: "This claim doesn't exist (or belongs to a different account).",
+      fullId: 'Claim ID',
+      copied: 'Copied',
     },
     wizard: {
       back: 'Back',

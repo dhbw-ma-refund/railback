@@ -64,6 +64,51 @@
   margin: 0;
 }
 
+/* Full-ULID row on the detail header — the ID users paste into a
+   support ticket. Monospace so a manual triple-click selects cleanly
+   even if the copy button is blocked by clipboard permissions. */
+.claim-detail__fullid {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  flex-wrap: wrap;
+}
+
+.claim-detail__fullid-code {
+  font-family: 'SFMono-Regular', ui-monospace, 'Menlo', 'Consolas', monospace;
+  font-size: 12px;
+  background: var(--color-warm-off-white, #f6f2ec);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--color-text-primary);
+  user-select: all;
+}
+
+.claim-detail__fullid-copy {
+  border: 1px solid var(--color-input-border);
+  background: white;
+  border-radius: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  transition: color var(--motion-fast) var(--motion-ease),
+              border-color var(--motion-fast) var(--motion-ease);
+}
+
+.claim-detail__fullid-copy:hover {
+  color: var(--color-deep-trust-blue);
+  border-color: var(--color-deep-trust-blue);
+}
+
+.claim-detail__fullid-note {
+  color: var(--color-deep-trust-blue);
+  font-weight: var(--font-weight-semibold);
+}
+
 /* --- Section --------------------------------------------------- */
 
 .claim-detail__section {

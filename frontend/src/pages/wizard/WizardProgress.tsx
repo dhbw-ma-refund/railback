@@ -23,8 +23,8 @@ export const WizardProgress = ({ activeSlug }: Props) => {
   const activeStep = activeIndex >= 0 ? WIZARD_STEPS[activeIndex] : null;
 
   return (
-    <nav className="wizard-progress" aria-label="Antragsschritte">
-      <ol className="wizard-progress__track">
+    <nav className="wiz-progress" aria-label="Antragsschritte">
+      <ol className="wiz-progress__track">
         {WIZARD_STEPS.map((step, i) => {
           const isActive = step.slug === activeSlug;
           const isDone = i < activeIndex;
@@ -32,11 +32,11 @@ export const WizardProgress = ({ activeSlug }: Props) => {
           return (
             <li
               key={step.slug}
-              className={`wizard-progress__step wizard-progress__step--${state}`}
+              className={`wiz-progress__step wiz-progress__step--${state}`}
             >
               <button
                 type="button"
-                className="wizard-progress__dot"
+                className="wiz-progress__dot"
                 onClick={() => navigate(step.path)}
                 aria-current={isActive ? 'step' : undefined}
                 aria-label={`${step.index}. ${step.labelDe}`}
@@ -48,7 +48,7 @@ export const WizardProgress = ({ activeSlug }: Props) => {
         })}
       </ol>
       {activeStep && (
-        <p className="wizard-progress__label">
+        <p className="wiz-progress__label">
           Schritt {activeStep.index} von {WIZARD_STEPS.length}
         </p>
       )}

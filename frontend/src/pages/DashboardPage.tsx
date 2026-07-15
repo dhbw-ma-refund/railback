@@ -19,7 +19,6 @@ import './DashboardPage.css';
  * TicketSummary schema (backend serialises only trip data); we display
  * antragsart / erwartete_erstattung / email_status instead where present.
  */
-const formatClaimId = (ticketId: string) => `REQ-${ticketId.slice(-9).toUpperCase()}`;
 
 const formatDate = (iso: string) => {
   const [y, m, d] = iso.split('-');
@@ -78,7 +77,6 @@ export const DashboardPage = () => {
               {tickets.map((ticket) => (
                 <li key={ticket.ticketId} className="claim-card">
                   <div className="claim-card__row claim-card__row--head">
-                    <span className="claim-card__id">{formatClaimId(ticket.ticketId)}</span>
                     <StatusChip state={ticket.ticket_state} />
                     <button
                       type="button"

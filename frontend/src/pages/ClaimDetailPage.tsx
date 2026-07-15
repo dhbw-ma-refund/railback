@@ -33,8 +33,6 @@ const EMAIL_STATUS_LABELS_DE: Record<EmailStatus, string> = {
   FAILED: 'Fehlgeschlagen',
 };
 
-const formatClaimId = (ticketId: string) => `REQ-${ticketId.slice(-9).toUpperCase()}`;
-
 const formatDate = (iso: string) => {
   const [y, m, d] = iso.split('-');
   return `${d}.${m}.${y}`;
@@ -88,11 +86,15 @@ export const ClaimDetailPage = () => {
     };
   }, [ticketId, t.claimDetail.loadError]);
 
-  const displayId = ticket
-    ? formatClaimId(ticket.ticketId)
-    : ticketId
-      ? formatClaimId(ticketId)
-      : '—';
+  // Title = trip route ("Bochum Hbf → Mannheim Hbf") when we know it,
+  // otherwise the generic "Antrag" fallback. The old REQ-XXX chip is
+  // gone — it was cosmetic and misled users into thinking it was a real
+  // reference number.
+  const heading = ticket
+    ? ticket.fahrt_abreisebahnhof && ticket.fahrt_zielbahnhof
+      ? `${ticket.fahrt_abreisebahnhof} → ${ticket.fahrt_zielbahnhof}`
+      : t.claimDetail.claim
+    : t.claimDetail.claim;
 
   if (notFound) {
     return (
@@ -155,12 +157,13 @@ export const ClaimDetailPage = () => {
 
         <header className="claim-detail__header">
           <div className="claim-detail__id-row">
-            <h1 className="claim-detail__id">{displayId}</h1>
+            <h1 className="claim-detail__id">{heading}</h1>
             <StatusChip state={ticket.ticket_state} />
           </div>
           <p className="claim-detail__updated">
             {t.claimDetail.updated}: {formatDateTime(ticket.updated_at)}
           </p>
+          <CopyableTicketId ticketId={ticket.ticketId} label={t.claimDetail.fullId} copied={t.claimDetail.copied} />
         </header>
 
         {/* Antrag */}
@@ -292,6 +295,52 @@ export const ClaimDetailPage = () => {
         </section>
       </main>
       <Footer />
+    </div>
+  );
+};
+
+/**
+ * Small helper: displays the full 26-character ULID (the ID the backend
+ * team searches by) with a copy-to-clipboard button. Sits below the
+ * "Zuletzt aktualisiert" line on the detail header.
+ *
+ * The REQ-<last 9> chip above is friendly display; this row is what you
+ * paste into a support ticket.
+ */
+const CopyableTicketId = ({
+  ticketId,
+  label,
+  copied,
+}: {
+  ticketId: string;
+  label: string;
+  copied: string;
+}) => {
+  const [wasCopied, setWasCopied] = useState(false);
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(ticketId);
+      setWasCopied(true);
+      // Reset after ~1.5s so the button doesn't look permanently "done".
+      window.setTimeout(() => setWasCopied(false), 1500);
+    } catch {
+      // Clipboard API blocked (no HTTPS, denied permission). Silent —
+      // user can still triple-click the ID text and copy manually.
+    }
+  };
+  return (
+    <div className="claim-detail__fullid">
+      <span className="claim-detail__fullid-label">{label}:</span>
+      <code className="claim-detail__fullid-code">{ticketId}</code>
+      <button
+        type="button"
+        className="claim-detail__fullid-copy"
+        onClick={onCopy}
+        aria-label={label}
+      >
+        {wasCopied ? '✓' : '⧉'}
+      </button>
+      {wasCopied && <span className="claim-detail__fullid-note">{copied}</span>}
     </div>
   );
 };
