@@ -119,13 +119,20 @@ class Http:
         except (urllib.error.URLError, TimeoutError, ssl.SSLError) as e:
             return 0, (time.perf_counter() - t0) * 1000, str(e).encode()
 
-    def login(self, email: str, password: str) -> str:
+    def login(self, email: str, password: str, attempts: int = 4) -> str:
         data = json.dumps({"email": email, "password": password}).encode()
-        req = urllib.request.Request(
-            self.base + "/auth/login", data=data,
-            headers={"Content-Type": "application/json"}, method="POST")
-        with urllib.request.urlopen(req, timeout=self.timeout, context=self._ctx) as r:
-            return json.loads(r.read())["accessToken"]
+        last = None
+        for i in range(attempts):
+            req = urllib.request.Request(
+                self.base + "/auth/login", data=data,
+                headers={"Content-Type": "application/json"}, method="POST")
+            try:
+                with urllib.request.urlopen(req, timeout=self.timeout, context=self._ctx) as r:
+                    return json.loads(r.read())["accessToken"]
+            except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ssl.SSLError) as e:
+                last = e
+                time.sleep(0.5 * (2 ** i))  # 0.5s, 1s, 2s backoff — ride out transient API 404s/throttle
+        raise RuntimeError(f"login failed after {attempts} attempts: {last}")
 
 
 def _pct(a: list[float], p: float) -> float:
@@ -159,8 +166,8 @@ def sample_keys(http: Http, token: str, user_token: str) -> dict:
     user_tid = uitems[0]["ticketId"] if uitems else tid
 
     # Delay data (real, discovered via route-lookup): a popular route with segments.
-    # Verified live: Frankfurt (Main) Hbf -> Stuttgart Hbf @ 2026-06-20, train ICE2845.
-    route_lookup = {"fromStation": "Frankfurt (Main) Hbf", "toStation": "Stuttgart Hbf",
+    # Verified live: Hamburg Hbf -> Frankfurt (Main) Hbf @ 2026-06-20 08:00 (200 cand=1).
+    route_lookup = {"fromStation": "Hamburg Hbf", "toStation": "Frankfurt (Main) Hbf",
                     "date": "2026-06-20", "abfahrtszeit_plan": "08:00"}
     delay_train, delay_date = "ICE2845", "2026-06-20"
     # Confirm the route still resolves; if so, adopt its first candidate's trainNr.
@@ -362,10 +369,14 @@ def main():
                  f"p99={row['p99_ms']:>7}ms  codes={json.dumps(row['codes'])}"
                  + (f"  ex:{row['err_sample']}" if row['err_sample'] else ""))
             time.sleep(args.settle_ms / 1000)
-        # refresh both tokens between patterns (900s TTL)
-        token = http.login(args.admin_email, args.admin_password)
-        user_token = http.login(user_email, args.user_password)
-        tokens = {"admin": token, "user": user_token}
+        # refresh both tokens between patterns (900s TTL); non-fatal — a transient
+        # API failure here shouldn't kill the whole sweep, keep the old token.
+        try:
+            token = http.login(args.admin_email, args.admin_password)
+            user_token = http.login(user_email, args.user_password)
+            tokens = {"admin": token, "user": user_token}
+        except Exception as e:
+            _log(f"    [warn] token refresh failed, reusing prior tokens: {e}")
 
     os.makedirs(args.out, exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
