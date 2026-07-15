@@ -967,6 +967,11 @@
 }
 
 @media (min-width: 2000px) {
+  .landing-page {
+    --landing-section-title-size: clamp(52px, 2.3vw, 60px);
+    --landing-section-copy-size: clamp(19px, 0.82vw, 21px);
+  }
+
   .eligibility {
     padding-bottom: 58px;
   }
