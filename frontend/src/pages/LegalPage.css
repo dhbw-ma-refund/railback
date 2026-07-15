@@ -162,7 +162,7 @@
   }
 
   .legal-card {
-    border-radius: 10px;
+    border-radius: var(--radius-card);
   }
 
   .legal-card h2 {
