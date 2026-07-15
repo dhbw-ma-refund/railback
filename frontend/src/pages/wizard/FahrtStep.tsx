@@ -17,7 +17,11 @@ import { useScrollIntoViewOn } from '../../hooks/useScrollIntoViewOn';
  * Regardless of mode the user always ends up here to confirm/edit — so it's
  * shared. Values live in wizardState.fahrt and map 1:1 to RefundRequest.fahrt.
  *
- * All fields on RefundRequest.fahrt except `zugkategorie_plan` are required.
+ * All fields on RefundRequest.fahrt except `zugkategorie_plan` are required
+ * on the wire. This form only surfaces the required ones — zugkategorie
+ * is prefilled by the extractor/lookup when available and otherwise
+ * omitted (users type "ICE 592" into the train field, so the category is
+ * implicit and a separate select would collect a duplicate).
  * `fahrkartenpreis` must match `^-?[0-9]+\.[0-9]{2}$` (backend regex) but we
  * accept flexible input from the user (40, 40,00, 40.00, 40.5, …) and
  * normalize to the strict form on blur / before store.
@@ -74,6 +78,13 @@ export const FahrtStep = () => {
   // Which fields are missing / malformed. Rendered as `error` on each
   // Input only after the user tries to advance — before then, showing red
   // borders on a fresh form would be aggressive. See handleNext.
+  //
+  // fahrkartennummer AND fahrkartenpreis are only required for single-trip
+  // tickets. The Zeitkarte / Deutschland-Ticket branch skips both inputs:
+  // the ticket file is the proof, and Zeitkarte compensation is a fixed
+  // flat rate — a per-trip price would be misleading anyway. buildRefundBody
+  // injects sentinels ("DEUTSCHLANDTICKET" / "0.00") for the backend's
+  // min(1) / decimal-EUR constraints.
   const missing = {
     abreisebahnhof: !f.abreisebahnhof,
     zielbahnhof: !f.zielbahnhof,
@@ -81,8 +92,8 @@ export const FahrtStep = () => {
     abfahrtszeit_plan: !f.abfahrtszeit_plan,
     ankunftszeit_plan: !f.ankunftszeit_plan,
     zugnummer_plan: !f.zugnummer_plan,
-    fahrkartennummer: !f.fahrkartennummer,
-    fahrkartenpreis: !f.fahrkartenpreis || priceInvalid,
+    fahrkartennummer: !state.is_zeitkarte && !f.fahrkartennummer,
+    fahrkartenpreis: !state.is_zeitkarte && (!f.fahrkartenpreis || priceInvalid),
   };
   const hasAnyMissing = Object.values(missing).some(Boolean);
   const [showErrors, setShowErrors] = useState(false);
@@ -160,37 +171,45 @@ export const FahrtStep = () => {
           onChange={(e) => updateFahrt({ abreisedatum: e.target.value })}
           invalid={inv('abreisedatum')}
         />
+        {/* Train number carries the category prefix in practice ("ICE 592",
+            "RE 4") — a separate zugkategorie select was collecting a value
+            the user had already typed. The wire field is optional; extractor
+            and lookup still populate it automatically when they can. */}
         <Input
           label={t.wizard.reise.train}
           required
-          placeholder="z.B. IC 2045"
+          placeholder="z.B. ICE 592"
           value={f.zugnummer_plan ?? ''}
           onChange={(e) => updateFahrt({ zugnummer_plan: e.target.value })}
           invalid={inv('zugnummer_plan')}
         />
-        <Input
-          label={t.wizard.reise.ticketNumber}
-          required
-          placeholder="z.B. 7313005"
-          value={f.fahrkartennummer ?? ''}
-          onChange={(e) => updateFahrt({ fahrkartennummer: e.target.value })}
-          invalid={inv('fahrkartennummer')}
-        />
-        <Input
-          label={t.wizard.reise.ticketPrice}
-          required
-          placeholder="z.B. 29,90"
-          inputMode="decimal"
-          value={priceInput}
-          onChange={(e) => onPriceChange(e.target.value)}
-          onBlur={onPriceBlur}
-          // Malformed input keeps its specific inline message (the summary
-          // banner below can't explain HOW to fix a bad number). Blank
-          // uses the silent invalid signal so it joins the banner.
-          error={priceInvalid ? t.wizard.reise.priceFormat : undefined}
-          invalid={!priceInvalid && inv('fahrkartenpreis')}
-          helperText={t.wizard.reise.priceHint}
-        />
+        {!state.is_zeitkarte && (
+          <Input
+            label={t.wizard.reise.ticketNumber}
+            required
+            placeholder="z.B. 7313005"
+            value={f.fahrkartennummer ?? ''}
+            onChange={(e) => updateFahrt({ fahrkartennummer: e.target.value })}
+            invalid={inv('fahrkartennummer')}
+          />
+        )}
+        {!state.is_zeitkarte && (
+          <Input
+            label={t.wizard.reise.ticketPrice}
+            required
+            placeholder="z.B. 29,90"
+            inputMode="decimal"
+            value={priceInput}
+            onChange={(e) => onPriceChange(e.target.value)}
+            onBlur={onPriceBlur}
+            // Malformed input keeps its specific inline message (the summary
+            // banner below can't explain HOW to fix a bad number). Blank
+            // uses the silent invalid signal so it joins the banner.
+            error={priceInvalid ? t.wizard.reise.priceFormat : undefined}
+            invalid={!priceInvalid && inv('fahrkartenpreis')}
+            helperText={t.wizard.reise.priceHint}
+          />
+        )}
         {/* No visible submit button — the WizardStepButtons "Weiter" below
             drives navigation. The <form> wrapper is here so pressing Enter
             in any input advances the step (matches login/register pattern). */}
@@ -201,7 +220,9 @@ export const FahrtStep = () => {
         onBack={() => {
           if (state.mode === 'upload') navigate('/antrag/neu/upload');
           else if (state.mode === 'lookup') navigate('/antrag/neu/suche');
-          else navigate('/antrag/neu');
+          // Manual Einzelfahrkarte path — back through the sub-picker,
+          // not all the way to the ticket-art picker at /antrag/neu.
+          else navigate('/antrag/neu/entry');
         }}
         onNext={handleNext}
       />

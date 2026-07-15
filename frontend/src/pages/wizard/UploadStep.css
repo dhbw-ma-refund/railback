@@ -30,6 +30,22 @@
   border-color: var(--color-deep-trust-blue);
 }
 
+/* Active-drop visual: solid brand-blue border, faint fill, subtle scale
+   so the user sees "yes, drop it here". Reused when a file is being
+   dragged over the zone. */
+.upload-drop--dragover {
+  border-color: var(--color-deep-trust-blue);
+  border-style: solid;
+  background: rgba(9, 67, 137, 0.08);
+  transform: scale(1.01);
+}
+
+/* Children pass-through pointer events so dragleave doesn't fire
+   spuriously as the cursor moves over inner icon/labels. */
+.upload-drop--dragover * {
+  pointer-events: none;
+}
+
 .upload-drop__spinner {
   width: 32px;
   height: 32px;

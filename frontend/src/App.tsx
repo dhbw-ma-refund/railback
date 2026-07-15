@@ -16,6 +16,7 @@ import { LegalPage } from './pages/LegalPage';
 import { PricingPage } from './pages/PricingPage';
 import { AdminApp } from './pages/admin/AdminApp';
 import { WizardProvider } from './pages/wizard/WizardContext';
+import { TicketArtStep } from './pages/wizard/TicketArtStep';
 import { EntryStep } from './pages/wizard/EntryStep';
 import { UploadStep } from './pages/wizard/UploadStep';
 import { LookupStep } from './pages/wizard/LookupStep';
@@ -33,7 +34,8 @@ import { SubmittedStep } from './pages/wizard/SubmittedStep';
 const WizardRoutes = () => (
   <WizardProvider>
     <Routes>
-      <Route index element={<EntryStep />} />
+      <Route index element={<TicketArtStep />} />
+      <Route path="entry" element={<EntryStep />} />
       <Route path="upload" element={<UploadStep />} />
       <Route path="suche" element={<LookupStep />} />
       <Route path="reise" element={<FahrtStep />} />

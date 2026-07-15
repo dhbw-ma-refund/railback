@@ -6,7 +6,9 @@ import { useWizard } from './WizardContext';
 import './EntryStep.css';
 
 /**
- * Landing screen at /antrag/neu — asks the user how they want to enter their trip.
+ * /antrag/neu/entry — asks the Einzelfahrkarte user how they want to
+ * enter their trip. Reached from TicketArtStep (/antrag/neu) after the
+ * user picks single-trip; Zeitkarte flow bypasses this screen entirely.
  * Three cards mirror the three backend entry paths:
  *  - upload  → POST /upload  (extractor prefills fahrt.*)
  *  - lookup  → POST /route-lookup → POST /from-route
@@ -21,8 +23,12 @@ export const EntryStep = () => {
   const choose = (mode: 'upload' | 'lookup' | 'manual', nextPath: string) => {
     // Wipe only ticket-scoped state — keep prefilled person/auszahlung so a
     // repeat entry doesn't lose hydrated profile data or force a re-fetch.
+    // Preserve is_zeitkarte: TicketArtStep set it to false when picking
+    // Einzelfahrkarte; resetTicket() keeps user-scoped slices but the
+    // is_zeitkarte flag is ticket-scoped and defaults to false — matching
+    // the branch the user is on right now.
     resetTicket();
-    update({ mode });
+    update({ mode, is_zeitkarte: false });
     navigate(nextPath);
   };
 

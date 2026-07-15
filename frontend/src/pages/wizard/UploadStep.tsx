@@ -13,6 +13,13 @@ import type { FahrtFields } from './WizardContext';
 import './UploadStep.css';
 
 const ACCEPTED = 'application/pdf,image/jpeg,image/png';
+/**
+ * Zeitkarte / Deutschland-Ticket path only accepts PDFs. Screenshots
+ * (JPEG/PNG) are trivially forgeable — for a subscription claim, DB
+ * expects the original PDF from the DB Navigator or the Abo portal. The
+ * runtime check in processFile mirrors this against the file's own mime.
+ */
+const ACCEPTED_ZEITKARTE = 'application/pdf';
 const MAX_BYTES = 10 * 1024 * 1024;
 
 const POLL_INTERVAL_MS = 1500;
@@ -27,7 +34,7 @@ type Phase = 'idle' | 'presigning' | 'uploading' | 'confirming' | 'extracting' |
  * the user just needs to know whether they'll be verifying prefilled
  * values or typing everything in.
  */
-type ExtractionOutcome = 'filled' | 'empty' | 'failed' | 'timedOut';
+type ExtractionOutcome = 'filled' | 'empty' | 'failed' | 'timedOut' | 'zeitkarte';
 
 /**
  * Real upload flow:
@@ -114,6 +121,7 @@ export const UploadStep = () => {
   const [phase, setPhase] = useState<Phase>('idle');
   const [error, setError] = useState<string>('');
   const [outcome, setOutcome] = useState<ExtractionOutcome | null>(null);
+  const [dragOver, setDragOver] = useState(false);
 
   const processing = phase !== 'idle' && phase !== 'error' && phase !== 'done';
 
@@ -124,12 +132,22 @@ export const UploadStep = () => {
     setPhase('done');
   };
 
-  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    e.target.value = '';
-
-    if (!isSupportedMime(f.type)) {
+  /**
+   * Ingest a File — same path whether it came from the file picker or a
+   * drag-and-drop. Validates mime + size, then runs the full presign →
+   * S3 → confirm → poll cycle.
+   */
+  const processFile = async (f: File) => {
+    // On the Zeitkarte branch the picker is already scoped to PDF, but
+    // drag-and-drop bypasses the input's `accept` attribute — enforce
+    // PDF-only here too so a dropped JPEG/PNG doesn't slip through.
+    if (state.is_zeitkarte) {
+      if (f.type !== 'application/pdf') {
+        setError(t.wizard.upload.errBadTypeZeitkarte);
+        setPhase('error');
+        return;
+      }
+    } else if (!isSupportedMime(f.type)) {
       setError(t.wizard.upload.errBadType);
       setPhase('error');
       return;
@@ -168,7 +186,18 @@ export const UploadStep = () => {
         mimeType: f.type,
       });
 
-      // Handle each of the three post-confirm states.
+      // Zeitkarte / Deutschland-Ticket path: the barcode extractor is
+      // trained on UIC 918.3 single-trip payloads and will almost
+      // certainly fail on a DTicket screenshot or Abo-PDF. Even if it
+      // succeeded, the trip fields it emits (abreise/ziel/train#/times)
+      // don't map to a subscription. So we stop here — file is safely
+      // attached to the ticket, and the user proceeds to type the trip
+      // details for the delayed journey on the next step.
+      if (state.is_zeitkarte) {
+        settle('zeitkarte');
+        return;
+      }
+
       if (confirm.extraction_status === 'FAILED') {
         settle('failed');
         return;
@@ -178,7 +207,6 @@ export const UploadStep = () => {
       if (confirm.extraction_status === 'DONE') {
         ticket = await api.getTicket(ticketId);
       } else {
-        // PROCESSING — poll.
         setPhase('extracting');
         const result = await pollUntilReady(ticketId);
         if ('timedOut' in result) {
@@ -195,10 +223,6 @@ export const UploadStep = () => {
 
       const patch = partialFahrtFromTicket(ticket);
       if (Object.keys(patch).length === 0) {
-        // Extractor ran but produced no usable fields — barcode unreadable,
-        // non-Bahn PDF, etc. Don't clobber existing fahrt state, don't
-        // silently forward the user into a blank form; tell them what
-        // happened.
         settle('empty');
         return;
       }
@@ -214,6 +238,56 @@ export const UploadStep = () => {
         setError(t.wizard.upload.errGeneric);
       }
     }
+  };
+
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    e.target.value = ''; // let re-selecting the same file re-fire onChange
+    await processFile(f);
+  };
+
+  /**
+   * Native drag-and-drop handlers on the drop zone. The `<input type="file">`
+   * inside doesn't get drop events itself — we handle them on the wrapping
+   * div and forward the first dropped file to processFile. Multiple files
+   * dropped at once: only the first is used (backend accepts one file per
+   * ticket).
+   */
+  const onDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    if (processing) return;
+    // dataTransfer.types is set even while items are still hidden; if it
+    // includes 'Files' we know an OS file drop is in progress.
+    if (e.dataTransfer.types.includes('Files')) {
+      e.preventDefault();
+      setDragOver(true);
+    }
+  };
+  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (processing) return;
+    if (e.dataTransfer.types.includes('Files')) {
+      // MUST preventDefault, otherwise the browser navigates to open the
+      // dropped file (default drop behavior).
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+    }
+  };
+  const onDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    // Only clear when leaving the drop zone itself, not a child element —
+    // the naive check drops dragOver on every child boundary. Compare the
+    // relatedTarget: if it's outside our zone or null, we've truly left.
+    const dropZone = e.currentTarget;
+    const to = e.relatedTarget as Node | null;
+    if (!to || !dropZone.contains(to)) {
+      setDragOver(false);
+    }
+  };
+  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (processing) return;
+    const f = e.dataTransfer.files?.[0];
+    if (f) void processFile(f);
   };
 
   const clearFile = () => {
@@ -240,6 +314,7 @@ export const UploadStep = () => {
 
   const outcomeMessage = (): { tone: 'info' | 'warning'; text: string } | null => {
     if (!outcome) return null;
+    if (outcome === 'zeitkarte') return { tone: 'info', text: t.wizard.upload.outcomeZeitkarte };
     if (outcome === 'filled') return { tone: 'info', text: t.wizard.upload.outcomeFilled };
     if (outcome === 'empty') return { tone: 'warning', text: t.wizard.upload.outcomeEmpty };
     if (outcome === 'failed') return { tone: 'warning', text: t.wizard.upload.outcomeFailed };
@@ -249,12 +324,25 @@ export const UploadStep = () => {
   const om = outcomeMessage();
 
   return (
-    <WizardLayout activeSlug="upload" title={t.wizard.upload.title}>
-      <p className="wizard-helper">{t.wizard.upload.hint}</p>
+    <WizardLayout
+      activeSlug="upload"
+      title={state.is_zeitkarte ? t.wizard.upload.titleZeitkarte : t.wizard.upload.title}
+    >
+      <p className="wizard-helper">
+        {state.is_zeitkarte ? t.wizard.upload.hintZeitkarte : t.wizard.upload.hint}
+      </p>
 
       <div
-        className={'upload-drop' + (processing ? ' upload-drop--processing' : '')}
+        className={
+          'upload-drop' +
+          (processing ? ' upload-drop--processing' : '') +
+          (dragOver ? ' upload-drop--dragover' : '')
+        }
         onClick={processing ? undefined : onPickFile}
+        onDragEnter={onDragEnter}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
         role="button"
         tabIndex={0}
         aria-busy={processing}
@@ -275,13 +363,15 @@ export const UploadStep = () => {
               </svg>
             </span>
             <span className="upload-drop__label">{t.wizard.upload.pick}</span>
-            <span className="upload-drop__meta">{t.wizard.upload.formats}</span>
+            <span className="upload-drop__meta">
+              {state.is_zeitkarte ? t.wizard.upload.formatsZeitkarte : t.wizard.upload.formats}
+            </span>
           </>
         )}
         <input
           ref={fileRef}
           type="file"
-          accept={ACCEPTED}
+          accept={state.is_zeitkarte ? ACCEPTED_ZEITKARTE : ACCEPTED}
           onChange={(e) => void onFile(e)}
           hidden
         />
@@ -315,15 +405,26 @@ export const UploadStep = () => {
       </p>
 
       <WizardStepButtons
-        onBack={() => navigate('/antrag/neu')}
+        onBack={() =>
+          // Zeitkarte flow enters UploadStep directly from the picker at
+          // /antrag/neu; single-trip flow reaches it via /antrag/neu/entry.
+          // Send them back to whichever screen they came from.
+          navigate(state.is_zeitkarte ? '/antrag/neu' : '/antrag/neu/entry')
+        }
         onNext={() => navigate('/antrag/neu/reise')}
         // Only block Next during in-flight async work (S3 upload, extractor
         // poll). Otherwise the button is always live — no ticket file =
-        // user chose to skip and enter manually, and that's a valid path.
-        nextDisabled={processing}
+        // user chose to skip and enter manually, and that's a valid path
+        // for single-trip tickets. Zeitkarte flow, on the other hand,
+        // requires the DTicket file to be attached: the whole point of
+        // this branch is to skip the ticketnummer field in favour of the
+        // uploaded proof.
+        nextDisabled={processing || (state.is_zeitkarte && !state.ticketFile)}
         nextLabel={
           !state.ticketFile
-            ? t.wizard.upload.enterManually
+            ? state.is_zeitkarte
+              ? undefined // don't offer "enter manually" — user must upload
+              : t.wizard.upload.enterManually
             : outcome === 'empty' || outcome === 'failed' || outcome === 'timedOut'
               ? t.wizard.upload.continueManually
               : undefined

@@ -105,8 +105,6 @@ export const SubmittedStep = () => {
     navigate('/dashboard');
   };
 
-  const shortId = ticketId ? `RB-${ticketId.slice(-6)}` : '—';
-
   return (
     <div className="submitted-page">
       <Header />
@@ -124,10 +122,6 @@ export const SubmittedStep = () => {
         </p>
 
         <dl className="submitted-details">
-          <div className="submitted-details__row">
-            <dt>{t.wizard.submitted.claimId}</dt>
-            <dd>{shortId}</dd>
-          </div>
           {submittedAt && (
             <div className="submitted-details__row">
               <dt>{t.wizard.submitted.submittedAt}</dt>

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input, Checkbox } from '@shared/components';
 import { useLanguage } from '../../lib/LanguageContext';
@@ -18,7 +18,7 @@ import { ulid } from '../../lib/ulid';
 import { normalizePrice } from '../../lib/validators/price';
 import { useScrollIntoViewOn } from '../../hooks/useScrollIntoViewOn';
 import { uploadToS3 } from '../../lib/uploadToS3';
-import { buildRefundBody, mapAntragsgrundTags } from './buildRefundBody';
+import { buildRefundBody, mapAntragsgrundTags, ZEITKARTE_FAHRKARTENNUMMER, ZEITKARTE_FAHRKARTENPREIS } from './buildRefundBody';
 import './ReviewStep.css';
 
 const GRUND_LABELS_DE: Record<AntragsgrundTag, string> = {
@@ -67,7 +67,23 @@ export const ReviewStep = () => {
   const { state, update } = useWizard();
 
   const suggested = state.delayLookup?.suggested_antragsart;
-  const currentAntragsart: Antragsart = state.antragsart ?? suggested ?? 'ENTSCHAEDIGUNG_60_119';
+  // Zeitkarte flow: the antragsart is fixed to ENTSCHAEDIGUNG_ZEITKARTE
+  // regardless of what the delay lookup suggests (the other antragsart
+  // enums are single-trip categories). The user chose the Zeitkarte path
+  // on TicketArtStep — we honor it here.
+  //
+  // Single-trip flow: symmetric — if a persisted state.antragsart or a
+  // suggested value from the delay lookup lands on ENTSCHAEDIGUNG_ZEITKARTE
+  // here, ignore it. Zeitkarte is the top-level branch on TicketArtStep;
+  // the single-trip radio group can't offer it and mustn't silently
+  // preselect it either.
+  const singleTripFallback = (art: Antragsart | undefined): Antragsart | undefined =>
+    art === 'ENTSCHAEDIGUNG_ZEITKARTE' ? undefined : art;
+  const currentAntragsart: Antragsart = state.is_zeitkarte
+    ? 'ENTSCHAEDIGUNG_ZEITKARTE'
+    : singleTripFallback(state.antragsart ?? undefined) ??
+      singleTripFallback(suggested) ??
+      'ENTSCHAEDIGUNG_60_119';
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -92,8 +108,11 @@ export const ReviewStep = () => {
     datenschutz: !state.datenschutz_einwilligung,
     wahrheit: !state.wahrheitserklaerung,
     antragsgrund: state.problem.antragsgrund.length === 0,
-    fahrkartennummer: !state.fahrt.fahrkartennummer,
-    fahrkartenpreis: !state.fahrt.fahrkartenpreis,
+    // Zeitkarte branch injects the sentinels in buildRefundBody, so empty
+    // state.fahrt.fahrkartennummer / fahrkartenpreis are expected — don't
+    // gate submit on them.
+    fahrkartennummer: !state.is_zeitkarte && !state.fahrt.fahrkartennummer,
+    fahrkartenpreis: !state.is_zeitkarte && !state.fahrt.fahrkartenpreis,
     belege: belegeIncomplete,
   };
   const hasAnyMissing = Object.values(missing).some(Boolean);
@@ -162,8 +181,16 @@ export const ReviewStep = () => {
           toStation: state.fahrt.zielbahnhof!,
           abfahrtszeit_plan: state.fahrt.abfahrtszeit_plan!,
           ankunftszeit_plan: state.fahrt.ankunftszeit_plan!,
-          fahrkartennummer: state.fahrt.fahrkartennummer!,
-          fahrkartenpreis: state.fahrt.fahrkartenpreis!,
+          // fromRouteRequestSchema.fahrkartennummer is min(1) and
+          // .fahrkartenpreis matches ^-?[0-9]+\.[0-9]{2}$ — inject the
+          // Zeitkarte sentinels so the manual/lookup path still passes
+          // the backend refine (same rationale as buildRefundBody).
+          fahrkartennummer: state.is_zeitkarte
+            ? ZEITKARTE_FAHRKARTENNUMMER
+            : state.fahrt.fahrkartennummer!,
+          fahrkartenpreis: state.is_zeitkarte
+            ? ZEITKARTE_FAHRKARTENPREIS
+            : state.fahrt.fahrkartenpreis!,
           is_zeitkarte: state.is_zeitkarte || false,
         };
         const res = await api.createFromRoute(req);
@@ -352,29 +379,46 @@ export const ReviewStep = () => {
         <header className="review-card__head">
           <h2 className="review-card__title">{t.wizard.review.claimTypeTitle}</h2>
         </header>
-        {suggested && (
+        {suggested && !state.is_zeitkarte && suggested !== 'ENTSCHAEDIGUNG_ZEITKARTE' && (
           <p className="wizard-helper">
             {t.wizard.review.suggested.replace('{art}', t.wizard.antragsart[suggested])}
           </p>
         )}
+        {state.is_zeitkarte && (
+          <p className="wizard-helper">
+            {t.wizard.review.zeitkarteLocked}
+          </p>
+        )}
         <div className="wizard-field-group">
-          {ANTRAGSARTEN.map((art) => (
-            <label key={art} className="review-radio">
-              <input
-                type="radio"
-                name="antragsart"
-                value={art}
-                checked={currentAntragsart === art}
-                onChange={() =>
-                  update({
-                    antragsart: art,
-                    is_zeitkarte: art === 'ENTSCHAEDIGUNG_ZEITKARTE',
-                  })
-                }
-              />
-              <span>{t.wizard.antragsart[art]}</span>
-            </label>
-          ))}
+          {ANTRAGSARTEN
+            .filter((art) =>
+              // Zeitkarte flow: only ENTSCHAEDIGUNG_ZEITKARTE is valid,
+              // the other four are single-trip categories that would
+              // confuse the DB reviewer.
+              // Single-trip flow: hide ENTSCHAEDIGUNG_ZEITKARTE — that's
+              // its own top-level branch, picked on TicketArtStep. A user
+              // who reached this screen via Einzelfahrkarte has already
+              // said "not a season pass"; showing it as a radio option
+              // here contradicts that choice and would silently mis-file
+              // the claim.
+              state.is_zeitkarte
+                ? art === 'ENTSCHAEDIGUNG_ZEITKARTE'
+                : art !== 'ENTSCHAEDIGUNG_ZEITKARTE',
+            )
+            .map((art) => (
+              <label key={art} className="review-radio">
+                <input
+                  type="radio"
+                  name="antragsart"
+                  value={art}
+                  checked={currentAntragsart === art}
+                  // is_zeitkarte is set upstream on TicketArtStep now;
+                  // this radio only picks the antragsart.
+                  onChange={() => update({ antragsart: art })}
+                />
+                <span>{t.wizard.antragsart[art]}</span>
+              </label>
+            ))}
           <Input
             label={t.wizard.review.antragstellungOrt}
             required
@@ -518,6 +562,8 @@ interface BelegRowProps {
 
 const BelegRow = ({ beleg, onChange, onRemove, labels, typLabels, amountFormat }: BelegRowProps) => {
   const amountInvalid = !!beleg.amount && normalizePrice(beleg.amount) === null;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const onAmountBlur = () => {
     // Snap to canonical XX.XX form when leaving the field, so the user
     // sees the exact string that'll be sent to the backend.
@@ -526,51 +572,138 @@ const BelegRow = ({ beleg, onChange, onRemove, labels, typLabels, amountFormat }
       onChange({ amount: canonical });
     }
   };
+
+  const onFilePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = ''; // allow re-picking the same file
+    if (!f) return;
+    if (f.size > BELEG_MAX_BYTES) {
+      onChange({ status: 'error', error: 'Datei zu groß (max. 5 MB)' });
+      return;
+    }
+    onChange({ file: f, filename: f.name, status: 'draft', error: undefined });
+  };
+
+  const clearFile = () =>
+    onChange({ file: undefined, filename: undefined, status: 'draft', error: undefined });
+
+  const fileSize = beleg.file?.size ?? beleg.size_bytes;
+  const fileSizeLabel =
+    fileSize !== undefined
+      ? fileSize < 1024
+        ? `${fileSize} B`
+        : fileSize < 1024 * 1024
+          ? `${(fileSize / 1024).toFixed(0)} KB`
+          : `${(fileSize / 1024 / 1024).toFixed(1)} MB`
+      : undefined;
+
   return (
-    <div className="wizard-field-group" style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--spacing-2)' }}>
-      <label className="rb-input-label">{labels.typ}</label>
-      <select
-        value={beleg.typ}
-        onChange={(e) => onChange({ typ: e.target.value as BelegTyp })}
-        className="rb-input"
+    <div className="beleg-row">
+      <button
+        type="button"
+        className="beleg-row__remove"
+        onClick={onRemove}
+        aria-label={labels.remove}
+        title={labels.remove}
       >
-        {BELEG_TYPEN.map((tp) => (
-          <option key={tp} value={tp}>
-            {typLabels[tp]}
-          </option>
-        ))}
-      </select>
-      <Input
-        label={labels.amount}
-        placeholder="z.B. 12,50"
-        inputMode="decimal"
-        value={beleg.amount}
-        onChange={(e) => onChange({ amount: e.target.value })}
-        onBlur={onAmountBlur}
-        error={amountInvalid ? amountFormat : undefined}
-        helperText={amountFormat}
-      />
-      <label className="rb-input-label">{labels.file}</label>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polyline points="3 6 5 6 21 6" />
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+          <path d="M10 11v6" />
+          <path d="M14 11v6" />
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+        </svg>
+      </button>
+
+      <div className="beleg-row__grid">
+        <div className="rb-input-wrapper beleg-row__typ">
+          <label className="rb-input-label">{labels.typ}</label>
+          <select
+            value={beleg.typ}
+            onChange={(e) => onChange({ typ: e.target.value as BelegTyp })}
+            className="rb-input"
+          >
+            {BELEG_TYPEN.map((tp) => (
+              <option key={tp} value={tp}>
+                {typLabels[tp]}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <Input
+          className="beleg-row__amount"
+          label={labels.amount}
+          placeholder="z.B. 12,50"
+          inputMode="decimal"
+          value={beleg.amount}
+          onChange={(e) => onChange({ amount: e.target.value })}
+          onBlur={onAmountBlur}
+          error={amountInvalid ? amountFormat : undefined}
+        />
+      </div>
+
+      {/* File picker: styled label that triggers a hidden native input.
+          Once a file is attached, we swap the button for a filename chip
+          matching the ticket-upload chip style. */}
+      {!beleg.filename ? (
+        <>
+          <button
+            type="button"
+            className="beleg-row__pick"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <span>{labels.file}</span>
+          </button>
+          <p className="beleg-row__hint">PDF, JPG oder PNG · max. 5 MB</p>
+        </>
+      ) : (
+        <div className="beleg-row__file">
+          <svg className="beleg-row__file-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
+          <div className="beleg-row__file-body">
+            <span className="beleg-row__file-name">{beleg.filename}</span>
+            {fileSizeLabel && <span className="beleg-row__file-meta">{fileSizeLabel}</span>}
+          </div>
+          {beleg.status === 'uploading' && (
+            <span className="beleg-row__pill beleg-row__pill--info">Wird hochgeladen …</span>
+          )}
+          {beleg.status === 'uploaded' && (
+            <span className="beleg-row__pill beleg-row__pill--success">✓ Hochgeladen</span>
+          )}
+          {beleg.status === 'draft' && (
+            <button
+              type="button"
+              className="beleg-row__file-clear"
+              onClick={clearFile}
+              aria-label="Datei entfernen"
+              title="Datei entfernen"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="6" y1="6" x2="18" y2="18" />
+                <line x1="18" y1="6" x2="6" y2="18" />
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
+
+      {beleg.error && <div className="error-message">{beleg.error}</div>}
+
       <input
+        ref={fileInputRef}
         type="file"
         accept={BELEG_ACCEPT}
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (!f) return;
-          if (f.size > BELEG_MAX_BYTES) {
-            onChange({ status: 'error', error: 'Datei zu groß (max. 5 MB)' });
-            return;
-          }
-          onChange({ file: f, filename: f.name, status: 'draft', error: undefined });
-        }}
+        onChange={onFilePick}
+        hidden
       />
-      {beleg.filename && <p className="wizard-helper">{beleg.filename}</p>}
-      {beleg.status === 'uploading' && <p className="wizard-helper">Wird hochgeladen …</p>}
-      {beleg.status === 'uploaded' && <p className="wizard-helper">✓ Hochgeladen</p>}
-      {beleg.error && <div className="error-message">{beleg.error}</div>}
-      <Button variant="secondary" onClick={onRemove}>
-        {labels.remove}
-      </Button>
     </div>
   );
 };

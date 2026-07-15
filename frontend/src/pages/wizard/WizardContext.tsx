@@ -154,11 +154,13 @@ interface WizardContextValue {
 
 const WizardContext = createContext<WizardContextValue | undefined>(undefined);
 
-const STORAGE_KEY = 'railback.wizard.v3';
-// Bumped from v2 → v3 because the antragsgrund tags changed from 4 UI tags
-// to the 3 backend enum values directly. Old v2 blobs would carry
-// REISEABBRUCH/REISEUNTERBRECHUNG/LETZTER_UMSTIEG values that no longer
-// exist in the type; safe to ignore.
+const STORAGE_KEY = 'railback.wizard.v4';
+// Bumped from v3 → v4 because is_zeitkarte is now chosen up-front on the
+// new TicketArtStep instead of being derived from antragsart on the
+// Review step. Old v3 blobs would carry `is_zeitkarte: false` even for
+// users who intend to file a DTicket claim; scrapping the persisted
+// state on the next mount is the simplest way to route them back
+// through the picker without a stealth misconfiguration.
 
 export const WizardProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<WizardState>(() => {

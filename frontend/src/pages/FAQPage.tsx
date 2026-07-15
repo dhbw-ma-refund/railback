@@ -93,7 +93,10 @@ const content: Record<string, Record<string, TopicContent>> = {
           'Ab 60 Minuten Verspätung erhältst du in der Regel 25 %, ab 120 Minuten 50 % des Ticketpreises. RailBack rechnet das automatisch für dich aus.',
           'Achtung: Bei außergewöhnlichen Umständen — extremes Wetter, Streiks Dritter, Vandalismus — kann die Bahn den Anspruch verweigern. Das ist seit Juni 2023 in der EU-Verordnung 2021/782 so vorgesehen.',
         ] },
-        { q: 'Was gilt für Zeitkarten?', a: ['Bei Zeitkarten sammeln wir berechtigte Fälle, bis die Auszahlungsgrenze von 4 € erreicht ist.'] },
+        { q: 'Was gilt für Zeitkarten?', a: [
+          'Bei Zeitkarten (z.B. Deutschlandticket, BahnCard 100, Monatskarten) ist die Entschädigung pro Verspätung meist ein kleiner Betrag — abhängig vom Ticketpreis und der Verspätung. Wir zeigen dir vor dem Absenden immer die erwartete Höhe.',
+          'Wichtig: Die Bahn zahlt Einzelbeträge unter 4 € nicht aus. Wenn dein berechneter Anspruch darunter liegt, bekommst du für diese Fahrt aktuell noch keine Auszahlung. Ein Feature, mehrere kleine Fälle zu einem Antrag zu bündeln, ist geplant — noch nicht verfügbar.',
+        ] },
         { q: 'Muss ich die Verspätung selbst nachweisen?', a: ['Nein. Wir dokumentieren die Verspätung automatisch und hinterlegen den Nachweis für deinen Antrag.'] },
       ],
     },
@@ -132,7 +135,10 @@ const content: Record<string, Record<string, TopicContent>> = {
           'From 60 minutes you usually get 25 %, from 120 minutes 50 % of the ticket price. RailBack calculates this automatically.',
           'Note: for extraordinary circumstances — severe weather, third-party strikes, vandalism — the railway can deny the claim. This is provided for in EU Regulation 2021/782 since June 2023.',
         ] },
-        { q: 'What applies to season tickets?', a: ['For season tickets, we combine eligible cases until the €4 payout threshold is reached.'] },
+        { q: 'What applies to season tickets?', a: [
+          'For season tickets (e.g. Deutschlandticket, BahnCard 100, monthly passes), the compensation per delay is usually a small amount — depending on the ticket price and delay length. We always show the expected amount before you submit.',
+          "Important: Deutsche Bahn doesn't pay out individual amounts under €4. If your calculated claim is below that, you currently won't get a payout for that trip. A feature to bundle multiple small cases into one claim is planned but not yet available.",
+        ] },
         { q: 'Do I have to prove the delay myself?', a: ['No. We document the delay automatically and store the evidence for your claim.'] },
       ],
     },

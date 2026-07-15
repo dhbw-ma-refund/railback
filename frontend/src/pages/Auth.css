@@ -199,7 +199,22 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: var(--spacing-1);
+  /* Wrap so a long title (e.g. "Persönliche Daten" translated) never
+     collides with the Bearbeiten button on narrow mobile viewports. */
+  flex-wrap: wrap;
   margin-bottom: var(--spacing-3);
+}
+
+/* Edit-mode forms on ProfilePage stack Input/Checkbox/Button vertically —
+   give them the same breathing room the wizard uses so labels and their
+   own inputs don't feel cramped together (each Input owns 8px between its
+   label and input, but the FORM itself had zero gap between successive
+   Inputs which read as jammed on mobile). */
+.profile-section > form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
 }
 
 .profile-data {

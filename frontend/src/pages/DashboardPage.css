@@ -109,8 +109,26 @@
 
 .claim-card__row--head {
   justify-content: flex-start;
+  gap: var(--spacing-1);
 }
 
+.claim-card__title {
+  margin: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-body);
+  color: var(--color-deep-trust-blue);
+  /* On narrow screens with long station names, truncate rather than
+     wrap onto multiple lines so the head row stays a single line. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* Kept for backwards compatibility — the old REQ chip class. Any leftover
+   consumer would render as a subtle deep-blue label. New code should use
+   .claim-card__title above. */
 .claim-card__id {
   font-weight: var(--font-weight-bold);
   font-size: var(--font-size-body);

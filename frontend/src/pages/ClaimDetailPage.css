@@ -239,3 +239,29 @@
   font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
 }
+
+/* --- Danger zone ------------------------------------------------ */
+/* The delete-claim section on the detail page. Softer than a plain red
+   card — we only want to prime the user, not scream at them. Actual
+   destructive action is behind a second confirm click. */
+.claim-detail__section--danger {
+  border-color: rgba(200, 40, 40, 0.25);
+  background: rgba(200, 40, 40, 0.02);
+}
+
+.claim-detail__section--danger .claim-detail__section-title {
+  color: var(--color-error-red);
+}
+
+.claim-detail__danger-hint {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.claim-detail__danger-actions {
+  display: flex;
+  gap: var(--spacing-1);
+  margin-top: var(--spacing-1);
+}

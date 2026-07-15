@@ -233,7 +233,6 @@ export const LookupStep = () => {
             type="time"
             value={aroundTime}
             onChange={(e) => setAroundTime(e.target.value)}
-            helperText={t.wizard.lookup.aroundTimeHelper}
           />
         </div>
 

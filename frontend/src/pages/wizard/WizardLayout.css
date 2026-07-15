@@ -66,6 +66,27 @@
   box-sizing: border-box;
 }
 
+/* Category dropdown next to the train-number input. Uses the same
+   `1fr auto` grid as the time-input case, but "S-Bahn" needs a little
+   more room than 140px. */
+.wizard-field-row__select {
+  width: 170px;
+}
+
+.wizard-field-row__select select.rb-input {
+  height: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  box-sizing: border-box;
+  /* Native selects on macOS/iOS have their own font-size sniffing that
+     doesn't inherit the same way as text inputs — pin it explicitly so
+     it lines up with the sibling input. */
+  font-size: var(--font-size-body);
+  padding: 0 12px;
+  background: white;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
 .wizard-helper {
   font-size: var(--font-size-caption);
   color: var(--color-text-secondary);

@@ -49,3 +49,171 @@
 .review-card__line--muted {
   color: var(--color-text-secondary);
 }
+
+/* --- Beleg row -------------------------------------------------- */
+/* Each receipt is its own card inside the Belege section — softer
+   border, own background, so the section reads as a stack of items
+   rather than a wall of stacked inputs. */
+.beleg-row {
+  position: relative;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-input);
+  background: var(--color-warm-off-white, #f6f2ec);
+  padding: var(--spacing-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+/* Trash icon top-right — corner destructive action, doesn't compete
+   with the primary buttons visually. */
+.beleg-row__remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+.beleg-row__remove:hover {
+  color: var(--color-error-red);
+  background: rgba(217, 48, 37, 0.08);
+}
+
+/* Type dropdown + amount input side-by-side. On narrow viewports the
+   grid falls back to a single column via minmax so the amount always
+   has room for HH,HH input. */
+.beleg-row__grid {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(120px, 1fr);
+  gap: var(--spacing-1);
+  padding-right: 32px; /* keep clear of the trash button */
+}
+
+.beleg-row__typ select.rb-input {
+  height: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  box-sizing: border-box;
+  font-size: var(--font-size-body);
+  padding: 0 12px;
+  background: white;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* Styled "Datei auswählen" button — same visual language as the
+   secondary Button variant, sized like a control. Uses a background
+   svg (chevron/upload icon) inside the JSX for the leading glyph. */
+.beleg-row__pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 8px 14px;
+  border: 1.5px solid var(--color-deep-trust-blue);
+  border-radius: var(--radius-input);
+  background: white;
+  color: var(--color-deep-trust-blue);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease);
+  min-height: var(--touch-target-min);
+}
+.beleg-row__pick:hover {
+  background: var(--color-deep-trust-blue);
+  color: white;
+}
+
+.beleg-row__hint {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+/* Attached-file chip. Mirrors the ticket-upload chip, but sized down
+   and with an inline pill for the upload status. */
+.beleg-row__file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-input);
+  background: white;
+  min-height: 44px;
+}
+
+.beleg-row__file-icon {
+  flex: none;
+  color: var(--color-deep-trust-blue);
+}
+
+.beleg-row__file-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.beleg-row__file-name {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.beleg-row__file-meta {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.beleg-row__file-clear {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+.beleg-row__file-clear:hover {
+  color: var(--color-error-red);
+  background: rgba(217, 48, 37, 0.08);
+}
+
+.beleg-row__pill {
+  flex: none;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.beleg-row__pill--info {
+  color: var(--color-deep-trust-blue);
+  background: rgba(9, 67, 137, 0.10);
+}
+.beleg-row__pill--success {
+  color: #0e6a2b;
+  background: rgba(16, 128, 55, 0.14);
+}

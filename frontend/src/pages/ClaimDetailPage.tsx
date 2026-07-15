@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useSmartBack } from '../hooks/useSmartBack';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { StatusChip } from '../components/StatusChip';
+import { Button } from '@shared/components';
 import { useLanguage } from '../lib/LanguageContext';
 import { api } from '../lib/api';
 import type { Antragsart, Antragsgrund, EmailStatus, TicketResponse } from '../lib/api';
@@ -56,12 +57,18 @@ const formatEuro = (decimal: string) => `${decimal.replace('.', ',')} €`;
  */
 export const ClaimDetailPage = () => {
   const goBack = useSmartBack('/dashboard');
+  const navigate = useNavigate();
   const { t } = useLanguage();
   const { ticketId } = useParams<{ ticketId: string }>();
 
   const [ticket, setTicket] = useState<TicketResponse | null>(null);
   const [error, setError] = useState('');
   const [notFound, setNotFound] = useState(false);
+  // Two-click delete: first click flips confirm on, second click fires
+  // the DELETE. Prevents thumb-slip data loss on mobile.
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     if (!ticketId) return;
@@ -95,6 +102,35 @@ export const ClaimDetailPage = () => {
       ? `${ticket.fahrt_abreisebahnhof} → ${ticket.fahrt_zielbahnhof}`
       : t.claimDetail.claim
     : t.claimDetail.claim;
+
+  // Backend allows DELETE only for VALIDATING / READY / INVALID states —
+  // anything past READY (EMAIL_SENDING onward) is refused with ERR_CONFLICT.
+  // Match that here so users don't see a button that always errors.
+  const canDelete =
+    !!ticket &&
+    (ticket.ticket_state === 'VALIDATING' ||
+      ticket.ticket_state === 'READY' ||
+      ticket.ticket_state === 'INVALID');
+
+  const doDelete = async () => {
+    if (!ticket || !ticketId) return;
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await api.deleteTicket(ticketId);
+      // Success: bounce back to the dashboard, ticket disappears from list.
+      navigate('/dashboard');
+    } catch (err) {
+      if (err instanceof ApiError) {
+        // If the state changed between page-load and click (e.g. backend
+        // moved it past READY in the meantime), surface the message.
+        setDeleteError(err.body.message || t.claimDetail.deleteError);
+      } else {
+        setDeleteError(t.claimDetail.deleteError);
+      }
+      setDeleting(false);
+    }
+  };
 
   if (notFound) {
     return (
@@ -293,6 +329,40 @@ export const ClaimDetailPage = () => {
             ))}
           </ol>
         </section>
+
+        {canDelete && (
+          <section className="claim-detail__section claim-detail__section--danger">
+            <h2 className="claim-detail__section-title">{t.claimDetail.dangerTitle}</h2>
+            {!confirmDelete ? (
+              <>
+                <p className="claim-detail__danger-hint">{t.claimDetail.deleteHint}</p>
+                <Button variant="secondary" onClick={() => setConfirmDelete(true)}>
+                  {t.claimDetail.deleteAction}
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="claim-detail__danger-hint">{t.claimDetail.deleteConfirmHint}</p>
+                {deleteError && <div className="error-message">{deleteError}</div>}
+                <div className="claim-detail__danger-actions">
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setConfirmDelete(false);
+                      setDeleteError('');
+                    }}
+                    disabled={deleting}
+                  >
+                    {t.claimDetail.deleteCancel}
+                  </Button>
+                  <Button variant="primary" onClick={doDelete} disabled={deleting}>
+                    {deleting ? t.claimDetail.deleting : t.claimDetail.deleteConfirm}
+                  </Button>
+                </div>
+              </>
+            )}
+          </section>
+        )}
       </main>
       <Footer />
     </div>

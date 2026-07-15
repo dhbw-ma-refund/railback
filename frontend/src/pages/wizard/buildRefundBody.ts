@@ -19,6 +19,29 @@ export function mapAntragsgrundTags(tags: AntragsgrundTag[]): Antragsgrund[] {
 }
 
 /**
+ * Sentinel we send as `fahrkartennummer` when the user is filing a
+ * Zeitkarte / Deutschland-Ticket claim. The backend's refundFahrtSchema
+ * still requires the field to be a non-empty string
+ * (`z.string().min(1)`), so we can't just omit it. A stable, obviously-
+ * synthetic value keeps the schema happy AND gives admin reviewers a
+ * clear signal that this row is a subscription claim.
+ *
+ * When the backend gets around to marking fahrkartennummer optional-
+ * when-`is_zeitkarte`, drop this and let the field pass through empty.
+ */
+export const ZEITKARTE_FAHRKARTENNUMMER = 'DEUTSCHLANDTICKET';
+
+/**
+ * Sentinel for `fahrkartenpreis` on the Zeitkarte branch. Zeitkarte
+ * compensation is a fixed flat rate (§17 EVO) that doesn't depend on
+ * the ticket price at all, so the field is meaningless here — but
+ * refundFahrtSchema still constrains it to `^-?[0-9]+\.[0-9]{2}$`.
+ * `0.00` satisfies the regex AND is obviously not a real ticket price
+ * when the admin reviewer scans the row.
+ */
+export const ZEITKARTE_FAHRKARTENPREIS = '0.00';
+
+/**
  * Build the RefundRequest body. Throws with a message-shaped Error if a
  * required field is missing — the caller (ReviewStep) should have kept the
  * submit button disabled in that state, so this is a defensive assert.
@@ -31,6 +54,9 @@ export function buildRefundBody(state: WizardState): RefundRequest {
     throw new Error('missing antragsgrund');
   }
   const f = state.fahrt;
+  // fahrkartennummer + fahrkartenpreis are only required from the user
+  // for single-trip tickets. On the Zeitkarte branch, FahrtStep hides
+  // both inputs and we synthesize the sentinels below.
   const required: Array<keyof typeof f> = [
     'abreisedatum',
     'abreisebahnhof',
@@ -38,9 +64,10 @@ export function buildRefundBody(state: WizardState): RefundRequest {
     'abfahrtszeit_plan',
     'ankunftszeit_plan',
     'zugnummer_plan',
-    'fahrkartennummer',
-    'fahrkartenpreis',
   ];
+  if (!state.is_zeitkarte) {
+    required.push('fahrkartennummer', 'fahrkartenpreis');
+  }
   for (const key of required) {
     if (!f[key]) throw new Error(`missing fahrt.${key}`);
   }
@@ -67,8 +94,12 @@ export function buildRefundBody(state: WizardState): RefundRequest {
       ankunftszeit_plan: f.ankunftszeit_plan!,
       zugnummer_plan: f.zugnummer_plan!,
       zugkategorie_plan: f.zugkategorie_plan || undefined,
-      fahrkartennummer: f.fahrkartennummer!,
-      fahrkartenpreis: f.fahrkartenpreis!,
+      fahrkartennummer: state.is_zeitkarte
+        ? ZEITKARTE_FAHRKARTENNUMMER
+        : f.fahrkartennummer!,
+      fahrkartenpreis: state.is_zeitkarte
+        ? ZEITKARTE_FAHRKARTENPREIS
+        : f.fahrkartenpreis!,
     },
     fahrt_tatsaechlich: {
       // The contract accepts `null` for "not applicable"; the wizard doesn't
