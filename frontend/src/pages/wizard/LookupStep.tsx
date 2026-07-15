@@ -1,15 +1,23 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Input, Button } from '@shared/components';
+import { Input, Button, Checkbox } from '@shared/components';
 import { StationInput } from '../../components/StationInput';
 import { useLanguage } from '../../lib/LanguageContext';
 import { WizardLayout } from './WizardLayout';
 import { WizardStepButtons } from './WizardStepButtons';
 import { useWizard } from './WizardContext';
+import { RouteTemplatePicker } from './RouteTemplatePicker';
+import { DateInputWithToday } from './DateInputWithToday';
 import { api } from '../../lib/api';
-import type { RouteLookupCandidate, RouteLookupRequest } from '../../lib/api';
+import type {
+  RouteLookupCandidate,
+  RouteLookupRequest,
+  RouteTemplateView,
+} from '../../lib/api';
+import { useRouteTemplates } from '../../lib/useRouteTemplates';
 import { ApiError } from '@shared/api/errors';
 import './LookupStep.css';
+import './RouteTemplatePicker.css';
 
 /**
  * Route-lookup for past trips. This is NOT a bahn.de-style timetable search —
@@ -62,12 +70,15 @@ const dataQualityChip = (
 export const LookupStep = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { updateFahrt } = useWizard();
+  const { state, update, updateFahrt } = useWizard();
+  const { add: addTemplate, remove: removeTemplate } = useRouteTemplates();
 
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [date, setDate] = useState('');
   const [aroundTime, setAroundTime] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const [candidates, setCandidates] = useState<RouteLookupCandidate[] | null>(null);
   const [searching, setSearching] = useState(false);
@@ -165,6 +176,74 @@ export const LookupStep = () => {
   const swap = () => {
     setFrom(to);
     setTo(from);
+    // Manual edit — any picked template no longer describes both ends.
+    if (state.pickedTemplateId) update({ pickedTemplateId: null });
+  };
+
+  /**
+   * User picked a saved-route chip from RouteTemplatePicker. Fill both
+   * local station fields and remember the templateId. Save affordance
+   * is hidden while a picked template is active (route already exists
+   * on the account).
+   *
+   * Local `from`/`to` are the source of truth on this screen (they
+   * drive the /route-lookup request and get flushed to wizard.fahrt
+   * on `pick`).
+   */
+  const pickTemplate = (tpl: RouteTemplateView) => {
+    setFrom(tpl.fromStation);
+    setTo(tpl.toStation);
+    update({ pickedTemplateId: tpl.templateId });
+  };
+
+  /**
+   * User edited a station field directly. Clear the picked-template
+   * link. Does NOT delete a session-saved template — fine-tuning a
+   * station name shouldn't wipe the saved row.
+   */
+  const clearPickedTemplateOnEdit = () => {
+    if (state.pickedTemplateId) update({ pickedTemplateId: null });
+  };
+
+  /**
+   * "Als Strecke speichern" toggle — save-on-tick / delete-on-untick,
+   * same semantics as FahrtStep. See FahrtStep.onToggleSave for
+   * details; the two implementations are intentionally mirror-image.
+   */
+  const onToggleSave = async (checked: boolean) => {
+    setSaveError('');
+    if (checked) {
+      if (!from || !to) return;
+      setSaving(true);
+      try {
+        const created = await addTemplate({
+          label: `${from} → ${to}`,
+          fromStation: from,
+          toStation: to,
+        });
+        update({ savedThisSessionTemplateId: created.templateId });
+      } catch (err) {
+        setSaveError(
+          err instanceof Error ? err.message : t.wizard.reise.saveRouteError,
+        );
+      } finally {
+        setSaving(false);
+      }
+    } else {
+      const id = state.savedThisSessionTemplateId;
+      if (!id) return;
+      setSaving(true);
+      try {
+        await removeTemplate(id);
+        update({ savedThisSessionTemplateId: null });
+      } catch (err) {
+        setSaveError(
+          err instanceof Error ? err.message : t.wizard.reise.saveRouteError,
+        );
+      } finally {
+        setSaving(false);
+      }
+    }
   };
 
   const pick = (c: RouteLookupCandidate) => {
@@ -186,13 +265,21 @@ export const LookupStep = () => {
     <WizardLayout title={t.wizard.lookup.title}>
       <p className="wizard-helper">{t.wizard.lookup.hint}</p>
 
+      <RouteTemplatePicker
+        onPick={pickTemplate}
+        activeTemplateId={state.pickedTemplateId}
+      />
+
       <form className="rl-search" onSubmit={runSearch}>
         <div className="rl-where">
           <StationInput
             label={t.wizard.lookup.from}
             placeholder="z.B. Mannheim Hbf"
             value={from}
-            onChange={setFrom}
+            onChange={(v) => {
+              clearPickedTemplateOnEdit();
+              setFrom(v);
+            }}
           />
           <div className="rl-to">
             <div className="rl-to__labelrow">
@@ -215,18 +302,20 @@ export const LookupStep = () => {
             <StationInput
               placeholder="z.B. Karlsruhe Hbf"
               value={to}
-              onChange={setTo}
+              onChange={(v) => {
+                clearPickedTemplateOnEdit();
+                setTo(v);
+              }}
               aria-label={t.wizard.lookup.to}
             />
           </div>
         </div>
 
         <div className="rl-when">
-          <Input
+          <DateInputWithToday
             label={t.wizard.lookup.date}
-            type="date"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={setDate}
           />
           <Input
             label={t.wizard.lookup.aroundTime}
@@ -235,6 +324,23 @@ export const LookupStep = () => {
             onChange={(e) => setAroundTime(e.target.value)}
           />
         </div>
+
+        {/* "Als Strecke speichern" — save-on-tick, delete-on-untick,
+            same rule as FahrtStep. Only offered when the user typed
+            their own from/to. Rename lives on the Profile page. */}
+        {!state.pickedTemplateId && !!from && !!to && (
+          <div className="route-templates__save">
+            <Checkbox
+              label={t.wizard.reise.saveRoute}
+              checked={!!state.savedThisSessionTemplateId}
+              disabled={saving}
+              onChange={(e) => void onToggleSave(e.target.checked)}
+            />
+            {saveError && (
+              <p className="route-templates__save-error">{saveError}</p>
+            )}
+          </div>
+        )}
 
         <Button
           type="submit"

@@ -11,6 +11,7 @@ import { useAuth } from '../lib/AuthContext';
 import { RegisterRequest } from '../lib/api';
 import { ApiError } from '@shared/api/errors';
 import { useScrollIntoViewOn } from '../hooks/useScrollIntoViewOn';
+import { validateIban, validateBic } from '../lib/validators/iban';
 import './Auth.css';
 
 /** Shape of the router state LoginPage passes across when the user clicks
@@ -22,12 +23,16 @@ interface LoginHandoff {
 }
 
 /**
- * Which fields are required per step. Used to compute `missing` and
- * decide whether Weiter should navigate or reveal errors. Mirrors the
- * ticket wizard's per-step validation pattern (see FahrtStep, PersonStep,
- * etc.): Weiter is always clickable, clicking with any field missing
- * reds the offending inputs and scrolls the summary banner into view.
+ * Per-field validation state. Ordered by user-facing severity:
+ *   - `null`   → field is fine
+ *   - `empty`  → required but blank → silent invalid style (red border, no
+ *                per-input text — the summary banner explains)
+ *   - `invalid`→ user typed something malformed → inline error message
+ *                because the summary banner can't teach the user how to
+ *                fix "abc@" or a wrong-checksum IBAN.
  */
+type FieldState = 'empty' | 'invalid' | null;
+
 type StepFields =
   | 'vorname' | 'nachname' | 'email' | 'password' | 'telefon'
   | 'strasse' | 'hausnr' | 'plz' | 'ort'
@@ -41,6 +46,49 @@ const FIELDS_BY_STEP: Record<1 | 2 | 3 | 4, StepFields[]> = {
   4: ['datenschutz', 'agb'],
 };
 
+// Format checks. Kept intentionally lenient — the backend does authoritative
+// validation, we're just catching the obvious cases here so the user gets
+// feedback without a round-trip.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PLZ_RE = /^\d{5}$/;
+const MIN_PASSWORD = 8;
+
+function checkField(key: StepFields, formData: RegisterRequest): FieldState {
+  switch (key) {
+    case 'vorname':
+      return formData.vorname ? null : 'empty';
+    case 'nachname':
+      return formData.nachname ? null : 'empty';
+    case 'email':
+      if (!formData.email) return 'empty';
+      return EMAIL_RE.test(formData.email) ? null : 'invalid';
+    case 'password':
+      if (!formData.password) return 'empty';
+      return formData.password.length >= MIN_PASSWORD ? null : 'invalid';
+    case 'telefon':
+      return formData.telefon ? null : 'empty';
+    case 'strasse':
+      return formData.adresse.strasse ? null : 'empty';
+    case 'hausnr':
+      return formData.adresse.hausnr ? null : 'empty';
+    case 'plz':
+      if (!formData.adresse.plz) return 'empty';
+      return PLZ_RE.test(formData.adresse.plz) ? null : 'invalid';
+    case 'ort':
+      return formData.adresse.ort ? null : 'empty';
+    case 'iban':
+      if (!formData.iban) return 'empty';
+      return validateIban(formData.iban) ? null : 'invalid';
+    case 'bic':
+      if (!formData.bic) return 'empty';
+      return validateBic(formData.bic) ? null : 'invalid';
+    case 'datenschutz':
+      return formData.datenschutz_einwilligung ? null : 'empty';
+    case 'agb':
+      return formData.agb_akzeptiert ? null : 'empty';
+  }
+}
+
 export const RegisterPage = () => {
   const { t } = useLanguage();
   const { register } = useAuth();
@@ -50,8 +98,6 @@ export const RegisterPage = () => {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  /** Per-step flag: once the user clicks Weiter/Submit with any field
-   *  missing on THIS step, flip to true so inputs show the red border. */
   const [showErrors, setShowErrors] = useState<Record<1 | 2 | 3 | 4, boolean>>({
     1: false, 2: false, 3: false, 4: false,
   });
@@ -75,40 +121,63 @@ export const RegisterPage = () => {
     agb_akzeptiert: false,
   });
 
-  // Which required fields for the CURRENT step are still empty.
-  const missing: Record<StepFields, boolean> = {
-    vorname: !formData.vorname,
-    nachname: !formData.nachname,
-    email: !formData.email,
-    password: !formData.password,
-    telefon: !formData.telefon,
-    strasse: !formData.adresse.strasse,
-    hausnr: !formData.adresse.hausnr,
-    plz: !formData.adresse.plz,
-    ort: !formData.adresse.ort,
-    iban: !formData.iban,
-    bic: !formData.bic,
-    datenschutz: !formData.datenschutz_einwilligung,
-    agb: !formData.agb_akzeptiert,
+  // Compute per-field state for every possible field. Cheap — 13 boolean
+  // checks per keystroke, all local.
+  const fieldStates: Record<StepFields, FieldState> = {
+    vorname: checkField('vorname', formData),
+    nachname: checkField('nachname', formData),
+    email: checkField('email', formData),
+    password: checkField('password', formData),
+    telefon: checkField('telefon', formData),
+    strasse: checkField('strasse', formData),
+    hausnr: checkField('hausnr', formData),
+    plz: checkField('plz', formData),
+    ort: checkField('ort', formData),
+    iban: checkField('iban', formData),
+    bic: checkField('bic', formData),
+    datenschutz: checkField('datenschutz', formData),
+    agb: checkField('agb', formData),
   };
-  const missingOnStep = FIELDS_BY_STEP[step].some((k) => missing[k]);
-  const bannerRef = useScrollIntoViewOn(showErrors[step] && missingOnStep);
 
-  // Auto-clear the current step's showErrors flag once every required
-  // field on it is filled — users don't get stuck seeing red on a field
-  // they just fixed.
+  const stepFields = FIELDS_BY_STEP[step];
+  const problemsOnStep = stepFields.filter((k) => fieldStates[k] !== null);
+  const hasProblemsOnStep = problemsOnStep.length > 0;
+  const hasInvalidOnStep = problemsOnStep.some((k) => fieldStates[k] === 'invalid');
+
+  const bannerRef = useScrollIntoViewOn(showErrors[step] && hasProblemsOnStep);
+
   useEffect(() => {
-    if (!missingOnStep && showErrors[step]) {
+    if (!hasProblemsOnStep && showErrors[step]) {
       setShowErrors((s) => ({ ...s, [step]: false }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [missingOnStep, step]);
+  }, [hasProblemsOnStep, step]);
 
-  const inv = (key: StepFields) => showErrors[step] && missing[key];
+  /**
+   * Inline error text for a field — only when showErrors is on AND the
+   * field is `invalid` (not empty). Empty fields get silent style; the
+   * summary banner tells the user to fill them.
+   */
+  const inlineError = (key: StepFields): string | undefined => {
+    if (!showErrors[step]) return undefined;
+    if (fieldStates[key] !== 'invalid') return undefined;
+    switch (key) {
+      case 'email': return t.auth.register.emailInvalid;
+      case 'password': return t.auth.register.passwordTooShort;
+      case 'plz': return t.auth.register.plzInvalid;
+      case 'iban': return t.auth.register.ibanInvalid;
+      case 'bic': return t.auth.register.bicInvalid;
+      default: return undefined;
+    }
+  };
+
+  /** Silent invalid signal — for empty fields only (no inline text). */
+  const invEmpty = (key: StepFields) =>
+    showErrors[step] && fieldStates[key] === 'empty';
 
   const handleNext = (e?: FormEvent) => {
     e?.preventDefault();
-    if (missingOnStep) {
+    if (hasProblemsOnStep) {
       setShowErrors((s) => ({ ...s, [step]: true }));
       return;
     }
@@ -128,17 +197,13 @@ export const RegisterPage = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // Even at the final step: if the two consent checkboxes aren't ticked,
-    // reveal the missing state instead of firing the network call.
-    if (missingOnStep) {
+    if (hasProblemsOnStep) {
       setShowErrors((s) => ({ ...s, [step]: true }));
       return;
     }
     setError('');
     setSubmitting(true);
     try {
-      // iban/bic are required at the backend — send whatever the form holds
-      // and let ERR_VALIDATION surface if they are blank or badly formatted.
       await register(formData);
       navigate('/user');
     } catch (err) {
@@ -147,6 +212,12 @@ export const RegisterPage = () => {
       setSubmitting(false);
     }
   };
+
+  // Pick the summary banner copy: "some are invalid" beats "some are empty"
+  // because malformed-input is the more surprising problem to flag.
+  const summaryText = hasInvalidOnStep
+    ? t.auth.register.invalidSummary
+    : t.wizard.reise.missingSummary;
 
   const renderStep = () => {
     switch (step) {
@@ -161,7 +232,7 @@ export const RegisterPage = () => {
               value={formData.vorname}
               onChange={(e) => setFormData({ ...formData, vorname: e.target.value })}
               required
-              invalid={inv('vorname')}
+              invalid={invEmpty('vorname')}
             />
             <Input
               label={t.auth.register.nachname}
@@ -170,7 +241,7 @@ export const RegisterPage = () => {
               value={formData.nachname}
               onChange={(e) => setFormData({ ...formData, nachname: e.target.value })}
               required
-              invalid={inv('nachname')}
+              invalid={invEmpty('nachname')}
             />
             <Input
               label={t.auth.register.email}
@@ -181,7 +252,8 @@ export const RegisterPage = () => {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
-              invalid={inv('email')}
+              error={inlineError('email')}
+              invalid={invEmpty('email')}
             />
             <Input
               label={t.auth.register.password}
@@ -191,7 +263,8 @@ export const RegisterPage = () => {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
-              invalid={inv('password')}
+              error={inlineError('password')}
+              invalid={invEmpty('password')}
             />
             <Input
               label={t.auth.register.telefon}
@@ -202,7 +275,7 @@ export const RegisterPage = () => {
               value={formData.telefon}
               onChange={(e) => setFormData({ ...formData, telefon: e.target.value })}
               required
-              invalid={inv('telefon')}
+              invalid={invEmpty('telefon')}
             />
             <Button type="submit" variant="primary">
               {t.auth.register.next}
@@ -225,7 +298,7 @@ export const RegisterPage = () => {
                 })
               }
               required
-              invalid={inv('strasse')}
+              invalid={invEmpty('strasse')}
             />
             <Input
               label={t.auth.register.hausnr}
@@ -239,7 +312,7 @@ export const RegisterPage = () => {
                 })
               }
               required
-              invalid={inv('hausnr')}
+              invalid={invEmpty('hausnr')}
             />
             <Input
               label={t.auth.register.plz}
@@ -254,7 +327,8 @@ export const RegisterPage = () => {
                 })
               }
               required
-              invalid={inv('plz')}
+              error={inlineError('plz')}
+              invalid={invEmpty('plz')}
             />
             <Input
               label={t.auth.register.ort}
@@ -268,7 +342,7 @@ export const RegisterPage = () => {
                 })
               }
               required
-              invalid={inv('ort')}
+              invalid={invEmpty('ort')}
             />
             <div className="button-group">
               <Button type="button" variant="secondary" onClick={handleBack}>
@@ -295,7 +369,8 @@ export const RegisterPage = () => {
               value={formData.iban}
               onChange={(e) => setFormData({ ...formData, iban: e.target.value })}
               required
-              invalid={inv('iban')}
+              error={inlineError('iban')}
+              invalid={invEmpty('iban')}
             />
             <Input
               label={t.auth.register.bic}
@@ -305,7 +380,8 @@ export const RegisterPage = () => {
               value={formData.bic}
               onChange={(e) => setFormData({ ...formData, bic: e.target.value })}
               required
-              invalid={inv('bic')}
+              error={inlineError('bic')}
+              invalid={invEmpty('bic')}
             />
             <div className="button-group">
               <Button type="button" variant="secondary" onClick={handleBack}>
@@ -317,7 +393,12 @@ export const RegisterPage = () => {
             </div>
           </form>
         );
-      case 4:
+      case 4: {
+        const consentErr = showErrors[step]
+          ? fieldStates.datenschutz === 'empty' || fieldStates.agb === 'empty'
+            ? t.auth.register.consentRequired
+            : undefined
+          : undefined;
         return (
           <form onSubmit={handleSubmit} className="wizard-step-content" noValidate>
             <h2 className="h2">{t.auth.register.step4Title}</h2>
@@ -330,6 +411,11 @@ export const RegisterPage = () => {
                 })
               }
               required
+              error={
+                showErrors[step] && fieldStates.datenschutz === 'empty'
+                  ? consentErr
+                  : undefined
+              }
               label={
                 <>
                   {t.auth.register.datenschutzPrefix}
@@ -354,6 +440,11 @@ export const RegisterPage = () => {
                 })
               }
               required
+              error={
+                showErrors[step] && fieldStates.agb === 'empty'
+                  ? consentErr
+                  : undefined
+              }
               label={
                 <>
                   {t.auth.register.agbPrefix}
@@ -380,6 +471,7 @@ export const RegisterPage = () => {
             </div>
           </form>
         );
+      }
       default:
         return null;
     }
@@ -405,9 +497,9 @@ export const RegisterPage = () => {
             ))}
           </div>
           {renderStep()}
-          {showErrors[step] && missingOnStep && (
+          {showErrors[step] && hasProblemsOnStep && (
             <div ref={bannerRef} className="error-message">
-              {t.wizard.reise.missingSummary}
+              {summaryText}
             </div>
           )}
           <p className="auth-link">

@@ -1,0 +1,45 @@
+/* "Heute" quick-fill chip sits beside the input label, not below the
+   input itself, so it doesn't shift the form's vertical rhythm. */
+
+.date-with-today__labelrow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-1);
+  margin-bottom: 4px;
+}
+
+.date-with-today__chip {
+  background: none;
+  border: 0;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill, 999px);
+  font-family: inherit;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-deep-trust-blue);
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.date-with-today__chip:hover {
+  background: rgba(9, 67, 137, 0.08);
+}
+
+.date-with-today__chip:focus-visible {
+  outline: 2px solid var(--color-deep-trust-blue);
+  outline-offset: 2px;
+}
+
+/* Suppress the default label above the Input — we render it ourselves
+   in the label row so we can attach the chip. */
+.date-with-today .rb-input-label {
+  /* first .rb-input-label is our own, styled by the container */
+}
+
+.date-with-today .rb-input-wrapper > .rb-input-label {
+  /* the Input component may render its own label when `label` is
+     passed; we deliberately don't pass it below, so this rule is
+     defence-in-depth. */
+  display: none;
+}

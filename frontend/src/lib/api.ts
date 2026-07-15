@@ -293,6 +293,52 @@ export interface FromRouteResponse {
   extraction_confidence: 0;
 }
 
+// ─── Route templates ────────────────────────────────────────────────────
+// Saved A→B routes per user account. No cap, no TTL. Station names are
+// resolved server-side against the bundled top-200 list — see
+// backend/lambdas/user-handler/src/routes/post-route-template.ts.
+// Wire shape uses camelCase for the route fields (fromStation / fromEva /
+// toStation / toEva) and snake_case for the ticket-mirror fields
+// (fahrkartennummer / fahrkartenpreis / zugkategorie_pref) to match the
+// existing Ticket/Refund payloads.
+
+export interface RouteTemplateView {
+  templateId: string;
+  label: string;
+  fromStation: string;
+  fromEva: number;
+  toStation: string;
+  toEva: number;
+  fahrkartennummer?: string;
+  fahrkartenpreis?: string;
+  zugkategorie_pref?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ListRouteTemplatesResponse {
+  templates: RouteTemplateView[];
+}
+
+export interface CreateRouteTemplateRequest {
+  templateId: string; // frontend-allocated ULID
+  label: string;
+  fromStation: string;
+  toStation: string;
+  fahrkartennummer?: string;
+  fahrkartenpreis?: string;
+  zugkategorie_pref?: string;
+}
+
+export interface PatchRouteTemplateRequest {
+  label?: string;
+  fromStation?: string;
+  toStation?: string;
+  fahrkartennummer?: string;
+  fahrkartenpreis?: string;
+  zugkategorie_pref?: string;
+}
+
 // ─── Delays ─────────────────────────────────────────────────────────────
 
 export interface DelaysRequest {
@@ -497,5 +543,29 @@ export const api = {
   // Refund submit
   submitRefund(ticketId: string, data: RefundRequest): Promise<RefundResponse> {
     return apiClient.post<RefundResponse>(`/users/me/tickets/${ticketId}/refund`, data);
+  },
+
+  // Route templates — saved A→B routes for the MANUAL_ROUTE-ticket flow.
+  // See backend/lambdas/user-handler/src/routes/*route-template*.
+  listRouteTemplates(): Promise<ListRouteTemplatesResponse> {
+    return apiClient.get<ListRouteTemplatesResponse>('/users/me/route-templates');
+  },
+
+  createRouteTemplate(data: CreateRouteTemplateRequest): Promise<RouteTemplateView> {
+    return apiClient.post<RouteTemplateView>('/users/me/route-templates', data);
+  },
+
+  updateRouteTemplate(
+    templateId: string,
+    data: PatchRouteTemplateRequest,
+  ): Promise<RouteTemplateView> {
+    return apiClient.patch<RouteTemplateView>(
+      `/users/me/route-templates/${templateId}`,
+      data,
+    );
+  },
+
+  deleteRouteTemplate(templateId: string): Promise<void> {
+    return apiClient.delete<void>(`/users/me/route-templates/${templateId}`);
   },
 };

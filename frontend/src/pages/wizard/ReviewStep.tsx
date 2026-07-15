@@ -192,6 +192,19 @@ export const ReviewStep = () => {
             ? ZEITKARTE_FAHRKARTENPREIS
             : state.fahrt.fahrkartenpreis!,
           is_zeitkarte: state.is_zeitkarte || false,
+          // Informational on the wire (the backend accepts but doesn't
+          // persist templateId on the ticket yet — see the note on
+          // FromRouteRequest.templateId). Forward it anyway so analytics
+          // and future persistence work retroactively. Either the user
+          // picked a saved template on FahrtStep/LookupStep, OR they
+          // saved a new one via the "Als Strecke speichern" tick during
+          // this session — either way, we have a template id to attach.
+          ...((state.pickedTemplateId ?? state.savedThisSessionTemplateId)
+            ? {
+                templateId: (state.pickedTemplateId ??
+                  state.savedThisSessionTemplateId) as string,
+              }
+            : {}),
         };
         const res = await api.createFromRoute(req);
         ticketId = res.ticketId;

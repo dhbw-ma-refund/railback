@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import { SavedRoutesSection } from '../components/SavedRoutesSection';
 import { Button } from '@shared/components';
 import { Input } from '@shared/components';
 import { Card } from '@shared/components';
@@ -367,6 +368,8 @@ export const ProfilePage = () => {
             </div>
           )}
         </Card>
+
+        <SavedRoutesSection />
 
         <Card className="profile-section profile-section--account">
           <h2 className="h2">{t.auth.profile.accountTitle}</h2>

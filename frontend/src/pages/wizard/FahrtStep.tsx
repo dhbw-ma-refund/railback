@@ -1,13 +1,18 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Input } from '@shared/components';
+import { Input, Checkbox } from '@shared/components';
 import { StationInput } from '../../components/StationInput';
 import { useLanguage } from '../../lib/LanguageContext';
 import { WizardLayout } from './WizardLayout';
 import { WizardStepButtons } from './WizardStepButtons';
 import { useWizard } from './WizardContext';
+import { RouteTemplatePicker } from './RouteTemplatePicker';
+import { DateInputWithToday } from './DateInputWithToday';
+import type { RouteTemplateView } from '../../lib/api';
+import { useRouteTemplates } from '../../lib/useRouteTemplates';
 import { normalizePrice } from '../../lib/validators/price';
 import { useScrollIntoViewOn } from '../../hooks/useScrollIntoViewOn';
+import './RouteTemplatePicker.css';
 
 /**
  * Step 2 — Reisedaten prüfen. Wireframe screen 2.
@@ -30,8 +35,11 @@ import { useScrollIntoViewOn } from '../../hooks/useScrollIntoViewOn';
 export const FahrtStep = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { state, updateFahrt } = useWizard();
+  const { state, update, updateFahrt } = useWizard();
+  const { add: addTemplate, remove: removeTemplate } = useRouteTemplates();
   const f = state.fahrt;
+  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   /**
    * Local uncontrolled-shape state for the price field so the user sees
@@ -114,6 +122,95 @@ export const FahrtStep = () => {
   };
 
   /**
+   * User tapped a saved-route chip. Apply the template's from/to to
+   * wizard.fahrt, remember `templateId` so ReviewStep can forward it to
+   * /from-route. The template already exists on the account — no save
+   * affordance is shown while a picked-template is active.
+   *
+   * We intentionally do NOT populate fahrkartennummer / fahrkartenpreis
+   * from the template even when it carries them:
+   *   - Zeitkarte flow doesn't show those inputs.
+   *   - Single-trip flow: the price varies per trip (day-of-week,
+   *     Sparpreis vs Flexpreis) so a stored value is more misleading
+   *     than helpful. The template exists to save the route, not the
+   *     ticket.
+   * zugkategorie_pref DOES apply — it's a per-route preference the
+   * user has declared ("ICE on this line"), and the field lives on
+   * FahrtStep now-invisibly (extractor/lookup still fill it when they
+   * can). Setting it here lets it flow into buildRefundBody at submit.
+   */
+  const pickTemplate = (tpl: RouteTemplateView) => {
+    updateFahrt({
+      abreisebahnhof: tpl.fromStation,
+      zielbahnhof: tpl.toStation,
+      zugkategorie_plan: tpl.zugkategorie_pref ?? state.fahrt.zugkategorie_plan ?? '',
+    });
+    update({ pickedTemplateId: tpl.templateId });
+  };
+
+  /**
+   * User edited a station field directly. Clear the "picked template"
+   * link so we don't ship a mismatched templateId on submit and don't
+   * highlight the wrong chip. Called from the onChange of both station
+   * inputs. Does NOT auto-delete a session-saved template — the user
+   * might just be fine-tuning a station name and doesn't expect their
+   * saved route to disappear.
+   */
+  const clearPickedTemplateOnEdit = () => {
+    if (state.pickedTemplateId) {
+      update({ pickedTemplateId: null });
+    }
+  };
+
+  /**
+   * "Als Strecke speichern" toggle. Save-on-tick / delete-on-untick,
+   * both fire the network call immediately so the user sees the chip
+   * appear/disappear right away. The pointer is stashed on wizard
+   * state so navigating between FahrtStep and LookupStep in the same
+   * session keeps the toggle in sync.
+   *
+   * On error: revert the toggle, show a small inline message. We do
+   * NOT block navigation on save errors — the wizard flow itself is
+   * unaffected.
+   */
+  const onToggleSave = async (checked: boolean) => {
+    setSaveError('');
+    if (checked) {
+      if (!f.abreisebahnhof || !f.zielbahnhof) return;
+      setSaving(true);
+      try {
+        const created = await addTemplate({
+          label: `${f.abreisebahnhof} → ${f.zielbahnhof}`,
+          fromStation: f.abreisebahnhof,
+          toStation: f.zielbahnhof,
+          ...(f.zugkategorie_plan ? { zugkategorie_pref: f.zugkategorie_plan } : {}),
+        });
+        update({ savedThisSessionTemplateId: created.templateId });
+      } catch (err) {
+        setSaveError(
+          err instanceof Error ? err.message : t.wizard.reise.saveRouteError,
+        );
+      } finally {
+        setSaving(false);
+      }
+    } else {
+      const id = state.savedThisSessionTemplateId;
+      if (!id) return;
+      setSaving(true);
+      try {
+        await removeTemplate(id);
+        update({ savedThisSessionTemplateId: null });
+      } catch (err) {
+        setSaveError(
+          err instanceof Error ? err.message : t.wizard.reise.saveRouteError,
+        );
+      } finally {
+        setSaving(false);
+      }
+    }
+  };
+
+  /**
    * Silent invalid signal — used on every field that only has a
    * "required" issue. The red border is enough; the summary banner
    * below the form tells the user what's missing (see the banner at
@@ -124,6 +221,10 @@ export const FahrtStep = () => {
 
   return (
     <WizardLayout activeSlug="reise" title={t.wizard.reise.title}>
+      <RouteTemplatePicker
+        onPick={pickTemplate}
+        activeTemplateId={state.pickedTemplateId}
+      />
       <form className="wizard-field-group" onSubmit={handleNext}>
         <div className="wizard-field-row">
           <StationInput
@@ -131,7 +232,10 @@ export const FahrtStep = () => {
             required
             placeholder="z.B. Mannheim Hbf"
             value={f.abreisebahnhof ?? ''}
-            onChange={(v) => updateFahrt({ abreisebahnhof: v })}
+            onChange={(v) => {
+              clearPickedTemplateOnEdit();
+              updateFahrt({ abreisebahnhof: v });
+            }}
             invalid={inv('abreisebahnhof')}
           />
           <Input
@@ -150,7 +254,10 @@ export const FahrtStep = () => {
             required
             placeholder="z.B. Karlsruhe Hbf"
             value={f.zielbahnhof ?? ''}
-            onChange={(v) => updateFahrt({ zielbahnhof: v })}
+            onChange={(v) => {
+              clearPickedTemplateOnEdit();
+              updateFahrt({ zielbahnhof: v });
+            }}
             invalid={inv('zielbahnhof')}
           />
           <Input
@@ -163,12 +270,32 @@ export const FahrtStep = () => {
             invalid={inv('ankunftszeit_plan')}
           />
         </div>
-        <Input
+
+        {/* "Als Strecke speichern" — save-on-tick, delete-on-untick.
+            Only offered when the user typed their own from/to (i.e. no
+            picked template) and both stations have text. Rename lives
+            on the Profile page. */}
+        {!state.pickedTemplateId &&
+          !!f.abreisebahnhof &&
+          !!f.zielbahnhof && (
+            <div className="route-templates__save">
+              <Checkbox
+                label={t.wizard.reise.saveRoute}
+                checked={!!state.savedThisSessionTemplateId}
+                disabled={saving}
+                onChange={(e) => void onToggleSave(e.target.checked)}
+              />
+              {saveError && (
+                <p className="route-templates__save-error">{saveError}</p>
+              )}
+            </div>
+          )}
+
+        <DateInputWithToday
           label={t.wizard.reise.date}
           required
-          type="date"
           value={f.abreisedatum ?? ''}
-          onChange={(e) => updateFahrt({ abreisedatum: e.target.value })}
+          onChange={(v) => updateFahrt({ abreisedatum: v })}
           invalid={inv('abreisedatum')}
         />
         {/* Train number carries the category prefix in practice ("ICE 592",

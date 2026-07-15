@@ -106,6 +106,28 @@ export interface WizardState {
   antragsart: Antragsart | null;
   is_zeitkarte: boolean;
   belege: BelegDraft[];
+  /**
+   * `templateId` when the user picked an existing template from the
+   * FahrtStep / LookupStep chip picker. Forwarded to /from-route so the
+   * backend can link the resulting ticket to the template (currently
+   * informational on the wire — see the note on
+   * FromRouteRequest.templateId). Reset when the user manually edits
+   * either station.
+   */
+  pickedTemplateId: string | null;
+  /**
+   * When the user ticks "Als Strecke speichern" during the current
+   * wizard session, we POST the template immediately and pin its id
+   * here. Untick → DELETE the same id and clear. Lives in wizard
+   * state so navigating between FahrtStep and LookupStep in the same
+   * session doesn't lose the reference.
+   *
+   * NOTE: this is only set for templates saved DURING this wizard
+   * session. Templates the user saved in previous sessions live only
+   * in the shared useRouteTemplates cache; they can be deleted from
+   * the Profile page.
+   */
+  savedThisSessionTemplateId: string | null;
   delayLookup: DelaysResponse | null;
   submitResult: RefundResponse | null;
   antragstellung_ort: string;
@@ -126,6 +148,8 @@ const INITIAL_STATE: WizardState = {
   antragsart: null,
   is_zeitkarte: false,
   belege: [],
+  pickedTemplateId: null,
+  savedThisSessionTemplateId: null,
   delayLookup: null,
   submitResult: null,
   antragstellung_ort: '',
@@ -154,13 +178,13 @@ interface WizardContextValue {
 
 const WizardContext = createContext<WizardContextValue | undefined>(undefined);
 
-const STORAGE_KEY = 'railback.wizard.v4';
-// Bumped from v3 → v4 because is_zeitkarte is now chosen up-front on the
-// new TicketArtStep instead of being derived from antragsart on the
-// Review step. Old v3 blobs would carry `is_zeitkarte: false` even for
-// users who intend to file a DTicket claim; scrapping the persisted
-// state on the next mount is the simplest way to route them back
-// through the picker without a stealth misconfiguration.
+const STORAGE_KEY = 'railback.wizard.v6';
+// Bumped from v5 → v6: saveRoute / saveRouteLabel replaced with a
+// single savedThisSessionTemplateId pointer, matching the new save-
+// on-tick semantics (immediate POST, untick → DELETE). Old v5 blobs
+// would still spread cleanly (missing keys default to falsy) but
+// would carry dead saveRoute / saveRouteLabel keys the setter no
+// longer knows to drop; bumping is defensive.
 
 export const WizardProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<WizardState>(() => {

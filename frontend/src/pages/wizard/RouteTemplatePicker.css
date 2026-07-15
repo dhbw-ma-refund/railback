@@ -1,0 +1,119 @@
+/* Route-template chip picker — sits above the from/to inputs on
+   FahrtStep. Layout: title on top, horizontally-scrolling chip row
+   underneath. Each chip is a two-line summary: the user-chosen label
+   ("Zuhause → Uni") and the resolved station pair beneath, in a
+   secondary color, so the user recognises the route even if the label
+   is generic. */
+
+.route-templates {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.route-templates__title {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+/* Horizontal scroll on overflow — a Vielfahrer might have 10+ saved
+   routes and stacking them would push the actual form below the fold.
+   Chips shrink to content width; the row scrolls x-direction on touch.
+   We hide the scrollbar for cleanliness but keep the scroll behaviour.
+   Top+bottom padding gives the chips room to lift on hover
+   (transform: translateY(-1px)) without their shadow being clipped by
+   the scroll container's box. `overflow-y: visible` reinforces that —
+   a bare `overflow-x: auto` implies `overflow-y: auto` and would clip
+   the lifted shadow at the top edge. */
+.route-templates__row {
+  display: flex;
+  gap: var(--spacing-1);
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 4px 0 var(--spacing-1);
+  scrollbar-width: none;
+}
+
+.route-templates__row::-webkit-scrollbar {
+  display: none;
+}
+
+.route-templates__chip {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  /* Rectangular card, not a pill — the two-line label + station-pair
+     content reads better in a square-ish shape. Vertical padding
+     matches horizontal so the box feels proportioned. */
+  padding: var(--spacing-2);
+  background: white;
+  border: 1px solid var(--color-border-subtle, rgba(9, 67, 137, 0.15));
+  border-radius: var(--radius-card);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease;
+  min-width: 0;
+}
+
+.route-templates__chip:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-hover);
+}
+
+.route-templates__chip:focus-visible {
+  outline: 2px solid var(--color-deep-trust-blue);
+  outline-offset: 2px;
+}
+
+/* Picked template — subtle brand tint + darker border so it reads as
+   "this one is currently applied". We deliberately don't hide the other
+   chips: the user should still be able to pick a different one. */
+.route-templates__chip--active {
+  background: rgba(9, 67, 137, 0.08);
+  border-color: var(--color-deep-trust-blue);
+}
+
+.route-templates__chip-label {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-deep-trust-blue);
+  white-space: nowrap;
+}
+
+.route-templates__chip-route {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* Compact "save this route" affordance below the from/to inputs.
+   Renders as a single row: checkbox + inline label input that only
+   appears once the checkbox is ticked. */
+
+.route-templates__save {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) 0;
+}
+
+.route-templates__save-label-wrap {
+  /* Sits directly below the checkbox row when expanded. Padding-left
+     aligns the label input to the checkbox text, not the checkbox box,
+     so the eye follows the intent ("give this a name"). */
+  padding-left: calc(var(--spacing-2) + 4px);
+}
+
+.route-templates__save-error {
+  margin: 0;
+  padding-left: calc(var(--spacing-2) + 4px);
+  font-size: var(--font-size-caption);
+  color: var(--color-error, #b30d0d);
+}
