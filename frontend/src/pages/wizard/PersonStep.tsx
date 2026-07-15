@@ -27,6 +27,13 @@ export const PersonStep = () => {
   const { state, updatePerson } = useWizard();
   const p = state.person;
 
+  // Local buffer so trailing spaces stay visible while the user types
+  // between first and last name. Wizard state is kept in sync on every
+  // change (split on the FIRST space, so multi-word Nachnamen work).
+  const [fullName, setFullName] = useState(
+    p.nachname ? `${p.vorname} ${p.nachname}` : p.vorname,
+  );
+
   const missing = {
     vorname: !p.vorname,
     email: !p.email,
@@ -57,11 +64,13 @@ export const PersonStep = () => {
           required
           placeholder="z.B. Maria Müller"
           autoComplete="name"
-          value={[p.vorname, p.nachname].filter(Boolean).join(' ')}
+          value={fullName}
           onChange={(e) => {
-            const parts = e.target.value.split(/\s+/);
-            const vorname = parts[0] ?? '';
-            const nachname = parts.slice(1).join(' ');
+            const raw = e.target.value;
+            setFullName(raw);
+            const idx = raw.indexOf(' ');
+            const vorname = idx === -1 ? raw : raw.slice(0, idx);
+            const nachname = idx === -1 ? '' : raw.slice(idx + 1);
             updatePerson({ vorname, nachname });
           }}
           invalid={inv('vorname')}

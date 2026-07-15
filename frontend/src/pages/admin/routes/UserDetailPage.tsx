@@ -9,6 +9,7 @@ import { useAdminGoBack } from '../services/hooks/useAdminGoBack';
 import { UserStateBadge } from '../ui/UserStateBadge';
 import { UserEditDialog } from './UserEditDialog';
 import { Button } from '../ui-library';
+import { DetailPageSkeleton } from '../ui/PageSkeletons';
 import './DetailPage.css';
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
@@ -55,11 +56,7 @@ export function UserDetailPage() {
   }, [email]);
 
   if (loading) {
-    return (
-      <div className="rb-detail">
-        <div className="rb-detail__loading">Lädt…</div>
-      </div>
-    );
+    return <DetailPageSkeleton sections={3} />;
   }
 
   if (notFound) {

@@ -8,9 +8,9 @@ import type { Ticket } from '../services/types/ticket';
 import { fmtDate, fmtDateTime } from '../services/format/date';
 import { fmtEUR } from '../services/format/money';
 import { TicketStateBadge } from '../ui/TicketStateBadge';
-import { StateOverrideDialog } from './StateOverrideDialog';
 import { Button } from '../ui-library';
 import { useToast } from '../ui/useToast';
+import { DetailPageSkeleton } from '../ui/PageSkeletons';
 import './DetailPage.css';
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
@@ -26,7 +26,6 @@ export function TicketDetailPage() {
   const { ticketId } = useParams<{ ticketId: string }>();
   const goBack = useAdminGoBack('/admin-panel/tickets');
   const navigate = useNavigate();
-  const [stateDialogOpen, setStateDialogOpen] = useState(false);
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -99,11 +98,7 @@ export function TicketDetailPage() {
   }
 
   if (loading) {
-    return (
-      <div className="rb-detail">
-        <div className="rb-detail__loading">Lädt…</div>
-      </div>
-    );
+    return <DetailPageSkeleton sections={4} />;
   }
   if (notFound) {
     return (
@@ -137,9 +132,6 @@ export function TicketDetailPage() {
       </button>
       <h1 className="rb-detail__title">Ticket {ticket.ticketId}</h1>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '12px 0' }}>
-        <Button type="button" variant="secondary" onClick={() => setStateDialogOpen(true)}>
-          State ändern
-        </Button>
         <Button
           type="button"
           variant="secondary"
@@ -182,16 +174,6 @@ export function TicketDetailPage() {
           {rebuilding ? 'Läuft …' : 'pain.008 neu erzeugen'}
         </Button>
       </div>
-
-      <StateOverrideDialog
-        ticket={ticket}
-        open={stateDialogOpen}
-        onClose={() => setStateDialogOpen(false)}
-        onSaved={(updated) => {
-          setTicket(updated);
-          setStateDialogOpen(false);
-        }}
-      />
 
       <section className="rb-detail__section">
         <h2 className="rb-detail__section-title">Reisende:r</h2>

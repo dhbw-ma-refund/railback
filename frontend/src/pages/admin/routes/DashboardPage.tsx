@@ -9,6 +9,7 @@ import { fmtEUR } from '../services/format/money';
 import { Button } from '../ui-library';
 import { TicketStateBadge } from '../ui/TicketStateBadge';
 import { useToast } from '../ui/useToast';
+import { DashboardSkeleton } from '../ui/PageSkeletons';
 import '../admin.css';
 import './DashboardPage.css';
 
@@ -105,12 +106,7 @@ export function DashboardPage() {
   }, [toast]);
 
   if (loading) {
-    return (
-      <div className="rb-dashboard">
-        <h1 className="rb-dashboard__title">Dashboard</h1>
-        <p>Lädt…</p>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (forbidden) {

@@ -1,0 +1,50 @@
+/*
+ * Skeleton primitive. Same border + background as KPI cards / table cells so
+ * the placeholder feels like the real surface waiting for content. The
+ * shimmer is a low-contrast horizontal gradient sweep — subtle enough not to
+ * fight the rest of the panel, obvious enough to read as "loading" without a
+ * spinner.
+ */
+.rb-skel {
+  display: inline-block;
+  background-color: var(--color-input-border);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  background-position: 200% 0;
+  animation: rb-skel-shimmer 1.4s var(--motion-ease-out) infinite;
+  border-radius: 6px;
+  vertical-align: middle;
+  color: transparent;
+  user-select: none;
+}
+
+.rb-skel--text {
+  border-radius: 4px;
+}
+
+.rb-skel--block {
+  border-radius: var(--radius-card);
+}
+
+@keyframes rb-skel-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rb-skel {
+    animation: none;
+    background-image: none;
+    opacity: 0.7;
+  }
+}

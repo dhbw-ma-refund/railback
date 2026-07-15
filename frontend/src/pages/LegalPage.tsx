@@ -45,6 +45,18 @@ const LEGAL_CONTENT: Record<
       definitions: string[];
       servicesTitle: string;
       services: string;
+      registrationTitle: string;
+      registration: string[];
+      violationsTitle: string;
+      violations: string[];
+      terminationTitle: string;
+      termination: string[];
+      liabilityTitle: string;
+      liability: string[];
+      termsPrivacyTitle: string;
+      termsPrivacy: string;
+      finalProvisionsTitle: string;
+      finalProvisions: string[];
       version: string;
       privacyTitle: string;
       personalDataTitle: string;
@@ -65,27 +77,30 @@ const LEGAL_CONTENT: Record<
       provider: 'Anbieterkennzeichnung',
       company: (
         <>
-          Elaspix UG<br />
-          Schliffkopfstraße 25<br />
-          D - 68163 Mannheim<br />
-          Fon: 0621 586 799 21<br />
-          Mobil: 0176 226 945 84<br />
+          Elaspix UG
+          <br />
+          Schliffkopfstraße 25
+          <br />
+          D - 68163 Mannheim
+          <br />
+          Fon: 0621 586 799 21
+          <br />
+          Mobil: 0176 226 945 84
+          <br />
           E-Mail: support@railback.de
         </>
       ),
       management: 'Geschäftsführung',
-      managers: (
-        <>
-          Dr. Tobias Günther
-        </>
-      ),
+      managers: <>Dr. Tobias Günther</>,
       seatTitle: 'Sitz der Gesellschaft',
       seat: 'Mannheim, eingetragen beim Amtsgericht Mannheim unter HRB 705891.',
       bankTitle: 'Bankverbindung',
       bank: (
         <>
-          Deutsche Bank Mannheim<br />
-          BIC: DEUTDEDBMAN<br />
+          Deutsche Bank Mannheim
+          <br />
+          BIC: DEUTDEDBMAN
+          <br />
           IBAN: DE68 6707 0024 0019 5917 00
         </>
       ),
@@ -94,10 +109,12 @@ const LEGAL_CONTENT: Record<
       contentTitle: 'Verantwortlich für den Inhalt',
       content: (
         <>
-          Elaspix UG<br />
-          Dr. Tobias Günther<br />
-          Schliffkopfstraße 25<br />
-          D - 68163 Mannheim
+          Elaspix UG
+          <br />
+          Dr. Tobias Günther
+          <br />
+          Schliffkopfstraße 25
+          <br />D - 68163 Mannheim
         </>
       ),
       copyrightTitle: 'Urheberrecht',
@@ -125,6 +142,38 @@ const LEGAL_CONTENT: Record<
       servicesTitle: '§ 3 Leistungen von RailBack',
       services:
         'RailBack unterstützt den Nutzer bei der Prüfung, Berechnung und Einreichung von Entschädigungsansprüchen. Ein Antrag wird ausschließlich nach ausdrücklicher Freigabe durch den Nutzer übermittelt.',
+      registrationTitle: '§ 4 Registrierung als Nutzer',
+      registration: [
+        'Für die Nutzung der kontobezogenen Funktionen ist eine Registrierung erforderlich. Die Registrierung ist kostenfrei. Ein Anspruch auf Registrierung besteht nicht. Minderjährige können nur durch ihre gesetzlichen Vertreter oder mit deren Zustimmung registriert werden.',
+        'Die im Registrierungsformular abgefragten Angaben sind vollständig und wahrheitsgemäß anzugeben. Jeder Nutzer darf nur ein persönliches Nutzerkonto anlegen und ist verpflichtet, seine hinterlegten Daten aktuell zu halten.',
+        'Die Zugangsdaten sind geheim zu halten und vor dem Zugriff Dritter zu schützen. Besteht der Verdacht, dass Dritte Zugriff auf das Nutzerkonto erlangt haben, ist RailBack unverzüglich zu informieren und das Passwort zu ändern.',
+      ],
+      violationsTitle: '§ 6 Verstöße',
+      violations: [
+        'Der Nutzer hat bei der Nutzung von RailBack diese Allgemeinen Geschäftsbedingungen, geltendes Recht und die Rechte Dritter zu beachten. Insbesondere dürfen die Anwendung und ihre technischen Einrichtungen nicht missbräuchlich genutzt, beeinträchtigt oder umgangen werden.',
+        'Bei Verstößen kann RailBack unter Berücksichtigung von Art, Schwere und Dauer des Verstoßes den Nutzer verwarnen sowie den Zugang vorübergehend oder dauerhaft sperren. Bei schwerwiegenden Verstößen kann eine Sperrung ohne vorherige Verwarnung erfolgen. Weitergehende gesetzliche Ansprüche und das Recht zur Kündigung bleiben unberührt.',
+      ],
+      terminationTitle: '§ 7 Kündigung',
+      termination: [
+        'Der Nutzer kann das Nutzungsverhältnis jederzeit in Textform gegenüber RailBack kündigen. Die Kündigung kann insbesondere per E-Mail an support@railback.de erklärt werden.',
+        'Das Recht beider Parteien zur außerordentlichen Kündigung aus wichtigem Grund bleibt unberührt. Bereits freigegebene oder laufende Entschädigungsvorgänge werden von der Beendigung des Nutzerkontos nicht berührt, soweit ihre weitere Bearbeitung zur Vertragserfüllung oder aufgrund gesetzlicher Pflichten erforderlich ist.',
+      ],
+      liabilityTitle: '§ 8 Haftungsbeschränkung',
+      liability: [
+        'RailBack haftet unbeschränkt für Vorsatz und grobe Fahrlässigkeit sowie für Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit. Die Haftung nach dem Produkthaftungsgesetz und aus ausdrücklich übernommenen Garantien bleibt unberührt.',
+        'Bei leicht fahrlässiger Verletzung einer wesentlichen Vertragspflicht ist die Haftung auf den vertragstypischen, bei Vertragsschluss vorhersehbaren Schaden begrenzt. Wesentliche Vertragspflichten sind solche, deren Erfüllung die ordnungsgemäße Durchführung des Vertrags erst ermöglicht und auf deren Einhaltung der Nutzer regelmäßig vertrauen darf. Im Übrigen ist die Haftung für leichte Fahrlässigkeit ausgeschlossen.',
+        'RailBack übernimmt keine Gewähr dafür, dass ein vom Nutzer geltend gemachter Entschädigungsanspruch tatsächlich besteht oder vom jeweiligen Verkehrsunternehmen anerkannt wird. Die gesetzlichen Rechte des Nutzers bleiben unberührt.',
+      ],
+      termsPrivacyTitle: '§ 11 Datenschutz',
+      termsPrivacy:
+        'Über die Erhebung, Verwendung, Weitergabe und sonstige Verarbeitung personenbezogener Daten geben die Datenschutzbestimmungen Auskunft, die Nutzer auf der RailBack-Webseite der Elaspix UG einsehen können.',
+      finalProvisionsTitle: '§ 12 Schlussbestimmungen',
+      finalProvisions: [
+        'Individuelle Vereinbarungen zwischen RailBack und dem Nutzer haben Vorrang vor diesen Allgemeinen Geschäftsbedingungen. Änderungen und Ergänzungen sollen in Textform erfolgen.',
+        'Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Gegenüber Verbrauchern gilt diese Rechtswahl nur, soweit ihnen dadurch nicht der Schutz zwingender Bestimmungen des Staates ihres gewöhnlichen Aufenthalts entzogen wird.',
+        'Ist der Nutzer Kaufmann, eine juristische Person des öffentlichen Rechts oder ein öffentlich-rechtliches Sondervermögen, ist Mannheim ausschließlicher Gerichtsstand für alle Streitigkeiten aus dem Vertragsverhältnis. Gesetzlich zwingende Gerichtsstände bleiben unberührt.',
+        'Sollten einzelne Bestimmungen dieser Allgemeinen Geschäftsbedingungen ganz oder teilweise unwirksam sein oder werden, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt. An die Stelle der unwirksamen Bestimmung treten die gesetzlichen Vorschriften.',
+      ],
       version: 'Version 1.0 · Mai 2026',
       privacyTitle: 'II. Datenschutzbestimmungen',
       personalDataTitle: 'Definition von personenbezogenen Daten',
@@ -148,27 +197,30 @@ const LEGAL_CONTENT: Record<
       provider: 'Provider identification',
       company: (
         <>
-          Elaspix UG<br />
-          Schliffkopfstraße 25<br />
-          D - 68163 Mannheim<br />
-          Phone: +49 621 586 799 21<br />
-          Mobile: +49 176 226 945 84<br />
+          Elaspix UG
+          <br />
+          Schliffkopfstraße 25
+          <br />
+          D - 68163 Mannheim
+          <br />
+          Phone: +49 621 586 799 21
+          <br />
+          Mobile: +49 176 226 945 84
+          <br />
           Email: support@railback.de
         </>
       ),
       management: 'Management',
-      managers: (
-        <>
-          Dr. Tobias Günther
-        </>
-      ),
+      managers: <>Dr. Tobias Günther</>,
       seatTitle: 'Registered office',
       seat: 'Mannheim, registered with the Local Court of Mannheim under HRB 705891.',
       bankTitle: 'Bank details',
       bank: (
         <>
-          Deutsche Bank Mannheim<br />
-          BIC: DEUTDEDBMAN<br />
+          Deutsche Bank Mannheim
+          <br />
+          BIC: DEUTDEDBMAN
+          <br />
           IBAN: DE68 6707 0024 0019 5917 00
         </>
       ),
@@ -177,10 +229,12 @@ const LEGAL_CONTENT: Record<
       contentTitle: 'Responsible for content',
       content: (
         <>
-          Elaspix UG<br />
-          Dr. Tobias Günther<br />
-          Schliffkopfstraße 25<br />
-          D - 68163 Mannheim
+          Elaspix UG
+          <br />
+          Dr. Tobias Günther
+          <br />
+          Schliffkopfstraße 25
+          <br />D - 68163 Mannheim
         </>
       ),
       copyrightTitle: 'Copyright',
@@ -208,6 +262,38 @@ const LEGAL_CONTENT: Record<
       servicesTitle: 'Section 3 RailBack services',
       services:
         'RailBack supports the User in checking, calculating and submitting compensation claims. A claim is transmitted only after the User has expressly approved it.',
+      registrationTitle: 'Section 4 User registration',
+      registration: [
+        'Registration is required to use account-related functions. Registration is free of charge and there is no entitlement to registration. Minors may be registered only by their legal representatives or with their consent.',
+        'The information requested in the registration form must be complete and accurate. Each User may create only one personal user account and must keep the stored information up to date.',
+        'Login credentials must be kept confidential and protected from third-party access. If there is reason to suspect that a third party has gained access to the user account, RailBack must be informed without undue delay and the password must be changed.',
+      ],
+      violationsTitle: 'Section 6 Violations',
+      violations: [
+        'When using RailBack, the User must comply with these General Terms and Conditions, applicable law and third-party rights. In particular, the application and its technical facilities must not be misused, impaired or circumvented.',
+        'In the event of a violation, RailBack may, taking into account its nature, severity and duration, warn the User or suspend access temporarily or permanently. Serious violations may result in suspension without prior warning. Further statutory claims and the right to terminate remain unaffected.',
+      ],
+      terminationTitle: 'Section 7 Termination',
+      termination: [
+        'The User may terminate the user relationship at any time by notifying RailBack in text form, including by email to support@railback.de.',
+        'Either party’s right to terminate for cause remains unaffected. Claims that have already been approved or are still being processed are not affected by the termination of the user account insofar as continued processing is required to perform the contract or comply with legal obligations.',
+      ],
+      liabilityTitle: 'Section 8 Limitation of liability',
+      liability: [
+        'RailBack is liable without limitation for intent and gross negligence and for loss arising from injury to life, limb or health. Liability under the German Product Liability Act and under expressly assumed guarantees remains unaffected.',
+        'In the event of a slightly negligent breach of a material contractual obligation, liability is limited to the loss typical for the contract and foreseeable when the contract was concluded. Material contractual obligations are obligations whose fulfilment is essential for proper performance of the contract and on which the User may normally rely. Liability for slight negligence is otherwise excluded.',
+        'RailBack does not warrant that a compensation claim asserted by the User exists or will be accepted by the relevant transport company. The User’s statutory rights remain unaffected.',
+      ],
+      termsPrivacyTitle: 'Section 11 Data protection',
+      termsPrivacy:
+        'Information about the collection, use, disclosure and other processing of personal data is provided in the Privacy Policy, which Users can access on the RailBack website operated by Elaspix UG.',
+      finalProvisionsTitle: 'Section 12 Final provisions',
+      finalProvisions: [
+        'Individual agreements between RailBack and the User take precedence over these General Terms and Conditions. Amendments and additions should be made in text form.',
+        'The law of the Federal Republic of Germany applies, excluding the UN Convention on Contracts for the International Sale of Goods. For consumers, this choice of law applies only insofar as it does not deprive them of the protection afforded by mandatory provisions of the country of their habitual residence.',
+        'If the User is a merchant, a legal entity under public law or a special fund under public law, Mannheim is the exclusive place of jurisdiction for all disputes arising from the contractual relationship. Mandatory statutory places of jurisdiction remain unaffected.',
+        'If any provision of these General Terms and Conditions is or becomes wholly or partly invalid, the remaining provisions remain effective. The invalid provision is replaced by the applicable statutory provisions.',
+      ],
       version: 'Version 1.0 · May 2026',
       privacyTitle: 'II. Privacy Policy',
       personalDataTitle: 'Definition of personal data',
@@ -285,6 +371,24 @@ const RechtlichesContent = ({ lang }: { lang: Language }) => {
       <h3>{copy.servicesTitle}</h3>
       <p>{copy.services}</p>
 
+      <h3>{copy.registrationTitle}</h3>
+      <Paragraphs items={copy.registration} />
+
+      <h3>{copy.violationsTitle}</h3>
+      <Paragraphs items={copy.violations} />
+
+      <h3>{copy.terminationTitle}</h3>
+      <Paragraphs items={copy.termination} />
+
+      <h3>{copy.liabilityTitle}</h3>
+      <Paragraphs items={copy.liability} />
+
+      <h3>{copy.termsPrivacyTitle}</h3>
+      <p>{copy.termsPrivacy}</p>
+
+      <h3>{copy.finalProvisionsTitle}</h3>
+      <Paragraphs items={copy.finalProvisions} />
+
       <p className="legal-card__version">{copy.version}</p>
 
       <h2 id="datenschutz">{copy.privacyTitle}</h2>
@@ -346,7 +450,11 @@ export const LegalPage = ({ type }: LegalPageProps) => {
               {t.menu.back}
             </button>
           </div>
-          {type === 'impressum' ? <ImpressumContent lang={lang} /> : <RechtlichesContent lang={lang} />}
+          {type === 'impressum' ? (
+            <ImpressumContent lang={lang} />
+          ) : (
+            <RechtlichesContent lang={lang} />
+          )}
         </div>
       </main>
       <Footer />

@@ -1,3 +1,15 @@
+/*
+ * Between the card breakpoint (≤899px) and where the 8-column ticket grid
+ * finally fits (~1024px+), the desktop table gets a horizontal scroll
+ * container so the page itself never grows a horizontal scrollbar. The
+ * container is emitted by <Table> around every rendered table.
+ */
+.rb-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .rb-table {
   width: 100%;
   border-collapse: collapse;
@@ -48,7 +60,7 @@
   color: var(--color-error-red);
 }
 
-@media (max-width: 767px) {
+@media (max-width: 899px) {
   .rb-table thead {
     display: none;
   }
@@ -87,6 +99,25 @@
     font-size: var(--font-size-caption);
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    flex: 0 0 40%;
+    flex: 0 0 35%;
+    max-width: 40%;
+  }
+
+  /* On phones, cell values must be free to shrink/wrap so a long badge or */
+  /* email string never punches the card wider than the viewport. */
+  .rb-table tbody td > * {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .rb-table tbody td .rb-ticket-badge,
+  .rb-table tbody td .rb-status-badge {
+    white-space: normal;
+    text-align: right;
+    /* Word-level wrap keeps DELETION_SCHEDULED and REJECTED_INELIGIBLE inside */
+    /* the value column instead of pushing the card past the viewport. */
+    overflow-wrap: anywhere;
+    max-width: 100%;
   }
 }
