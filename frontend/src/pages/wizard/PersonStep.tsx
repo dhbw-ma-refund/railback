@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@shared/components';
 import { useLanguage } from '../../lib/LanguageContext';
@@ -20,20 +21,26 @@ export const PersonStep = () => {
   const { state, updatePerson } = useWizard();
   const p = state.person;
 
+  // Local buffer so trailing spaces stay visible while the user types
+  // between first and last name. Wizard state is kept in sync on every
+  // change (split on the first space).
+  const [fullName, setFullName] = useState(
+    p.nachname ? `${p.vorname} ${p.nachname}` : p.vorname,
+  );
+
   return (
     <WizardLayout activeSlug="person" title={t.wizard.person.title}>
       <div className="wizard-field-group">
         <Input
           label={`* ${t.wizard.person.fullName}`}
           placeholder="z.B. Maria Müller"
-          value={
-            [p.vorname, p.nachname].filter(Boolean).join(' ')
-          }
+          value={fullName}
           onChange={(e) => {
-            // Split on the first space so single names still work.
-            const parts = e.target.value.split(/\s+/);
-            const vorname = parts[0] ?? '';
-            const nachname = parts.slice(1).join(' ');
+            const raw = e.target.value;
+            setFullName(raw);
+            const idx = raw.indexOf(' ');
+            const vorname = idx === -1 ? raw : raw.slice(0, idx);
+            const nachname = idx === -1 ? '' : raw.slice(idx + 1);
             updatePerson({ vorname, nachname });
           }}
         />
