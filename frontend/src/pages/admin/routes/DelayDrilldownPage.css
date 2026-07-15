@@ -17,7 +17,7 @@
 }
 
 .rb-delay__cancelled {
-  color: var(--color-error-red, #b00020);
+  color: var(--color-error-red, #D93025);
   font-size: 0.875rem;
   font-weight: 600;
   margin-top: 4px;
