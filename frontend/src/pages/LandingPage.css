@@ -99,7 +99,7 @@
   align-items: center;
   gap: 10px;
   background: #edf8d9;
-  color: #537f12;
+  color: var(--color-landing-green-ink);
   padding: 11px 17px;
   border-radius: 999px;
   font-weight: 800;
@@ -112,7 +112,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #93cd1c;
+  background: var(--color-relief-green);
   flex: none;
 }
 
@@ -822,7 +822,7 @@
   scroll-snap-align: start;
   background: #fff;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   padding: 24px;
   box-shadow: none;
 }
@@ -889,7 +889,7 @@
   width: 100%;
   background: #fff;
   border: 1px solid rgba(9, 67, 137, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   box-shadow: 0 18px 44px rgba(9, 67, 137, 0.12);
   padding: clamp(24px, 3vw, 34px);
 }

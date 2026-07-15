@@ -99,7 +99,7 @@
   align-self: center;
   background: #fff;
   border: 1px solid rgba(9, 67, 137, 0.09);
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-default);
   padding: clamp(24px, 4vw, 36px);
 }
