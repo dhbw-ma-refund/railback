@@ -6,13 +6,12 @@
 .landing-page {
   --hero-header-offset: 112px;
   --page-inline-padding: clamp(22px, 4vw, 96px);
+  --landing-content-width: clamp(1320px, 74vw, 1740px);
+  --landing-section-title-size: clamp(30px, 4vw, 48px);
+  --landing-section-copy-size: clamp(16px, 1.35vw, 18px);
   min-height: 100vh;
   background:
-    linear-gradient(
-      to bottom left,
-      rgba(147, 205, 28, 0.38) 0%,
-      rgba(250, 249, 245, 0) 46%
-    ),
+    linear-gradient(to bottom left, rgba(147, 205, 28, 0.38) 0%, rgba(250, 249, 245, 0) 46%),
     linear-gradient(
       to top right,
       rgba(147, 205, 28, 0.18) 0%,
@@ -38,10 +37,21 @@
 .faq-page .wrap,
 .legal-page .wrap,
 .pricing-page .wrap {
-  max-width: 2560px;
   margin: 0 auto;
   padding-right: var(--page-inline-padding, clamp(22px, 4vw, 96px));
   padding-left: var(--page-inline-padding, clamp(22px, 4vw, 96px));
+}
+
+.landing-page .wrap {
+  max-width: calc(
+    var(--landing-content-width) + var(--page-inline-padding) + var(--page-inline-padding)
+  );
+}
+
+.faq-page .wrap,
+.legal-page .wrap,
+.pricing-page .wrap {
+  max-width: 2560px;
 }
 
 .container {
@@ -72,7 +82,7 @@
   width: 100%;
   /* Keep copy and visual connected instead of letting the empty first grid
      track absorb all additional desktop width. */
-  max-width: clamp(1320px, 74vw, 2000px);
+  max-width: var(--landing-content-width);
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(380px, 480px);
@@ -272,7 +282,6 @@
   .trust__item {
     font-size: 16px;
   }
-
 }
 
 @media (min-width: 2000px) {
@@ -346,7 +355,6 @@
 /* Taller desktop formats need a tighter composition than widescreen layouts. */
 @media (min-width: 1200px) and (max-width: 1999px) and (max-aspect-ratio: 4 / 3) {
   .hero__grid {
-    max-width: clamp(1280px, 70vw, 1400px);
     gap: clamp(64px, 5vw, 96px);
   }
 }
@@ -543,7 +551,9 @@
   border-radius: 44px;
   background: #0b1a2b;
   padding: 12px;
-  box-shadow: var(--shadow-default), inset 0 0 0 2px rgba(255, 255, 255, 0.06);
+  box-shadow:
+    var(--shadow-default),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.06);
 }
 
 .phone__notch {
@@ -696,7 +706,9 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  box-shadow: 0 24px 58px rgba(9, 67, 137, 0.22), 0 8px 22px rgba(147, 205, 28, 0.18);
+  box-shadow:
+    0 24px 58px rgba(9, 67, 137, 0.22),
+    0 8px 22px rgba(147, 205, 28, 0.18);
   max-width: 380px;
   backdrop-filter: blur(8px);
 }
@@ -713,7 +725,9 @@
   font-size: 25px;
   line-height: 1;
   flex: none;
-  box-shadow: 0 12px 24px rgba(105, 182, 0, 0.24), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 12px 24px rgba(105, 182, 0, 0.24),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
 }
 
 .floating-badge .infocard__copy {
@@ -773,19 +787,21 @@
   flex: none;
 }
 
-.eligibility__head h2 {
+.eligibility__head h2,
+.landing-pricing__copy h2 {
   max-width: 18ch;
   margin: 0 0 var(--spacing-2);
   color: var(--color-deep-trust-blue);
-  font-size: clamp(30px, 4vw, 48px);
+  font-size: var(--landing-section-title-size);
   line-height: 1.12;
 }
 
-.eligibility__head p {
+.eligibility__head p,
+.landing-pricing__copy p {
   max-width: 62ch;
   margin: 0;
   color: var(--color-muted-gray-blue);
-  font-size: clamp(16px, 1.35vw, 18px);
+  font-size: var(--landing-section-copy-size);
   line-height: 1.65;
 }
 
@@ -849,10 +865,124 @@
   line-height: 1.55;
 }
 
+.landing-pricing {
+  scroll-margin-top: var(--hero-header-offset);
+  padding: clamp(50px, 7vh, 92px) 0 clamp(58px, 8vh, 104px);
+  background: transparent;
+}
+
+.landing-pricing__grid {
+  width: 100%;
+  max-width: var(--landing-content-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 500px);
+  gap: clamp(36px, 5vw, 72px);
+  align-items: center;
+}
+
+.landing-pricing__copy {
+  max-width: 660px;
+}
+
+.landing-pricing-card {
+  width: 100%;
+  background: #fff;
+  border: 1px solid rgba(9, 67, 137, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 18px 44px rgba(9, 67, 137, 0.12);
+  padding: clamp(24px, 3vw, 34px);
+}
+
+.landing-pricing-card__head {
+  display: grid;
+  gap: var(--spacing-2);
+}
+
+.landing-pricing-card h3 {
+  margin: 0;
+  color: var(--color-deep-trust-blue);
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.landing-pricing-card__price {
+  color: var(--color-deep-trust-blue);
+  font-size: clamp(52px, 7vw, 72px);
+  font-weight: 850;
+  line-height: 1;
+}
+
+.landing-pricing-card__meta,
+.landing-pricing-card__note {
+  color: var(--color-muted-gray-blue);
+  line-height: 1.5;
+}
+
+.landing-pricing-card__meta {
+  margin: 8px 0 0;
+}
+
+.landing-pricing-card ul {
+  display: grid;
+  gap: 14px;
+  padding: 0;
+  margin: var(--spacing-4) 0;
+  list-style: none;
+}
+
+.landing-pricing-card li {
+  position: relative;
+  padding-left: 30px;
+  color: var(--color-text-primary);
+  line-height: 1.45;
+}
+
+.landing-pricing-card li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 0.42em;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-landing-green-ink);
+  box-shadow: 0 0 0 4px #edf8d9;
+}
+
+.landing-pricing-card .rb-button {
+  width: 100%;
+}
+
+.landing-pricing-card__note {
+  margin: var(--spacing-2) 0 0;
+  font-size: 14px;
+}
+
 @media (min-width: 1440px) {
   .eligibility-card {
     min-height: 270px;
     padding: clamp(26px, 2vw, 34px);
+  }
+}
+
+@media (min-width: 2000px) {
+  .landing-page {
+    --landing-section-title-size: clamp(52px, 2.3vw, 60px);
+    --landing-section-copy-size: clamp(19px, 0.82vw, 21px);
+  }
+
+  .eligibility {
+    padding-bottom: 58px;
+  }
+
+  .landing-pricing {
+    padding-top: 56px;
+    padding-bottom: 64px;
+  }
+
+  .landing-pricing__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(520px, 620px);
   }
 }
 
@@ -1077,12 +1207,14 @@
     font-size: 12px;
   }
 
-  .eligibility__head h2 {
+  .eligibility__head h2,
+  .landing-pricing__copy h2 {
     max-width: 100%;
     font-size: clamp(25px, 6.8vw, 32px);
   }
 
-  .eligibility__head p {
+  .eligibility__head p,
+  .landing-pricing__copy p {
     font-size: 15px;
     line-height: 1.5;
   }
@@ -1096,6 +1228,31 @@
     scroll-snap-type: none;
     margin-right: 0;
     padding-right: 0;
+  }
+
+  .landing-pricing {
+    padding: 42px 0 58px;
+  }
+
+  .landing-pricing__grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .landing-pricing-card {
+    padding: 22px;
+  }
+
+  .landing-pricing-card h3 {
+    font-size: 20px;
+  }
+
+  .landing-pricing-card__price {
+    font-size: clamp(48px, 15vw, 64px);
+  }
+
+  .landing-pricing-card ul {
+    margin: 24px 0;
   }
 
   .eligibility-card {
