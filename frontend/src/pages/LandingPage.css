@@ -6,6 +6,9 @@
 .landing-page {
   --hero-header-offset: 112px;
   --page-inline-padding: clamp(22px, 4vw, 96px);
+  --landing-content-width: clamp(1320px, 74vw, 1740px);
+  --landing-section-title-size: clamp(30px, 4vw, 48px);
+  --landing-section-copy-size: clamp(16px, 1.35vw, 18px);
   min-height: 100vh;
   background:
     linear-gradient(to bottom left, rgba(147, 205, 28, 0.38) 0%, rgba(250, 249, 245, 0) 46%),
@@ -34,10 +37,21 @@
 .faq-page .wrap,
 .legal-page .wrap,
 .pricing-page .wrap {
-  max-width: 2560px;
   margin: 0 auto;
   padding-right: var(--page-inline-padding, clamp(22px, 4vw, 96px));
   padding-left: var(--page-inline-padding, clamp(22px, 4vw, 96px));
+}
+
+.landing-page .wrap {
+  max-width: calc(
+    var(--landing-content-width) + var(--page-inline-padding) + var(--page-inline-padding)
+  );
+}
+
+.faq-page .wrap,
+.legal-page .wrap,
+.pricing-page .wrap {
+  max-width: 2560px;
 }
 
 .container {
@@ -68,7 +82,7 @@
   width: 100%;
   /* Keep copy and visual connected instead of letting the empty first grid
      track absorb all additional desktop width. */
-  max-width: clamp(1320px, 74vw, 2000px);
+  max-width: var(--landing-content-width);
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(380px, 480px);
@@ -341,7 +355,6 @@
 /* Taller desktop formats need a tighter composition than widescreen layouts. */
 @media (min-width: 1200px) and (max-width: 1999px) and (max-aspect-ratio: 4 / 3) {
   .hero__grid {
-    max-width: clamp(1280px, 70vw, 1400px);
     gap: clamp(64px, 5vw, 96px);
   }
 }
@@ -774,19 +787,21 @@
   flex: none;
 }
 
-.eligibility__head h2 {
+.eligibility__head h2,
+.landing-pricing__copy h2 {
   max-width: 18ch;
   margin: 0 0 var(--spacing-2);
   color: var(--color-deep-trust-blue);
-  font-size: clamp(30px, 4vw, 48px);
+  font-size: var(--landing-section-title-size);
   line-height: 1.12;
 }
 
-.eligibility__head p {
+.eligibility__head p,
+.landing-pricing__copy p {
   max-width: 62ch;
   margin: 0;
   color: var(--color-muted-gray-blue);
-  font-size: clamp(16px, 1.35vw, 18px);
+  font-size: var(--landing-section-copy-size);
   line-height: 1.65;
 }
 
@@ -858,7 +873,7 @@
 
 .landing-pricing__grid {
   width: 100%;
-  max-width: clamp(1120px, 72vw, 1740px);
+  max-width: var(--landing-content-width);
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(360px, 500px);
@@ -868,20 +883,6 @@
 
 .landing-pricing__copy {
   max-width: 660px;
-}
-
-.landing-pricing__copy h2 {
-  margin: 0 0 var(--spacing-2);
-  color: var(--color-deep-trust-blue);
-  font-size: clamp(30px, 4vw, 48px);
-  line-height: 1.12;
-}
-
-.landing-pricing__copy p {
-  margin: 0;
-  color: var(--color-muted-gray-blue);
-  font-size: clamp(16px, 1.35vw, 18px);
-  line-height: 1.65;
 }
 
 .landing-pricing-card {
@@ -931,16 +932,22 @@
 }
 
 .landing-pricing-card li {
-  display: grid;
-  grid-template-columns: 22px minmax(0, 1fr);
-  gap: 10px;
-  align-items: start;
+  position: relative;
+  padding-left: 30px;
   color: var(--color-text-primary);
   line-height: 1.45;
 }
 
-.landing-pricing-card li svg {
-  margin-top: 2px;
+.landing-pricing-card li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 0.42em;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-landing-green-ink);
+  box-shadow: 0 0 0 4px #edf8d9;
 }
 
 .landing-pricing-card .rb-button {
@@ -956,6 +963,22 @@
   .eligibility-card {
     min-height: 270px;
     padding: clamp(26px, 2vw, 34px);
+  }
+}
+
+@media (min-width: 2000px) {
+  .eligibility {
+    padding-bottom: 58px;
+  }
+
+  .landing-pricing {
+    padding-top: 56px;
+    padding-bottom: 64px;
+  }
+
+  .landing-pricing__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(520px, 620px);
+    align-items: start;
   }
 }
 
@@ -1180,12 +1203,14 @@
     font-size: 12px;
   }
 
-  .eligibility__head h2 {
+  .eligibility__head h2,
+  .landing-pricing__copy h2 {
     max-width: 100%;
     font-size: clamp(25px, 6.8vw, 32px);
   }
 
-  .eligibility__head p {
+  .eligibility__head p,
+  .landing-pricing__copy p {
     font-size: 15px;
     line-height: 1.5;
   }
@@ -1208,15 +1233,6 @@
   .landing-pricing__grid {
     grid-template-columns: 1fr;
     gap: 24px;
-  }
-
-  .landing-pricing__copy h2 {
-    font-size: clamp(25px, 6.8vw, 32px);
-  }
-
-  .landing-pricing__copy p {
-    font-size: 15px;
-    line-height: 1.5;
   }
 
   .landing-pricing-card {

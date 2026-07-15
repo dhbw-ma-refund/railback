@@ -73,20 +73,6 @@ const Icon = ({ name, size = 20, color }: { name: string; size?: number; color?:
         <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
       </svg>
     ),
-    check: (
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={color || 'currentColor'}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M20 6L9 17l-5-5" />
-      </svg>
-    ),
   };
 
   return icons[name] || null;
@@ -221,10 +207,7 @@ export const LandingPage = () => {
                 </div>
                 <ul>
                   {pricing.features.map((feature) => (
-                    <li key={feature}>
-                      <Icon name="check" size={18} color="var(--color-landing-green-ink)" />
-                      <span>{feature}</span>
-                    </li>
+                    <li key={feature}>{feature}</li>
                   ))}
                 </ul>
                 <Button variant="primary" size="large" onClick={handleCheckClaim}>
