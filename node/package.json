@@ -38,7 +38,7 @@
     "prepare": "tsc || true",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest --runInBand",
+    "test": "jest --runInBand",
     "test:integration": "RAILBACK_RUN_INTEGRATION=1 node --experimental-vm-modules node_modules/.bin/jest tests/integration.test.ts"
   },
   "jest": {
@@ -59,7 +59,8 @@
       "^.+\\.tsx?$": [
         "ts-jest",
         {
-          "useESM": true
+          "useESM": true,
+          "diagnostics": { "ignoreCodes": [6059] }
         }
       ]
     }
