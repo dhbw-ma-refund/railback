@@ -162,7 +162,8 @@ describe("DdbBackend.blobs", () => {
     expect(list2.find((r) => r.belegId === "B1")).toBeUndefined();
   });
 
-  test("S3-bytes methods are wired in Phase 3c (put/get round-trip + presign key)", async () => {
+  const s3it = process.env["S3_ENDPOINT_URL"] ? test : test.skip;
+  s3it("S3-bytes methods are wired in Phase 3c (put/get round-trip + presign key)", async () => {
     // Phase 3c filled these against the S3BlobConnector. They no longer throw
     // NotImplementedError; full S3 behaviour (cascades, caps) is covered by
     // tests/adapter_phase3c_blobs.test.ts. Here we just confirm the happy path.

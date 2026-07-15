@@ -45,6 +45,7 @@
     "preset": "ts-jest/presets/default-esm",
     "testEnvironment": "node",
     "globalSetup": "<rootDir>/scripts/jest-global-setup.mjs",
+    "maxWorkers": 1,
     "testMatch": [
       "**/tests/**/*.test.ts"
     ],
