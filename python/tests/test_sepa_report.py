@@ -4,8 +4,11 @@ NOW = "2026-01-01T00:00:00Z"
 
 def item(date, rid, **extra):
     return {"pk": f"SEPA#REPORT#{date}", "sk": f"REPORT#{rid}",
-            "report_type": "CAMT054", "s3_bucket": "bucket",
-            "s3_key": f"sepa/{date}/{rid}.xml", "parsed_at": NOW, **extra}
+            "report_type": "CAMT054", "s3_bucket": "railback-sepa",
+            "s3_key": f"sepa-reports/{date}/{rid}.xml",
+            "sender": "rueckmeldung@bank.example", "ingest_source": "MANUAL_UPLOAD",
+            "mandates_correlated": ["MID_A", "MID_B"],
+            "parsed_at": NOW, "received_at": NOW, **extra}
 
 
 class TestSepaReportConnector:

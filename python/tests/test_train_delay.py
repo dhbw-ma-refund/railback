@@ -6,10 +6,13 @@ def item(train_nr, date, seg_id, **extra):
     # Route-lookup rides GSI3 (STATION#<eva>#<date> / <date>T<HH:MM>#<trainNr>).
     # The ingest-delays poller writes gsi3_sk as full ISO — DB_SCHEMA.md 2026-07-11.
     return {"pk": f"TRAIN#{train_nr}#{date}", "sk": f"SEG#{seg_id}",
-            "origin_eva": 8000001, "destination_eva": 8000002,
-            "departure_time": "08:00", "arrival_time": "09:00",
-            "delay_minutes": 0, "recorded_at": NOW,
             "gsi3_pk": f"STATION#8000001#{date}", "gsi3_sk": f"{date}T08:00#{train_nr}",
+            "origin_eva": 8000001, "destination_eva": 8000002,
+            "origin": "Mannheim Hbf", "destination": "Karlsruhe Hbf",
+            "planned_departure": f"{date}T08:00", "actual_departure": f"{date}T08:05",
+            "planned_arrival": f"{date}T08:30", "actual_arrival": f"{date}T08:35",
+            "delayMinutes": 5, "reason": "42", "is_cancelled": False,
+            "finalized_at": f"{date}T09:00", "source": "iris", "last_seen_at": NOW,
             **extra}
 
 
@@ -28,14 +31,14 @@ class TestTrainSegmentDelayConnector:
 
     def test_update_existing(self, db):
         db.train_delay.put(item("ICE3", "2026-01-03", f"{NS}_UPD"))
-        db.train_delay.update("ICE3", "2026-01-03", f"{NS}_UPD", {"delay_minutes": 15})
-        assert db.train_delay.get("ICE3", "2026-01-03", f"{NS}_UPD").unwrap()["delay_minutes"] == 15
+        db.train_delay.update("ICE3", "2026-01-03", f"{NS}_UPD", {"delayMinutes": 15})
+        assert db.train_delay.get("ICE3", "2026-01-03", f"{NS}_UPD").unwrap()["delayMinutes"] == 15
         db.train_delay._delete("TRAIN#ICE3#2026-01-03", f"SEG#{NS}_UPD")
 
     def test_update_empty_dict_is_noop(self, db):
         db.train_delay.put(item("ICE4", "2026-01-04", f"{NS}_EMP"))
         assert db.train_delay.update("ICE4", "2026-01-04", f"{NS}_EMP", {}).is_ok()
-        assert db.train_delay.get("ICE4", "2026-01-04", f"{NS}_EMP").unwrap()["delay_minutes"] == 0
+        assert db.train_delay.get("ICE4", "2026-01-04", f"{NS}_EMP").unwrap()["delayMinutes"] == 5
         db.train_delay._delete("TRAIN#ICE4#2026-01-04", f"SEG#{NS}_EMP")
 
     def test_list_for_train_empty(self, db):

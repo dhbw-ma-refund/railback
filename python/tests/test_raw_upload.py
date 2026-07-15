@@ -5,7 +5,9 @@ E = f"{NS}@it.de"
 
 def item(tid, **extra):
     return {"pk": f"USER#{E}", "sk": f"RAW#{tid}", "filename": "ticket.pdf",
-            "s3_bucket": "bucket", "s3_key": f"raw/{tid}.pdf", "uploaded_at": NOW, **extra}
+            "s3_bucket": "railback-uploads", "s3_key": f"raw/{NS}/{tid}.pdf",
+            "content_type": "application/pdf", "size_bytes": 248193,
+            "uploaded_at": NOW, **extra}
 
 
 class TestRawUploadConnector:

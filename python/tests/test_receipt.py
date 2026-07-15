@@ -6,7 +6,9 @@ E = f"{NS}@it.de"
 def item(tid, bid, **extra):
     return {"pk": f"USER#{E}", "sk": f"TICKET#{tid}#BELEG#{bid}",
             "filename": "receipt.pdf", "typ": "TAXI",
-            "s3_bucket": "bucket", "s3_key": f"belege/{tid}/{bid}.pdf", "uploaded_at": NOW, **extra}
+            "s3_bucket": "railback-uploads", "s3_key": f"belege/{tid}/{bid}.pdf",
+            "content_type": "application/pdf", "size_bytes": 51204,
+            "uploaded_at": NOW, **extra}
 
 
 class TestOriginalReceiptConnector:

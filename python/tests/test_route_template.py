@@ -5,8 +5,11 @@ E = f"{NS}@it.de"
 
 def item(tid, **extra):
     return {"pk": f"USER#{E}", "sk": f"TEMPLATE#{tid}",
-            "origin_eva": 8000001, "destination_eva": 8000105,
-            "label": "Home to Work", "created_at": NOW, **extra}
+            "templateId": tid, "label": "Home to Work",
+            "from_station": "Mannheim Hbf", "from_eva": 8000001,
+            "to_station": "Karlsruhe Hbf", "to_eva": 8000105,
+            "fahrkartennummer": "78123456789", "fahrkartenpreis": "39.90",
+            "zugkategorie_pref": "IC", "created_at": NOW, "updated_at": NOW, **extra}
 
 
 class TestRouteTemplateConnector:

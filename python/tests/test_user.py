@@ -6,8 +6,12 @@ def item(email, **extra):
     return {
         "pk": f"USER#{email}", "sk": "PROFILE",
         "gsi1_pk": "USER", "gsi1_sk": f"EMAIL#{email}",
-        "user_state": "ACTIVE", "hashed_password": "x",
-        "vorname": "Test", "nachname": "User",
+        "user_state": "ACTIVE", "hashed_password": "$2b$12$abcdefghijklmnopqrstuv",
+        "vorname": "Maria", "nachname": "Müller",
+        "telefon": "+49 151 1234567",
+        "adresse_strasse": "Musterstraße", "adresse_hausnr": "12a",
+        "adresse_plz": "68161", "adresse_ort": "Mannheim", "adresse_land": "DE",
+        "iban_enc": "AAECAwQFBgcICQoLDA0ODw==", "bic_enc": "EBESExQVFhcYGRobHB0eHw==",
         "created_at": NOW,
         "datenschutz_einwilligung": True, "agb_akzeptiert": True,
         **extra,
@@ -36,7 +40,7 @@ class TestUserConnector:
         db.user.put(item(e))
         r = db.user.get(e)
         assert r.is_ok()
-        assert r.unwrap()["vorname"] == "Test"
+        assert r.unwrap()["vorname"] == "Maria"
         db.user._delete(f"USER#{e}", "PROFILE")
 
     def test_get_not_found_returns_none(self, db):
@@ -101,7 +105,7 @@ class TestUserConnector:
         data = r.unwrap()
         assert data["iban_enc"] == "ENC_IBAN_001"
         assert data["bic_enc"] == "ENC_BIC_001"
-        assert data["vorname"] == "Test"
+        assert data["vorname"] == "Maria"
         assert db.user.get(e).unwrap()["iban_enc"] == "ENC_IBAN_001"
         db.user._delete(f"USER#{e}", "PROFILE")
 

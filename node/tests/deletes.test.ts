@@ -5,19 +5,27 @@ const NS = "del001ts";
 const NOW = "2026-01-01T00:00:00Z";
 
 function userItem(e: string) {
-  return { pk: `USER#${e}`, sk: "PROFILE", name: "Test", gsi1_pk: "USER", gsi1_sk: `EMAIL#${e}` };
+  return {
+    pk: `USER#${e}`, sk: "PROFILE", gsi1_pk: "USER", gsi1_sk: `EMAIL#${e}`,
+    user_state: "ACTIVE", hashed_password: "$2b$12$abcdefghijklmnopqrstuv",
+    vorname: "Maria", nachname: "Müller", telefon: "+49 151 1234567",
+    adresse_strasse: "Musterstraße", adresse_hausnr: "12a",
+    adresse_plz: "68161", adresse_ort: "Mannheim", adresse_land: "DE",
+    iban_enc: "AAECAwQFBgcICQoLDA0ODw==", bic_enc: "EBESExQVFhcYGRobHB0eHw==",
+    created_at: NOW, datenschutz_einwilligung: true, agb_akzeptiert: true,
+  };
 }
 function ticketItem(e: string, tid: string) {
-  return { pk: `USER#${e}`, sk: `TICKET#${tid}`, gsi1_pk: `TRAIN#ICE1#2026-01-01`, gsi1_sk: `TICKET#${tid}`, ticket_state: "READY", uploaded_at: NOW };
+  return { pk: `USER#${e}`, sk: `TICKET#${tid}`, gsi1_pk: `TRAIN#ICE1#2026-01-01`, gsi1_sk: `TICKET#${tid}`, ticket_state: "READY", uploaded_at: NOW, updated_at: NOW };
 }
 function ownerItem(tid: string, e: string) {
-  return { pk: `TICKET#${tid}`, sk: "OWNER", email: e };
+  return { pk: `TICKET#${tid}`, sk: "OWNER", email: e, ticketId: tid, created_at: NOW };
 }
 function belegItem(e: string, tid: string, bid: string) {
-  return { pk: `USER#${e}`, sk: `TICKET#${tid}#BELEG#${bid}`, typ: "TAXI", uploaded_at: NOW };
+  return { pk: `USER#${e}`, sk: `TICKET#${tid}#BELEG#${bid}`, filename: "receipt.pdf", typ: "TAXI", s3_bucket: "railback-uploads", s3_key: `belege/${tid}/${bid}.pdf`, content_type: "application/pdf", size_bytes: 51204, uploaded_at: NOW };
 }
 function mandateItem(e: string, tid: string) {
-  return { pk: `USER#${e}`, sk: `TICKET#${tid}#MANDATE`, mandate_state: "ISSUED", issued_at: NOW };
+  return { pk: `USER#${e}`, sk: `TICKET#${tid}#MANDATE`, mandate_id: `MID_${tid}`, mandate_state: "ISSUED", sequence_type: "OOFF", fee_amount: "0.75", issued_at: NOW };
 }
 
 describe("delete operations", () => {

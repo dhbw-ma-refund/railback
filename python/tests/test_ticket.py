@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 NS = "t001"
 NOW = "2026-06-01T10:00:00+02:00"
 
@@ -12,6 +14,20 @@ def ticket(email, tid, **extra):
         "gsi1_pk": f"TRAIN#IC 1#{NOW[:10]}", "gsi1_sk": f"TICKET#{tid}",
         "gsi2_pk": "BARCODE", "gsi2_sk": f"bc_{tid}",
         "ticket_state": "READY",
+        "state_timeline": [{"state": "VALIDATING", "at": NOW}, {"state": "READY", "at": NOW}],
+        "extraction_status": "DONE", "extraction_method": "BARCODE", "extraction_confidence": Decimal("0.95"),
+        "barcode_uid": f"bc_{tid}",
+        "vorname_aus_ticket": "Maria", "nachname_aus_ticket": "Müller",
+        "fahrt_abreisedatum": NOW[:10], "fahrt_abreisebahnhof": "Mannheim Hbf",
+        "fahrt_zielbahnhof": "Karlsruhe Hbf", "fahrt_abfahrtszeit_plan": "08:00",
+        "fahrt_ankunftszeit_plan": "08:30", "fahrt_zugnummer_plan": "IC 1",
+        "fahrt_zugkategorie_plan": "IC", "fahrt_fahrkartennummer": "78123456789",
+        "fahrt_fahrkartenpreis": "39.90",
+        "antragsgrund": ["VERSPAETUNG"], "antragsart": "ENTSCHAEDIGUNG_60_119",
+        "is_zeitkarte": False,
+        "datenschutz_einwilligung": True, "wahrheitserklaerung": True,
+        "delayMinutes": 75, "erwartete_erstattung": "19.95", "service_fee_betrag": "0.75",
+        "service_fee_state": "PENDING",
         "uploaded_at": NOW, "updated_at": NOW,
         **extra,
     }

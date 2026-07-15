@@ -10,7 +10,13 @@ function item(tid: string, extra: Record<string, unknown> = {}) {
   return {
     pk: `USER#${E}`, sk: `TICKET#${tid}#MANDATE`,
     mandate_id: `MID_${tid}`, mandate_state: "ISSUED",
-    fee_amount: "5.00", issued_at: NOW, ...extra,
+    sequence_type: "OOFF", fee_amount: "0.75",
+    iban_enc: "AAECAwQFBgcICQoLDA0ODw==", bic_enc: "EBESExQVFhcYGRobHB0eHw==",
+    kontoinhaber_snapshot: "Maria Müller",
+    user_consent_at: NOW, user_consent_ip: "203.0.113.7",
+    user_consent_user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+    vorabankuendigung_sent_at: NOW,
+    expires_at: "2029-01-01T00:00:00Z", issued_at: NOW, ...extra,
   };
 }
 

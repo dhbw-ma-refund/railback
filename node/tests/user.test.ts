@@ -9,8 +9,12 @@ function item(e: string, extra: Record<string, unknown> = {}) {
   return {
     pk: `USER#${e}`, sk: "PROFILE",
     gsi1_pk: "USER", gsi1_sk: `EMAIL#${e}`,
-    user_state: "ACTIVE", hashed_password: "x",
-    vorname: "Test", nachname: "User",
+    user_state: "ACTIVE", hashed_password: "$2b$12$abcdefghijklmnopqrstuv",
+    vorname: "Maria", nachname: "Müller",
+    telefon: "+49 151 1234567",
+    adresse_strasse: "Musterstraße", adresse_hausnr: "12a",
+    adresse_plz: "68161", adresse_ort: "Mannheim", adresse_land: "DE",
+    iban_enc: "AAECAwQFBgcICQoLDA0ODw==", bic_enc: "EBESExQVFhcYGRobHB0eHw==",
     created_at: NOW,
     datenschutz_einwilligung: true, agb_akzeptiert: true,
     ...extra,
@@ -29,7 +33,7 @@ describe("UserConnector", () => {
     await db.user.put(item(e));
     const r = await db.user.get(e);
     expect(r.isOk()).toBe(true);
-    expect((r.unwrap() as any)["vorname"]).toBe("Test");
+    expect(r.unwrap()?.["vorname"]).toBe("Maria");
     await db.user._delete(`USER#${e}`, "PROFILE");
   });
 
@@ -74,7 +78,7 @@ describe("UserConnector", () => {
     const data = r.unwrap() as Record<string, unknown>;
     expect(data).toHaveProperty("iban_enc", "ENC_IBAN");
     expect(data).toHaveProperty("bic_enc", "ENC_BIC");
-    expect(data["vorname"]).toBe("Test");
+    expect(data["vorname"]).toBe("Maria");
     expect((await db.user.get(e)).unwrap() as any).toMatchObject({ iban_enc: "ENC_IBAN" });
     await db.user._delete(`USER#${e}`, "PROFILE");
   });
@@ -96,12 +100,12 @@ describe("UserConnector", () => {
     const mixed = canonical.toUpperCase();
     const r1 = await db.user.get(mixed);
     expect(r1.isOk()).toBe(true);
-    expect((r1.unwrap() as any)?.["vorname"]).toBe("Test");
+    expect(r1.unwrap()?.["vorname"]).toBe("Maria");
     // And with whitespace padding.
     const padded = `  ${canonical}  `;
     const r2 = await db.user.get(padded);
     expect(r2.isOk()).toBe(true);
-    expect((r2.unwrap() as any)?.["vorname"]).toBe("Test");
+    expect(r2.unwrap()?.["vorname"]).toBe("Maria");
     await db.user._delete(`USER#${canonical}`, "PROFILE");
   });
 });
