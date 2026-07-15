@@ -76,6 +76,21 @@ class Http:
         except (urllib.error.URLError, TimeoutError, ssl.SSLError) as e:
             return 0, (time.perf_counter() - t0) * 1000, str(e).encode()
 
+    def post(self, path: str, token: str, body: dict) -> tuple[int, float, bytes]:
+        data = json.dumps(body).encode()
+        req = urllib.request.Request(
+            self.base + path, data=data, method="POST",
+            headers={"Authorization": "Bearer " + token,
+                     "Content-Type": "application/json"})
+        t0 = time.perf_counter()
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout, context=self._ctx) as r:
+                return r.status, (time.perf_counter() - t0) * 1000, r.read()
+        except urllib.error.HTTPError as e:
+            return e.code, (time.perf_counter() - t0) * 1000, e.read()
+        except (urllib.error.URLError, TimeoutError, ssl.SSLError) as e:
+            return 0, (time.perf_counter() - t0) * 1000, str(e).encode()
+
     def login(self, email: str, password: str) -> str:
         data = json.dumps({"email": email, "password": password}).encode()
         req = urllib.request.Request(
@@ -92,7 +107,7 @@ def _pct(a: list[float], p: float) -> float:
     return round(s[min(len(s) - 1, int(p / 100 * len(s)))], 1)
 
 
-def sample_keys(http: Http, token: str) -> dict:
+def sample_keys(http: Http, token: str, user_token: str) -> dict:
     """Pull real keys from existing data so probes hit live rows."""
     status, _, body = http.get("/admin/tickets?limit=100", token)
     items = (json.loads(body) or {}).get("items", []) if status == 200 else []
@@ -107,29 +122,75 @@ def sample_keys(http: Http, token: str) -> dict:
     train = detail.get("fahrt_zugnummer_plan") or detail.get("trainNr") or "ICE 1000"
     date = detail.get("fahrt_abreisedatum") or detail.get("date") or "2026-06-20"
     states = sorted({t.get("ticket_state", "READY") for t in items})
+
+    # USER-side: the seeded user's own email + one of their ticket ids.
+    ust, _, ub = http.get("/users/me", user_token)
+    user_email = (json.loads(ub) or {}).get("email", "") if ust == 200 else ""
+    utst, _, utb = http.get("/users/me/tickets", user_token)
+    uitems = (json.loads(utb) or {}).get("items", []) if utst == 200 else []
+    user_tid = uitems[0]["ticketId"] if uitems else tid
+
+    # Delay data (real, discovered via route-lookup): a popular route with segments.
+    # Verified live: Frankfurt (Main) Hbf -> Stuttgart Hbf @ 2026-06-20, train ICE2845.
+    route_lookup = {"fromStation": "Frankfurt (Main) Hbf", "toStation": "Stuttgart Hbf",
+                    "date": "2026-06-20", "abfahrtszeit_plan": "08:00"}
+    delay_train, delay_date = "ICE2845", "2026-06-20"
+    # Confirm the route still resolves; if so, adopt its first candidate's trainNr.
+    rst, _, rb = http.post("/users/me/tickets/route-lookup", user_token, route_lookup)
+    if rst == 200:
+        cands = (json.loads(rb) or {}).get("candidates", [])
+        if cands and cands[0].get("trainNr"):
+            delay_train = cands[0]["trainNr"]
+
     return {"ticketId": tid, "email": email, "trainNr": train, "date": date,
-            "states": states, "state": states[0] if states else "READY"}
+            "states": states, "state": states[0] if states else "READY",
+            "userEmail": user_email, "userTicketId": user_tid,
+            "delayTrain": delay_train, "delayDate": delay_date,
+            "routeLookup": route_lookup}
 
 
 def patterns(k: dict) -> dict:
+    # Each entry: (token_kind, method, path, body). token_kind ∈ {"admin","user"}.
     from urllib.parse import quote
     e = quote(k["email"]); tr = quote(k["trainNr"]); st = quote(k["state"])
+    dtr = quote(k["delayTrain"]); dd = k["delayDate"]
+    rl = k["routeLookup"]  # {fromStation,toStation,date,abfahrtszeit_plan}
     return {
-        # cheap: Query / GetItem
-        "GET_ticket_by_id__GetItem": f"/admin/tickets/{k['ticketId']}",
-        "GET_user_by_email__GetItem": f"/admin/users/{e}",
-        "tickets_trainNr_date__Query_gsi1": f"/admin/tickets?trainNr={tr}&date={k['date']}&limit=50",
-        "tickets_email__Query_base": f"/admin/tickets?email={e}&limit=50",
-        # expensive: Scan / N+1
-        "tickets_state__Scan_base": f"/admin/tickets?state={st}&limit=50",
-        "tickets_nofilter__Scan_base": "/admin/tickets?limit=50",
-        "stats__double_Scan": "/admin/stats",
-        "users_list__Query_plus_Nplus1": "/admin/users?limit=50",
-        "users_prefix__Query_plus_Nplus1": "/admin/users?email=loadtest-&limit=50",
+        # --- ADMIN cheap: Query / GetItem ---
+        "GET_ticket_by_id__GetItem": ("admin", "GET", f"/admin/tickets/{k['ticketId']}", None),
+        "GET_user_by_email__GetItem": ("admin", "GET", f"/admin/users/{e}", None),
+        "tickets_trainNr_date__Query_gsi1": ("admin", "GET", f"/admin/tickets?trainNr={tr}&date={k['date']}&limit=50", None),
+        "tickets_trainNr_date_lim100__Query_gsi1": ("admin", "GET", f"/admin/tickets?trainNr={tr}&date={k['date']}&limit=100", None),
+        "tickets_email__Query_base": ("admin", "GET", f"/admin/tickets?email={e}&limit=50", None),
+        "tickets_email_lim100__Query_base": ("admin", "GET", f"/admin/tickets?email={e}&limit=100", None),
+        # --- ADMIN expensive: Scan (Route 3 variants) ---
+        "tickets_state__Scan_base": ("admin", "GET", f"/admin/tickets?state={st}&limit=50", None),
+        "tickets_state_lim100__Scan_base": ("admin", "GET", f"/admin/tickets?state={st}&limit=100", None),
+        "tickets_daterange__Scan_base": ("admin", "GET", "/admin/tickets?from=2026-06-01&to=2026-06-30&limit=50", None),
+        "tickets_nofilter__Scan_base": ("admin", "GET", "/admin/tickets?limit=50", None),
+        "tickets_nofilter_lim100__Scan_base": ("admin", "GET", "/admin/tickets?limit=100", None),
+        "stats__double_Scan": ("admin", "GET", "/admin/stats", None),
+        # --- ADMIN expensive: users list = Query gsi1 + N+1 tickets.adminList per row ---
+        "users_list__Query_plus_Nplus1": ("admin", "GET", "/admin/users?limit=50", None),
+        "users_list_lim100__Query_plus_Nplus1": ("admin", "GET", "/admin/users?limit=100", None),
+        "users_prefix__Query_plus_Nplus1": ("admin", "GET", "/admin/users?email=loadtest-&limit=50", None),
+        "users_state_filter__Query_plus_Nplus1": ("admin", "GET", "/admin/users?user_state=ACTIVE&limit=50", None),
+        # --- ADMIN: delays passthrough — Query pk=TRAIN#<nr>#<date>, begins_with(sk,"SEG#") (V2) ---
+        "admin_train_delays__Query_TRAIN": ("admin", "GET", f"/admin/trains/{dtr}/{dd}/delays", None),
+        # --- ADMIN: pending SEPA batches — Scan on mandate fields (M3) [empty-set] ---
+        "admin_pending_batches__Scan_mandate": ("admin", "GET", "/admin/sepa/pending-batches", None),
+        # --- USER-scoped reads (USER token) ---
+        "me_profile__GetItem": ("user", "GET", "/users/me", None),
+        "me_refund_data__GetItem_plus_decrypt": ("user", "GET", "/users/me/refund-data", None),
+        "me_tickets__Query_base": ("user", "GET", "/users/me/tickets", None),
+        "me_ticket_by_id__GetItem": ("user", "GET", f"/users/me/tickets/{k['userTicketId']}", None),
+        "me_route_templates__Query_base": ("user", "GET", "/users/me/route-templates", None),
+        # --- USER: stateless route-lookup — GSI3 STATION#<eva>#<date> Query (V3) ---
+        "me_route_lookup__Query_gsi3": ("user", "POST", "/users/me/tickets/route-lookup", rl),
     }
 
 
-def run_level(http: Http, token: str, path: str, conc: int, total: int) -> dict:
+def run_level(http: Http, token: str, method: str, path: str, body: dict | None, conc: int, total: int) -> dict:
     lat: list[float] = []
     codes: dict = {}
     err = 0
@@ -144,15 +205,18 @@ def run_level(http: Http, token: str, path: str, conc: int, total: int) -> dict:
                 if launched >= total:
                     return
                 launched += 1
-            status, ms, body = http.get(path, token)
+            if method == "POST":
+                status, ms, resp_body = http.post(path, token, body or {})
+            else:
+                status, ms, resp_body = http.get(path, token)
             with lock:
                 lat.append(ms)
                 key = str(status) if status else "NETERR"
                 codes[key] = codes.get(key, 0) + 1
                 if not (200 <= status < 300):
                     err += 1
-                    if not sample and body:
-                        sample = body[:160].decode("utf-8", "replace")
+                    if not sample and resp_body:
+                        sample = resp_body[:160].decode("utf-8", "replace")
 
     t0 = time.perf_counter()
     with ThreadPoolExecutor(max_workers=conc) as ex:
@@ -196,35 +260,64 @@ def main():
     ap.add_argument("--base", required=True)
     ap.add_argument("--admin-email", required=True)
     ap.add_argument("--admin-password", required=True)
+    ap.add_argument("--user-email", default="", help="seeded USER for user-scoped reads; auto-picked from loadtest- prefix if omitted")
+    ap.add_argument("--user-password", default="min-8-zeichen")
     ap.add_argument("--levels", default="1,5,10,20,40")
     ap.add_argument("--requests-per-level", type=int, default=60)
     ap.add_argument("--settle-ms", type=int, default=1500)
     ap.add_argument("--timeout", type=float, default=15.0)
     ap.add_argument("--out", default="/Users/I749952/Documents/railback-schema-docs")
     args = ap.parse_args()
-
     http = Http(args.base, timeout=args.timeout)
     token = http.login(args.admin_email, args.admin_password)
-    print(f"[auth] admin token acquired")
-    keys = sample_keys(http, token)
+    print("[auth] admin token acquired")
+    # A seeded user shares the load-test password; pick one for the USER-scoped reads.
+    user_email = args.user_email
+    if not user_email:
+        # Page through seeded loadtest- users and pick the first that actually
+        # owns tickets, so the USER-scoped ticket read hits a row it owns.
+        st, _, ub = http.get("/admin/users?email=loadtest-&limit=50", token)
+        cand = (json.loads(ub) or {}).get("items", []) if st == 200 else []
+        for u in cand:
+            em = u.get("email", "")
+            if not em:
+                continue
+            try:
+                utok_probe = http.login(em, args.user_password)
+            except Exception:
+                continue
+            _, _, tb = http.get("/users/me/tickets", utok_probe)
+            if (json.loads(tb) or {}).get("items", []):
+                user_email = em
+                break
+        if not user_email and cand:
+            user_email = cand[0].get("email", "")
+    if not user_email:
+        raise SystemExit("no seeded loadtest- user found; pass --user-email")
+    user_token = http.login(user_email, args.user_password)
+    print(f"[auth] user token acquired ({user_email})")
+    keys = sample_keys(http, token, user_token)
     print(f"[keys] {keys}")
     levels = [int(x) for x in args.levels.split(",") if x]
     pats = patterns(keys)
+    tokens = {"admin": token, "user": user_token}
 
     results: dict = {}
-    for name, path in pats.items():
+    for name, (tok_kind, method, path, body) in pats.items():
         results[name] = []
-        print(f"\n### {name}\n    {path}")
+        print(f"\n### {name}\n    [{tok_kind}] {method} {path}")
         for conc in levels:
-            # token TTL is 900s; refresh defensively every pattern
-            row = run_level(http, token, path, conc, args.requests_per_level)
+            row = run_level(http, tokens[tok_kind], method, path, body, conc, args.requests_per_level)
             results[name].append(row)
             print(f"    c={conc:>2}  err={row['error_rate_pct']:>5}%  "
                   f"rps={row['rps']:>6}  avg={row['avg_ms']:>7}ms  "
                   f"p99={row['p99_ms']:>7}ms  codes={json.dumps(row['codes'])}"
                   + (f"  ex:{row['err_sample']}" if row['err_sample'] else ""))
             time.sleep(args.settle_ms / 1000)
-        token = http.login(args.admin_email, args.admin_password)  # refresh
+        # refresh both tokens between patterns (900s TTL)
+        token = http.login(args.admin_email, args.admin_password)
+        user_token = http.login(user_email, args.user_password)
+        tokens = {"admin": token, "user": user_token}
 
     os.makedirs(args.out, exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
