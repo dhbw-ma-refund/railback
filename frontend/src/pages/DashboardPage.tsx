@@ -1,53 +1,24 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@shared/components';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { StatusChip, TicketState } from '../components/StatusChip';
+import { StatusChip } from '../components/StatusChip';
 import { useLanguage } from '../lib/LanguageContext';
+import { api } from '../lib/api';
+import type { TicketSummary } from '../lib/api';
+import { ApiError } from '@shared/api/errors';
 import './DashboardPage.css';
 
-// Hardcoded static tickets. Shape follows the backend's TicketSummary contract
-// (see backend/lambdas/user-handler/src/routes/get-tickets.ts) so this page
-// can drop in real data later without a rewrite.
-interface StaticTicket {
-  ticketId: string;
-  ticket_state: TicketState;
-  abreisedatum: string;      // YYYY-MM-DD
-  abreisebahnhof: string;
-  zielbahnhof: string;
-  reisende: string;
-}
-
-const STATIC_TICKETS: StaticTicket[] = [
-  {
-    ticketId: '01J9X2N3P4Q5R6S7T8U9V0W1X',
-    ticket_state: 'PENDING_DB_PAYMENT',
-    abreisedatum: '2026-06-12',
-    abreisebahnhof: 'Mannheim Hbf',
-    zielbahnhof: 'Karlsruhe Hbf',
-    reisende: 'Maria Müller',
-  },
-  {
-    ticketId: '01J9Y3M4N5P6Q7R8S9T0U1V2W',
-    ticket_state: 'APPROVED',
-    abreisedatum: '2026-05-28',
-    abreisebahnhof: 'Frankfurt Hbf',
-    zielbahnhof: 'Stuttgart Hbf',
-    reisende: 'Maria Müller',
-  },
-  {
-    ticketId: '01J9Z4L5M6N7P8Q9R0S1T2U3V',
-    ticket_state: 'VALIDATING',
-    abreisedatum: '2026-07-02',
-    abreisebahnhof: 'Heidelberg Hbf',
-    zielbahnhof: 'München Hbf',
-    reisende: 'Maria Müller',
-  },
-];
-
-// Display: REQ-<last 6 chars of ULID> keeps the sketch's "REQ-2026-000123" feel
-// without inventing a separate namespace (backend explicitly says ticketId IS
-// the Antragsnummer, prefix is display-only).
+/**
+ * Live user dashboard — GET /users/me/tickets on mount, then render one
+ * card per ticket. The backend returns items sorted by updated_at DESC.
+ * "Erstattung starten" jumps into the wizard.
+ *
+ * The "reisende" field the static version showed doesn't exist on the
+ * TicketSummary schema (backend serialises only trip data); we display
+ * antragsart / erwartete_erstattung / email_status instead where present.
+ */
 const formatClaimId = (ticketId: string) => `REQ-${ticketId.slice(-9).toUpperCase()}`;
 
 const formatDate = (iso: string) => {
@@ -58,6 +29,26 @@ const formatDate = (iso: string) => {
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+
+  const [tickets, setTickets] = useState<TicketSummary[] | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await api.getTickets();
+        if (cancelled) return;
+        setTickets(res.items);
+      } catch (err) {
+        if (cancelled) return;
+        setError(err instanceof ApiError ? err.body.message || t.dashboard.loadError : t.dashboard.loadError);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [t.dashboard.loadError]);
 
   return (
     <div className="dashboard-page">
@@ -76,11 +67,15 @@ export const DashboardPage = () => {
             {t.dashboard.claimsTitle}
           </h2>
 
-          {STATIC_TICKETS.length === 0 ? (
+          {error && <div className="error-message">{error}</div>}
+
+          {tickets === null && !error ? (
+            <p className="dashboard-claims__empty">{t.dashboard.loading}</p>
+          ) : tickets && tickets.length === 0 ? (
             <p className="dashboard-claims__empty">{t.dashboard.empty}</p>
-          ) : (
+          ) : tickets ? (
             <ul className="dashboard-claims__list">
-              {STATIC_TICKETS.map((ticket) => (
+              {tickets.map((ticket) => (
                 <li key={ticket.ticketId} className="claim-card">
                   <div className="claim-card__row claim-card__row--head">
                     <span className="claim-card__id">{formatClaimId(ticket.ticketId)}</span>
@@ -94,40 +89,32 @@ export const DashboardPage = () => {
                     </button>
                   </div>
                   <dl className="claim-card__body">
-                    <div>
-                      <dt>{t.dashboard.date}:</dt>
-                      <dd>{formatDate(ticket.abreisedatum)}</dd>
-                    </div>
-                    <div>
-                      <dt>{t.dashboard.trip}:</dt>
-                      <dd>
-                        {ticket.abreisebahnhof} → {ticket.zielbahnhof}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>{t.dashboard.traveler}:</dt>
-                      <dd>{ticket.reisende}</dd>
-                    </div>
+                    {ticket.abreisedatum && (
+                      <div>
+                        <dt>{t.dashboard.date}:</dt>
+                        <dd>{formatDate(ticket.abreisedatum)}</dd>
+                      </div>
+                    )}
+                    {(ticket.abreisebahnhof || ticket.zielbahnhof) && (
+                      <div>
+                        <dt>{t.dashboard.trip}:</dt>
+                        <dd>
+                          {ticket.abreisebahnhof ?? '—'} → {ticket.zielbahnhof ?? '—'}
+                        </dd>
+                      </div>
+                    )}
+                    {ticket.erwartete_erstattung && (
+                      <div>
+                        <dt>{t.dashboard.expected}:</dt>
+                        <dd>{ticket.erwartete_erstattung.replace('.', ',')} €</dd>
+                      </div>
+                    )}
                   </dl>
                 </li>
               ))}
             </ul>
-          )}
+          ) : null}
         </section>
-
-        <div className="dashboard-actions">
-          <Button variant="secondary" onClick={() => navigate('/faq')}>
-            {t.dashboard.faq}
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              window.location.href = 'mailto:support@railback.de?subject=Support-Anfrage%20RailBack';
-            }}
-          >
-            {t.dashboard.help}
-          </Button>
-        </div>
       </main>
       <Footer />
     </div>

@@ -1,0 +1,103 @@
+/*
+ * Inline progress indicator for the wizard.
+ *
+ * Layout: a row of connected dots on the first line, and a two-piece
+ * label ("Schritt 3 von 6" + full step name) below. The track line is
+ * drawn as a pseudo-element on the ol so dots (which have their own
+ * opaque background) sit on top with pixel-perfect centering.
+ */
+
+.wizard-progress {
+  display: flex;
+  flex-direction: column;
+  /* Leaves the caption below the dots room to breathe — the previous
+     spacing-1 (8px) had the dots and text nearly touching. */
+  gap: var(--spacing-2);
+  margin: 0;
+}
+
+.wizard-progress__track {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  position: relative;
+}
+
+/* Connector line, inset by one dot-radius on each side so it starts/ends
+   at the first and last dot centers rather than the container edges. */
+.wizard-progress__track::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  background: var(--color-input-border);
+  z-index: 0;
+  transform: translateY(-50%);
+}
+
+.wizard-progress__step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+}
+
+.wizard-progress__dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--color-input-border);
+  background: white;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease);
+}
+
+.wizard-progress__dot:hover {
+  border-color: var(--color-deep-trust-blue);
+  color: var(--color-deep-trust-blue);
+}
+
+.wizard-progress__step--done .wizard-progress__dot,
+.wizard-progress__step--active .wizard-progress__dot {
+  background: var(--color-deep-trust-blue);
+  border-color: var(--color-deep-trust-blue);
+  color: white;
+}
+
+.wizard-progress__step--done .wizard-progress__dot:hover,
+.wizard-progress__step--active .wizard-progress__dot:hover {
+  color: white;
+}
+
+/* Soft ring around the active dot so it's distinguishable from
+   already-completed steps without introducing a second brand color. */
+.wizard-progress__step--active .wizard-progress__dot {
+  box-shadow: 0 0 0 4px rgba(0, 40, 85, 0.12);
+}
+
+.wizard-progress__label {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}

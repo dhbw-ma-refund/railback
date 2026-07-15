@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input, Button } from '@shared/components';
+import { StationInput } from '../../components/StationInput';
 import { useLanguage } from '../../lib/LanguageContext';
 import { WizardLayout } from './WizardLayout';
 import { WizardStepButtons } from './WizardStepButtons';
 import { useWizard } from './WizardContext';
+import { api } from '../../lib/api';
+import type { RouteLookupCandidate, RouteLookupRequest } from '../../lib/api';
+import { ApiError } from '@shared/api/errors';
 import './LookupStep.css';
 
 /**
@@ -18,31 +22,25 @@ import './LookupStep.css';
  *   2. Cancellation status (red banner) — a hard-yes for compensation.
  *   3. Train number + times — for identifying "yes, that was my train".
  *
- * Deliberately absent: seat class, occupancy, price, "Karte anzeigen",
- * anything future-trip-shopping-related. Those would just add noise.
- *
- * Backend contract: mirrors POST /route-lookup — from/to/date/timeWindow →
- * list of candidates. Selecting one seeds fahrt.* state and jumps to the
- * Reisedaten step (where the user can still edit).
+ * Backend contract: POST /users/me/tickets/route-lookup. Empty results come
+ * back as 404 ERR_NO_CANDIDATES — the frontend catches that as an empty
+ * state, NOT an error banner. Other errors surface normally.
  */
 
-interface Candidate {
-  trainNr: string;              // display label — "ICE 109"
-  category: 'S' | 'RE' | 'IC' | 'ICE';
-  abfahrt_plan: string;         // "HH:MM"
-  ankunft_plan: string;         // "HH:MM"
-  abfahrt_actual: string;
-  ankunft_actual: string;
-  delayMinutes: number;         // 0 = on time
-  cancelled: boolean;
+/** Given an HH:MM around-time, expand to a ±1h window clamped to the day. */
+function expandTimeWindow(around: string): { from: string; to: string } | undefined {
+  if (!around) return undefined;
+  const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(around);
+  if (!m) return undefined;
+  const hh = Number(m[1]);
+  const mm = Number(m[2]);
+  const total = hh * 60 + mm;
+  const fromMin = Math.max(0, total - 60);
+  const toMin = Math.min(23 * 60 + 59, total + 60);
+  const fmt = (v: number) =>
+    `${String(Math.floor(v / 60)).padStart(2, '0')}:${String(v % 60).padStart(2, '0')}`;
+  return { from: fmt(fromMin), to: fmt(toMin) };
 }
-
-const STATIC_CANDIDATES: Candidate[] = [
-  { trainNr: 'IC 2345',  category: 'IC',  abfahrt_plan: '08:14', ankunft_plan: '08:45', abfahrt_actual: '08:47', ankunft_actual: '09:52', delayMinutes: 67, cancelled: false },
-  { trainNr: 'ICE 279',  category: 'ICE', abfahrt_plan: '09:02', ankunft_plan: '09:31', abfahrt_actual: '09:02', ankunft_actual: '09:31', delayMinutes: 0,  cancelled: false },
-  { trainNr: 'RE 4',     category: 'RE',  abfahrt_plan: '09:24', ankunft_plan: '10:11', abfahrt_actual: '—',     ankunft_actual: '—',     delayMinutes: 0,  cancelled: true  },
-  { trainNr: 'ICE 511',  category: 'ICE', abfahrt_plan: '10:38', ankunft_plan: '11:07', abfahrt_actual: '10:52', ankunft_actual: '11:31', delayMinutes: 24, cancelled: false },
-];
 
 const delayTone = (mins: number, cancelled: boolean) => {
   if (cancelled) return 'cancelled';
@@ -50,6 +48,15 @@ const delayTone = (mins: number, cancelled: boolean) => {
   if (mins >= 15) return 'moderate';
   if (mins > 0) return 'minor';
   return 'ontime';
+};
+
+const dataQualityChip = (
+  quality: RouteLookupCandidate['data_quality'],
+  t: ReturnType<typeof useLanguage>['t'],
+): string => {
+  if (quality === 'FULL') return t.wizard.lookup.qualityFull;
+  if (quality === 'PARTIAL') return t.wizard.lookup.qualityPartial;
+  return t.wizard.lookup.qualityPlan;
 };
 
 export const LookupStep = () => {
@@ -61,20 +68,114 @@ export const LookupStep = () => {
   const [to, setTo] = useState('');
   const [date, setDate] = useState('');
   const [aroundTime, setAroundTime] = useState('');
-  const [searched, setSearched] = useState(false);
 
-  const runSearch = () => setSearched(Boolean(from && to && date));
+  const [candidates, setCandidates] = useState<RouteLookupCandidate[] | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [error, setError] = useState('');
+  const [emptyState, setEmptyState] = useState(false);
+  /**
+   * True when the first search (narrow window) returned nothing and we
+   * fell back to the whole day. Surface as a small note above the
+   * candidate list so the user understands why extra results appeared.
+   */
+  const [widened, setWidened] = useState(false);
+
+  /**
+   * Fire the lookup with an explicit time window.
+   *   - narrow  → ±1h around the user's typed aroundTime (only when they typed one)
+   *   - whole   → 00:00–23:59, the fallback and the default when no time is typed
+   *
+   * We MUST send a timeWindow — the backend's default when omitted is
+   * ±1h around wall-clock "now", which is almost never what the user
+   * meant (see backend/lambdas/user-handler/src/routes/post-route-lookup.ts).
+   * Returns null when the backend replies ERR_NO_CANDIDATES.
+   */
+  const attempt = async (
+    kind: 'narrow' | 'whole',
+  ): Promise<{ candidates: RouteLookupCandidate[] } | null> => {
+    const timeWindow =
+      kind === 'narrow'
+        ? expandTimeWindow(aroundTime) ?? { from: '00:00', to: '23:59' }
+        : { from: '00:00', to: '23:59' };
+    const req: RouteLookupRequest = {
+      fromStation: from,
+      toStation: to,
+      date,
+      timeWindow,
+    };
+    try {
+      return await api.routeLookup(req);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404 && err.body.code === 'ERR_NO_CANDIDATES') {
+        return null;
+      }
+      throw err;
+    }
+  };
+
+  const runSearch = async (e?: FormEvent) => {
+    e?.preventDefault();
+    if (!from || !to || !date) return;
+
+    setError('');
+    setEmptyState(false);
+    setWidened(false);
+    setCandidates(null);
+    setSearching(true);
+    try {
+      // If the user typed a time, first try ±1h around it. Otherwise go
+      // straight to whole-day.
+      const useNarrow = !!aroundTime;
+      let res = useNarrow ? await attempt('narrow') : null;
+
+      if (!res || res.candidates.length === 0) {
+        const wide = await attempt('whole');
+        if (!wide || wide.candidates.length === 0) {
+          setEmptyState(true);
+          setCandidates([]);
+        } else {
+          if (useNarrow) setWidened(true);
+          setCandidates(wide.candidates);
+        }
+      } else {
+        setCandidates(res.candidates);
+      }
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.body.code === 'ERR_VALIDATION') {
+          const field = (err.body.details as { field?: string } | undefined)?.field;
+          setError(
+            field === 'fromStation'
+              ? t.wizard.lookup.errBadFrom
+              : field === 'toStation'
+                ? t.wizard.lookup.errBadTo
+                : err.body.message || t.wizard.lookup.errGeneric,
+          );
+        } else {
+          setError(err.body.message || t.wizard.lookup.errGeneric);
+        }
+      } else {
+        setError(t.wizard.lookup.errGeneric);
+      }
+    } finally {
+      setSearching(false);
+    }
+  };
+
   const swap = () => {
     setFrom(to);
     setTo(from);
   };
 
-  const pick = (c: Candidate) => {
+  const pick = (c: RouteLookupCandidate) => {
+    // Populate fahrt from the picked candidate. The user still fills
+    // fahrkartennummer + fahrkartenpreis manually on FahrtStep.
     updateFahrt({
       abreisebahnhof: from,
       zielbahnhof: to,
       abreisedatum: date,
       zugnummer_plan: c.trainNr,
+      zugkategorie_plan: c.zugkategorie ?? '',
       abfahrtszeit_plan: c.abfahrt_plan,
       ankunftszeit_plan: c.ankunft_plan,
     });
@@ -85,19 +186,14 @@ export const LookupStep = () => {
     <WizardLayout title={t.wizard.lookup.title}>
       <p className="wizard-helper">{t.wizard.lookup.hint}</p>
 
-      {/* Search — plain guide-conformant Inputs. Order mirrors how users think
-          about a past trip: where from/to first, then when. */}
-      <div className="rl-search">
+      <form className="rl-search" onSubmit={runSearch}>
         <div className="rl-where">
-          <Input
+          <StationInput
             label={t.wizard.lookup.from}
             placeholder="z.B. Mannheim Hbf"
             value={from}
-            onChange={(e) => setFrom(e.target.value)}
+            onChange={setFrom}
           />
-          {/* Swap sits inline with the "Zielbahnhof" label row, right-aligned.
-              This avoids the centering problem that comes from putting a circle
-              button between two label+input units. */}
           <div className="rl-to">
             <div className="rl-to__labelrow">
               <span className="rl-to__label">{t.wizard.lookup.to}</span>
@@ -116,10 +212,10 @@ export const LookupStep = () => {
                 <span>{t.wizard.lookup.swap}</span>
               </button>
             </div>
-            <Input
+            <StationInput
               placeholder="z.B. Karlsruhe Hbf"
               value={to}
-              onChange={(e) => setTo(e.target.value)}
+              onChange={setTo}
               aria-label={t.wizard.lookup.to}
             />
           </div>
@@ -137,51 +233,62 @@ export const LookupStep = () => {
             type="time"
             value={aroundTime}
             onChange={(e) => setAroundTime(e.target.value)}
+            helperText={t.wizard.lookup.aroundTimeHelper}
           />
         </div>
 
         <Button
+          type="submit"
           variant="primary"
           size="large"
-          onClick={runSearch}
-          disabled={!from || !to || !date}
+          disabled={!from || !to || !date || searching}
           className="rl-search-btn"
         >
-          {t.wizard.lookup.search}
+          {searching ? t.wizard.lookup.searching : t.wizard.lookup.search}
         </Button>
-      </div>
+      </form>
 
-      {searched && (
+      {error && <div className="error-message">{error}</div>}
+
+      {emptyState && (
+        <div className="rl-empty">
+          <h2 className="rl-results__title">{t.wizard.lookup.noResultsTitle}</h2>
+          <p className="wizard-helper">{t.wizard.lookup.noResultsHint}</p>
+        </div>
+      )}
+
+      {candidates && candidates.length > 0 && (
         <div className="rl-results">
           <h2 className="rl-results__title">{t.wizard.lookup.resultsTitle}</h2>
+          {widened && (
+            <p className="wizard-helper rl-results__hint">{t.wizard.lookup.widenedNote}</p>
+          )}
           <p className="wizard-helper rl-results__hint">{t.wizard.lookup.pickHint}</p>
 
           <ul className="rl-list">
-            {STATIC_CANDIDATES.map((c) => {
-              const tone = delayTone(c.delayMinutes, c.cancelled);
+            {candidates.map((c) => {
+              const tone = delayTone(c.delayMinutes, c.any_cancelled);
+              const badgeClass = (c.zugkategorie ?? 'IC').toLowerCase().replace(/\s+/g, '');
               return (
-                <li key={c.trainNr} className={`rl-card rl-card--${tone}`}>
+                <li key={`${c.trainNr}-${c.abfahrt_plan}`} className={`rl-card rl-card--${tone}`}>
                   <button type="button" className="rl-card__hit" onClick={() => pick(c)}>
-                    {/* Left rail — a colored strip that visually mirrors the delay tone.
-                        Combined with the big minutes value it makes the row scannable. */}
                     <span className="rl-card__rail" aria-hidden="true" />
 
                     <div className="rl-card__body">
-                      {/* Row 1 — train identity + planned times. This is how the user
-                          confirms "yes, that's my train". */}
                       <div className="rl-card__idrow">
-                        <span className={`rl-badge rl-badge--${c.category.toLowerCase()}`}>
+                        <span className={`rl-badge rl-badge--${badgeClass}`}>
                           {c.trainNr}
                         </span>
                         <span className="rl-card__times">
                           {c.abfahrt_plan} → {c.ankunft_plan}
                         </span>
+                        <span className="rl-quality" title={dataQualityChip(c.data_quality, t)}>
+                          {dataQualityChip(c.data_quality, t)}
+                        </span>
                       </div>
 
-                      {/* Row 2 — status: this is the LOUD row. Delay in minutes,
-                          or a cancellation banner. */}
                       <div className={`rl-status rl-status--${tone}`}>
-                        {c.cancelled ? (
+                        {c.any_cancelled ? (
                           <>
                             <span className="rl-status__icon" aria-hidden="true">
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -196,9 +303,12 @@ export const LookupStep = () => {
                             <span className="rl-status__delta">+{c.delayMinutes}</span>
                             <div className="rl-status__stack">
                               <span className="rl-status__main">{t.wizard.lookup.minutesLate}</span>
-                              <span className="rl-status__sub">
-                                {t.wizard.lookup.actual}: {c.abfahrt_actual} → {c.ankunft_actual}
-                              </span>
+                              {(c.abfahrt_tatsaechlich || c.ankunft_tatsaechlich) && (
+                                <span className="rl-status__sub">
+                                  {t.wizard.lookup.actual}: {c.abfahrt_tatsaechlich ?? '—'} →{' '}
+                                  {c.ankunft_tatsaechlich ?? '—'}
+                                </span>
+                              )}
                             </div>
                           </>
                         ) : (
@@ -213,7 +323,6 @@ export const LookupStep = () => {
                         )}
                       </div>
 
-                      {/* Row 3 — station names anchoring the trip, small. */}
                       <div className="rl-card__stations">
                         <span>{from || '—'}</span>
                         <span aria-hidden="true">→</span>

@@ -1,10 +1,9 @@
 /**
- * Admin-side API client instance.
+ * User-facing API client instance.
  *
- * The transport (fetch + single-flight refresh) lives in the shared factory
- * at @shared/api/createClient. This file wires the admin's session-scoped
- * token storage and admin-login redirect into that factory. The user-facing
- * side does the same wire-up with its own storage in src/lib/api/client.ts.
+ * Same transport as the admin panel (shared factory at
+ * @shared/api/createClient), wired to the user-side localStorage-backed
+ * token store and a /login redirect on failed refresh.
  */
 import { createApiClient } from '@shared/api/createClient';
 import {
@@ -24,7 +23,7 @@ const created = createApiClient({
   onRefreshFailed: () => {
     clearTokens();
     if (typeof window !== 'undefined') {
-      window.location.replace('/admin-panel/login');
+      window.location.replace('/login');
     }
   },
 });

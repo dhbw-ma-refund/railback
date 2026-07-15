@@ -89,7 +89,10 @@ const content: Record<string, Record<string, TopicContent>> = {
       img: 'Screenshot: Reise-/Verspätungsprüfung',
       qa: [
         { q: 'Wie wird die Verspätung geprüft?', a: ['Wir gleichen deine Zugverbindung mit den offiziellen Ist-Fahrplandaten ab und ermitteln die tatsächliche Ankunftsverspätung in Minuten.'] },
-        { q: 'Ab wann habe ich Anspruch?', a: ['Ab 60 Minuten Verspätung erhältst du in der Regel 25 %, ab 120 Minuten 50 % des Ticketpreises. RailBack rechnet das automatisch für dich aus.'] },
+        { q: 'Ab wann habe ich Anspruch?', a: [
+          'Ab 60 Minuten Verspätung erhältst du in der Regel 25 %, ab 120 Minuten 50 % des Ticketpreises. RailBack rechnet das automatisch für dich aus.',
+          'Achtung: Bei außergewöhnlichen Umständen — extremes Wetter, Streiks Dritter, Vandalismus — kann die Bahn den Anspruch verweigern. Das ist seit Juni 2023 in der EU-Verordnung 2021/782 so vorgesehen.',
+        ] },
         { q: 'Was gilt für Zeitkarten?', a: ['Bei Zeitkarten sammeln wir berechtigte Fälle, bis die Auszahlungsgrenze von 4 € erreicht ist.'] },
         { q: 'Muss ich die Verspätung selbst nachweisen?', a: ['Nein. Wir dokumentieren die Verspätung automatisch und hinterlegen den Nachweis für deinen Antrag.'] },
       ],
@@ -125,7 +128,10 @@ const content: Record<string, Record<string, TopicContent>> = {
       img: 'Screenshot: trip / delay check',
       qa: [
         { q: 'How is the delay verified?', a: ['We match your connection against the official actual timetable data and determine the real arrival delay in minutes.'] },
-        { q: 'When am I entitled to a refund?', a: ['From 60 minutes you usually get 25 %, from 120 minutes 50 % of the ticket price. RailBack calculates this automatically.'] },
+        { q: 'When am I entitled to a refund?', a: [
+          'From 60 minutes you usually get 25 %, from 120 minutes 50 % of the ticket price. RailBack calculates this automatically.',
+          'Note: for extraordinary circumstances — severe weather, third-party strikes, vandalism — the railway can deny the claim. This is provided for in EU Regulation 2021/782 since June 2023.',
+        ] },
         { q: 'What applies to season tickets?', a: ['For season tickets, we combine eligible cases until the €4 payout threshold is reached.'] },
         { q: 'Do I have to prove the delay myself?', a: ['No. We document the delay automatically and store the evidence for your claim.'] },
       ],

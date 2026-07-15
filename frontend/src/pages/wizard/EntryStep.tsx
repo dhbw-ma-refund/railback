@@ -16,10 +16,12 @@ import './EntryStep.css';
 export const EntryStep = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { update, reset } = useWizard();
+  const { update, resetTicket } = useWizard();
 
   const choose = (mode: 'upload' | 'lookup' | 'manual', nextPath: string) => {
-    reset();
+    // Wipe only ticket-scoped state — keep prefilled person/auszahlung so a
+    // repeat entry doesn't lose hydrated profile data or force a re-fetch.
+    resetTicket();
     update({ mode });
     navigate(nextPath);
   };

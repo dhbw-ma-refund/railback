@@ -17,6 +17,12 @@
   color: var(--color-text-primary);
 }
 
+.rb-input-required {
+  margin-left: 4px;
+  color: var(--color-error-red);
+  font-weight: var(--font-weight-semibold);
+}
+
 .rb-input {
   font-family: var(--font-family-primary);
   font-size: var(--font-size-body);
