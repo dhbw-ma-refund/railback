@@ -214,6 +214,6 @@
   background: rgba(9, 67, 137, 0.10);
 }
 .beleg-row__pill--success {
-  color: #0e6a2b;
-  background: rgba(16, 128, 55, 0.14);
+  color: var(--color-landing-green-ink);
+  background: var(--color-success-green-soft);
 }

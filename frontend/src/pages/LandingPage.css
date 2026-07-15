@@ -99,7 +99,7 @@
   align-items: center;
   gap: 10px;
   background: #edf8d9;
-  color: #537f12;
+  color: var(--color-landing-green-ink);
   padding: 11px 17px;
   border-radius: 999px;
   font-weight: 800;
@@ -112,7 +112,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #93cd1c;
+  background: var(--color-relief-green);
   flex: none;
 }
 
