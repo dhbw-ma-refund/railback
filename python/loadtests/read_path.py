@@ -303,7 +303,7 @@ def main():
     ap.add_argument("--user-password", default=os.environ.get("RAILBACK_USER_PASSWORD", "min-8-zeichen"))
     ap.add_argument("--levels", default="1,2,3")
     ap.add_argument("--requests-per-level", type=int, default=10)
-    ap.add_argument("--settle-ms", type=int, default=1000)
+    ap.add_argument("--settle-ms", type=int, default=300)
     ap.add_argument("--timeout", type=float, default=15.0)
     ap.add_argument("--out", default=".")
     ap.add_argument("--log", default="", help="append per-level progress here as the run proceeds (tail -f); default <out>/read_path_<ts>.log")
