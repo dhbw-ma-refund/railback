@@ -43,8 +43,8 @@
 .rb-admin-login__error {
   margin-top: 12px;
   padding: 10px 12px;
-  border-radius: 8px;
-  background: rgba(217, 48, 37, 0.08);
+  border-radius: var(--radius-input);
+  background: var(--color-error-red-soft);
   color: var(--color-error-red);
   font-size: var(--font-size-caption);
   min-height: 1em;
