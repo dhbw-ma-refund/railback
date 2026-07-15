@@ -199,12 +199,19 @@ export const ReviewStep = () => {
           // picked a saved template on FahrtStep/LookupStep, OR they
           // saved a new one via the "Als Strecke speichern" tick during
           // this session — either way, we have a template id to attach.
-          ...((state.pickedTemplateId ?? state.savedThisSessionTemplateId)
-            ? {
-                templateId: (state.pickedTemplateId ??
-                  state.savedThisSessionTemplateId) as string,
-              }
-            : {}),
+          //
+          // For the session-saved case we still only forward the id if
+          // the current from/to actually match the row we saved; if the
+          // user has since edited the stations, the session pointer no
+          // longer describes this trip and forwarding it would attach a
+          // ticket to the wrong template.
+          ...(state.pickedTemplateId
+            ? { templateId: state.pickedTemplateId }
+            : state.savedThisSession &&
+                state.savedThisSession.fromStation === state.fahrt.abreisebahnhof &&
+                state.savedThisSession.toStation === state.fahrt.zielbahnhof
+              ? { templateId: state.savedThisSession.templateId }
+              : {}),
         };
         const res = await api.createFromRoute(req);
         ticketId = res.ticketId;

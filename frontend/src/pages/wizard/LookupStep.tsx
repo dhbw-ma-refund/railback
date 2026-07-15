@@ -207,8 +207,9 @@ export const LookupStep = () => {
 
   /**
    * "Als Strecke speichern" toggle — save-on-tick / delete-on-untick,
-   * same semantics as FahrtStep. See FahrtStep.onToggleSave for
-   * details; the two implementations are intentionally mirror-image.
+   * same semantics as FahrtStep. See FahrtStep.onToggleSave (and the
+   * comment on WizardState.savedThisSession) for the rationale; the
+   * two implementations are intentionally mirror-image.
    */
   const onToggleSave = async (checked: boolean) => {
     setSaveError('');
@@ -221,7 +222,13 @@ export const LookupStep = () => {
           fromStation: from,
           toStation: to,
         });
-        update({ savedThisSessionTemplateId: created.templateId });
+        update({
+          savedThisSession: {
+            templateId: created.templateId,
+            fromStation: from,
+            toStation: to,
+          },
+        });
       } catch (err) {
         setSaveError(
           err instanceof Error ? err.message : t.wizard.reise.saveRouteError,
@@ -230,12 +237,18 @@ export const LookupStep = () => {
         setSaving(false);
       }
     } else {
-      const id = state.savedThisSessionTemplateId;
-      if (!id) return;
+      const saved = state.savedThisSession;
+      if (
+        !saved ||
+        saved.fromStation !== from ||
+        saved.toStation !== to
+      ) {
+        return;
+      }
       setSaving(true);
       try {
-        await removeTemplate(id);
-        update({ savedThisSessionTemplateId: null });
+        await removeTemplate(saved.templateId);
+        update({ savedThisSession: null });
       } catch (err) {
         setSaveError(
           err instanceof Error ? err.message : t.wizard.reise.saveRouteError,
@@ -245,6 +258,12 @@ export const LookupStep = () => {
       }
     }
   };
+
+  /** See FahrtStep.isSavedNow — same rule, uses LookupStep's local from/to. */
+  const isSavedNow =
+    !!state.savedThisSession &&
+    state.savedThisSession.fromStation === from &&
+    state.savedThisSession.toStation === to;
 
   const pick = (c: RouteLookupCandidate) => {
     // Populate fahrt from the picked candidate. The user still fills
@@ -332,7 +351,7 @@ export const LookupStep = () => {
           <div className="route-templates__save">
             <Checkbox
               label={t.wizard.reise.saveRoute}
-              checked={!!state.savedThisSessionTemplateId}
+              checked={isSavedNow}
               disabled={saving}
               onChange={(e) => void onToggleSave(e.target.checked)}
             />

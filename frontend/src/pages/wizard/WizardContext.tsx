@@ -117,17 +117,32 @@ export interface WizardState {
   pickedTemplateId: string | null;
   /**
    * When the user ticks "Als Strecke speichern" during the current
-   * wizard session, we POST the template immediately and pin its id
-   * here. Untick → DELETE the same id and clear. Lives in wizard
-   * state so navigating between FahrtStep and LookupStep in the same
-   * session doesn't lose the reference.
+   * wizard session, we POST the template immediately and pin the
+   * created row here. Untick → DELETE and clear. We store the
+   * from/to alongside the id so downstream steps can tell whether the
+   * pointer still describes the fields currently shown in the form:
    *
-   * NOTE: this is only set for templates saved DURING this wizard
-   * session. Templates the user saved in previous sessions live only
-   * in the shared useRouteTemplates cache; they can be deleted from
-   * the Profile page.
+   *   isSavedNow = savedThisSession &&
+   *                savedThisSession.fromStation === fahrt.abreisebahnhof &&
+   *                savedThisSession.toStation   === fahrt.zielbahnhof
+   *
+   * If the user edits either station after saving, the pointer no
+   * longer matches — the checkbox reads unchecked and offers to save
+   * the NEW route — but the original template stays on the account
+   * (untick can't accidentally delete it because the checkbox is not
+   * checked). If they navigate to a different wizard step (Lookup vs
+   * Fahrt) with different from/to values, same rule applies.
+   *
+   * NOTE: only set for templates saved DURING this wizard session.
+   * Templates the user saved in previous sessions live only in the
+   * shared useRouteTemplates cache; they can be deleted from the
+   * Profile page.
    */
-  savedThisSessionTemplateId: string | null;
+  savedThisSession: {
+    templateId: string;
+    fromStation: string;
+    toStation: string;
+  } | null;
   delayLookup: DelaysResponse | null;
   submitResult: RefundResponse | null;
   antragstellung_ort: string;
@@ -149,7 +164,7 @@ const INITIAL_STATE: WizardState = {
   is_zeitkarte: false,
   belege: [],
   pickedTemplateId: null,
-  savedThisSessionTemplateId: null,
+  savedThisSession: null,
   delayLookup: null,
   submitResult: null,
   antragstellung_ort: '',
@@ -178,13 +193,13 @@ interface WizardContextValue {
 
 const WizardContext = createContext<WizardContextValue | undefined>(undefined);
 
-const STORAGE_KEY = 'railback.wizard.v6';
-// Bumped from v5 → v6: saveRoute / saveRouteLabel replaced with a
-// single savedThisSessionTemplateId pointer, matching the new save-
-// on-tick semantics (immediate POST, untick → DELETE). Old v5 blobs
-// would still spread cleanly (missing keys default to falsy) but
-// would carry dead saveRoute / saveRouteLabel keys the setter no
-// longer knows to drop; bumping is defensive.
+const STORAGE_KEY = 'railback.wizard.v7';
+// Bumped from v6 → v7: savedThisSessionTemplateId (string | null) was
+// replaced by savedThisSession ({templateId, fromStation, toStation} |
+// null) to fix a data-loss bug where editing the stations after
+// ticking "Als Strecke speichern" and then unticking would DELETE the
+// wrong (but still-valid) saved template. Old v6 blobs would carry
+// the dead key; bumping is defensive.
 
 export const WizardProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<WizardState>(() => {

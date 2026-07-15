@@ -68,11 +68,20 @@ export const FahrtStep = () => {
   const onPriceChange = (raw: string) => {
     setPriceInput(raw);
     const canonical = normalizePrice(raw);
-    // Only update wizard state when we can produce a valid canonical form.
-    // Keeping the last-good value in wizard state means an intermediate
-    // keystroke like "40," (mid-typing) doesn't wipe the previous submit-ready
-    // value on the way to a valid "40,50".
-    if (canonical !== null) updateFahrt({ fahrkartenpreis: canonical });
+    if (canonical !== null) {
+      // Valid keystroke — persist canonical form.
+      updateFahrt({ fahrkartenpreis: canonical });
+    } else if (raw === '') {
+      // Explicit clear — zero the wizard value so a subsequent Submit
+      // doesn't ship the previous price. NOTE: only reacts to a fully-
+      // empty input, not to intermediate mid-typing states like "40,"
+      // (which parse to null but SHOULDN'T wipe a still-valid stored
+      // value on the way to "40,50").
+      updateFahrt({ fahrkartenpreis: '' });
+    }
+    // Otherwise (raw is non-empty but unparseable) — leave the wizard
+    // value alone. priceInvalid flags this to the user via the input's
+    // red border + priceFormat message.
   };
 
   const onPriceBlur = () => {
@@ -166,8 +175,14 @@ export const FahrtStep = () => {
    * "Als Strecke speichern" toggle. Save-on-tick / delete-on-untick,
    * both fire the network call immediately so the user sees the chip
    * appear/disappear right away. The pointer is stashed on wizard
-   * state so navigating between FahrtStep and LookupStep in the same
-   * session keeps the toggle in sync.
+   * state (with the from/to it applies to) so:
+   *   - navigating between FahrtStep and LookupStep with the same
+   *     from/to keeps the toggle in sync, AND
+   *   - editing either station uncouples the pointer from the current
+   *     form fields, so untick can't accidentally delete a template
+   *     for a route the user is no longer looking at (isSavedNow
+   *     evaluates false → checkbox is unchecked → onToggleSave(true)
+   *     saves the NEW route, not deletes the old one).
    *
    * On error: revert the toggle, show a small inline message. We do
    * NOT block navigation on save errors — the wizard flow itself is
@@ -185,7 +200,13 @@ export const FahrtStep = () => {
           toStation: f.zielbahnhof,
           ...(f.zugkategorie_plan ? { zugkategorie_pref: f.zugkategorie_plan } : {}),
         });
-        update({ savedThisSessionTemplateId: created.templateId });
+        update({
+          savedThisSession: {
+            templateId: created.templateId,
+            fromStation: f.abreisebahnhof,
+            toStation: f.zielbahnhof,
+          },
+        });
       } catch (err) {
         setSaveError(
           err instanceof Error ? err.message : t.wizard.reise.saveRouteError,
@@ -194,12 +215,22 @@ export const FahrtStep = () => {
         setSaving(false);
       }
     } else {
-      const id = state.savedThisSessionTemplateId;
-      if (!id) return;
+      // Only delete if the pointer STILL describes the fields on
+      // screen. If it doesn't (user edited stations after saving),
+      // the checkbox shouldn't have been rendered as checked in the
+      // first place; guard defensively.
+      const saved = state.savedThisSession;
+      if (
+        !saved ||
+        saved.fromStation !== f.abreisebahnhof ||
+        saved.toStation !== f.zielbahnhof
+      ) {
+        return;
+      }
       setSaving(true);
       try {
-        await removeTemplate(id);
-        update({ savedThisSessionTemplateId: null });
+        await removeTemplate(saved.templateId);
+        update({ savedThisSession: null });
       } catch (err) {
         setSaveError(
           err instanceof Error ? err.message : t.wizard.reise.saveRouteError,
@@ -209,6 +240,17 @@ export const FahrtStep = () => {
       }
     }
   };
+
+  /**
+   * True when we saved a template during this wizard session AND the
+   * current from/to still match it. Used to drive the checkbox's
+   * `checked` state — see the comment on WizardState.savedThisSession
+   * for the whole rationale.
+   */
+  const isSavedNow =
+    !!state.savedThisSession &&
+    state.savedThisSession.fromStation === f.abreisebahnhof &&
+    state.savedThisSession.toStation === f.zielbahnhof;
 
   /**
    * Silent invalid signal — used on every field that only has a
@@ -281,7 +323,7 @@ export const FahrtStep = () => {
             <div className="route-templates__save">
               <Checkbox
                 label={t.wizard.reise.saveRoute}
-                checked={!!state.savedThisSessionTemplateId}
+                checked={isSavedNow}
                 disabled={saving}
                 onChange={(e) => void onToggleSave(e.target.checked)}
               />
