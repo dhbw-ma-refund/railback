@@ -39,7 +39,7 @@ export class S3BlobConnector {
   private readonly region: string;
   private regionAssertionDone = false;
   private readonly injectedClient: boolean;
-  private presignClientCache: S3Client | null = null;
+  private cognitoClientCache: S3Client | null = null;
 
   constructor(opts?: { client?: S3Client; bucket?: string; region?: string; assertRegion?: boolean }) {
     this.bucket = opts?.bucket ?? process.env["RAILBACK_S3_BUCKET"] ?? "railback-storage";
@@ -62,33 +62,34 @@ export class S3BlobConnector {
   }
 
   /**
-   * The S3 client used to SIGN presigned POST policies. Normally this is the
-   * same `this.client` (default credential chain). But in the demo deploy the
-   * function's own IAM role is DENIED s3:PutObject on raw/ belege/, so a
-   * presign it signs is rejected by S3 with 403 — while the shared Cognito
-   * unauthenticated identity pool's role IS allowed s3:PutObject there
-   * (probed 2026-07-11). When RAILBACK_COGNITO_IDENTITY_POOL_ID is set we
-   * build a SEPARATE client that signs presigns with that Cognito identity.
+   * The S3 client used to SIGN presigned POST policies AND to run server-side
+   * writes (putObject). Normally this is the same `this.client` (default
+   * credential chain). But in the demo deploy the function's own IAM role is
+   * DENIED s3:PutObject everywhere, so a presign it signs — and any PutObject
+   * it runs directly — is rejected by S3 with 403, while the shared Cognito
+   * unauthenticated identity pool's role IS allowed s3:PutObject (probed
+   * 2026-07-11 / re-confirmed 2026-07-15). When RAILBACK_COGNITO_IDENTITY_POOL_ID
+   * is set we build a SEPARATE client that signs with that Cognito identity.
    *
-   * Scope is presign-signing ONLY. getObject/putObject/deleteObject keep
-   * using `this.client` (default chain) because the Cognito role can GetObject
-   * nowhere — pointing byte I/O at it would break reads. This mirrors
-   * @railback/lib's s3ClientConfig("presign") split. DEMO-only; unset the env
-   * var to revert to the default chain.
+   * Scope is WRITE + presign-signing. getObject/deleteObject keep using
+   * `this.client`: the Cognito role can GetObject nowhere, and reads in the
+   * demo go through plain public HTTPS URLs (objects are written public-read),
+   * not this connector's getObject. DEMO-only; unset the env var to revert to
+   * the default chain.
    *
    * Disabled when a client was injected (tests) or S3_ENDPOINT_URL is set
    * (LocalStack/MinIO) — those never want the real Cognito flow.
    */
-  private presignClient(): S3Client {
-    if (this.presignClientCache) return this.presignClientCache;
+  private writeClient(): S3Client {
+    if (this.cognitoClientCache) return this.cognitoClientCache;
     const poolId = process.env["RAILBACK_COGNITO_IDENTITY_POOL_ID"];
     const endpoint = process.env["S3_ENDPOINT_URL"];
     if (this.injectedClient || endpoint || !poolId) {
-      this.presignClientCache = this.client;
-      return this.presignClientCache;
+      this.cognitoClientCache = this.client;
+      return this.cognitoClientCache;
     }
     const cognitoRegion = process.env["RAILBACK_COGNITO_REGION"] ?? this.region;
-    this.presignClientCache = new S3Client({
+    this.cognitoClientCache = new S3Client({
       region: this.region,
       credentials: fromCognitoIdentityPool({
         identityPoolId: poolId,
@@ -101,7 +102,29 @@ export class S3BlobConnector {
         },
       }),
     });
-    return this.presignClientCache;
+    return this.cognitoClientCache;
+  }
+
+  /**
+   * True in the demo deploy (Cognito pool set, not LocalStack): objects must be
+   * written `public-read` because the account grants no principal s3:GetObject,
+   * so reads happen via plain public HTTPS URLs. Mirrors the presignPost ACL
+   * gate below.
+   */
+  private demoPublicRead(): boolean {
+    return (
+      !this.injectedClient &&
+      !!process.env["RAILBACK_COGNITO_IDENTITY_POOL_ID"] &&
+      !process.env["S3_ENDPOINT_URL"]
+    );
+  }
+
+  /**
+   * @deprecated retained name for the presign path; delegates to writeClient()
+   * so presign + putObject share one Cognito-signed client.
+   */
+  private presignClient(): S3Client {
+    return this.writeClient();
   }
 
 
@@ -142,13 +165,22 @@ export class S3BlobConnector {
     }
   }
 
-  /** Uploads bytes verbatim. Overwrites existing object. */
+  /** Uploads bytes verbatim. Overwrites existing object.
+   *
+   * Uses writeClient() so the demo deploy signs with the Cognito unauth
+   * identity (the only principal allowed s3:PutObject; the execution role is
+   * denied → 403). In that same demo case the object is written public-read
+   * so it can be read back via a plain public HTTPS URL (no principal has
+   * s3:GetObject). Production-with-real-IAM / tests / LocalStack keep the
+   * default client and set no ACL.
+   */
   async putObject(key: string, bytes: Uint8Array, contentType: string): Promise<void> {
-    await this.client.send(new PutObjectCommand({
+    await this.writeClient().send(new PutObjectCommand({
       Bucket: this.bucket,
       Key: key,
       Body: bytes,
       ContentType: contentType,
+      ...(this.demoPublicRead() ? { ACL: "public-read" as const } : {}),
     }));
   }
 
@@ -185,8 +217,7 @@ export class S3BlobConnector {
     // POST policy. Gated on the SAME env var as the Cognito presign client, so
     // production-with-proper-IAM and tests/local keep the private no-ACL
     // behaviour (locked 2026-06-18 CLAUDE.md: presign sets no ACL).
-    const demoPublicRead = !!process.env["RAILBACK_COGNITO_IDENTITY_POOL_ID"]
-      && !process.env["S3_ENDPOINT_URL"];
+    const demoPublicRead = this.demoPublicRead();
     const conditions: PresignCondition[] = [
       ["content-length-range", sizeMin, sizeMax],
       ["eq", "$Content-Type", contentType],
