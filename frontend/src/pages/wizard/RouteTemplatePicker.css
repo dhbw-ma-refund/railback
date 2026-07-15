@@ -53,7 +53,7 @@
      matches horizontal so the box feels proportioned. */
   padding: var(--spacing-2);
   background: white;
-  border: 1px solid var(--color-border-subtle, rgba(9, 67, 137, 0.15));
+  border: 1px solid var(--color-input-border);
   border-radius: var(--radius-card);
   font-family: inherit;
   text-align: left;
@@ -115,5 +115,5 @@
   margin: 0;
   padding-left: calc(var(--spacing-2) + 4px);
   font-size: var(--font-size-caption);
-  color: var(--color-error, #b30d0d);
+  color: var(--color-error-red);
 }

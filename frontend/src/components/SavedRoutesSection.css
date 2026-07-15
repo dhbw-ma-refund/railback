@@ -28,7 +28,7 @@
   align-items: center;
   gap: var(--spacing-2);
   padding: var(--spacing-2);
-  border: 1px solid var(--color-border-subtle, rgba(9, 67, 137, 0.15));
+  border: 1px solid var(--color-input-border);
   border-radius: var(--radius-card);
   background: white;
 }
@@ -45,15 +45,25 @@
 }
 
 /* The label is a button so the user knows they can tap to rename;
-   strip button chrome and let the label style come through. */
+   strip button chrome and let the label style come through. Padding
+   gives the button a hit area >= --touch-target-min without visually
+   inflating the label — the parent row already has surrounding space,
+   so this only expands where the tap-target sits. */
 .saved-routes__label-btn {
   background: none;
   border: 0;
-  padding: 0;
+  padding: var(--spacing-1) 0;
+  min-height: var(--touch-target-min);
   cursor: text;
   font-family: inherit;
   text-align: left;
   color: inherit;
+  /* Ensure the two child spans (label + route line, if we ever move
+     the route inside the button) stack vertically like the current
+     row-main layout expects. */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .saved-routes__label-btn:hover .saved-routes__label {
@@ -70,7 +80,7 @@
 .saved-routes__error {
   margin: var(--spacing-1) 0 0;
   font-size: var(--font-size-caption);
-  color: var(--color-error, #b30d0d);
+  color: var(--color-error-red);
 }
 
 .saved-routes__rename {
@@ -86,12 +96,25 @@
 .saved-routes__link-btn {
   background: none;
   border: 0;
-  padding: 0;
+  /* Padding brings the inline "Abbrechen" up to the shared 44 px
+     touch-target size while keeping the visual footprint compact. */
+  padding: 0 var(--spacing-1);
+  min-height: var(--touch-target-min);
   font-family: inherit;
   color: var(--color-text-secondary);
   cursor: pointer;
   text-decoration: underline;
   font-size: var(--font-size-caption);
+}
+
+.saved-routes__link-btn:focus-visible {
+  outline: 2px solid var(--color-deep-trust-blue);
+  outline-offset: 2px;
+}
+
+.saved-routes__label-btn:focus-visible {
+  outline: 2px solid var(--color-deep-trust-blue);
+  outline-offset: 2px;
 }
 
 .saved-routes__actions {
@@ -103,6 +126,6 @@
 
 .saved-routes__confirm-label {
   font-size: var(--font-size-caption);
-  color: var(--color-error, #b30d0d);
+  color: var(--color-error-red);
   font-weight: var(--font-weight-bold);
 }
