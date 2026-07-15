@@ -454,7 +454,7 @@ base64-`cursor` (kodiert `ExclusiveStartKey`).
   ),
   [T7], [Barcode-Dedup (Duplikat-Upload)], [Query], [`gsi2`], [`gsi2_pk = "BARCODE" AND gsi2_sk = <uid>`, `Limit 1`; Treffer → `GetItem` fürs volle Ticket],
   [T8], [Email-Retry-Queue (Sweeper)], [Query], [`gsi_email_pending`], [`gsi_email_pending_pk = "EMAIL_PENDING"`, `ScanIndexForward = true` (oldest-first), pro Treffer `GetItem`],
-  [T9], [Email-Watchdog], [Scan], [Basis], [Filter `email_status = "SENT" AND email_last_attempt < now-24h AND ticket_state = "EMAIL_SENDING"`],
+  [T9], [Email-Watchdog], [Scan], [Basis], [Filter `email_status = "SENT" AND email_last_attempt < now-24h AND ticket_state = "EMAIL_SENDING" Cronjob, keine Latenz für Nutzer`],
 )
 
 `gsi2` und `gsi_email_pending` sind sparse und KEYS_ONLY — der Treffer trägt
