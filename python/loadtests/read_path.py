@@ -57,6 +57,34 @@ def _ssl_context() -> ssl.SSLContext:
         return ssl.create_default_context()
 
 
+def _load_dotenv() -> None:
+    # Minimal .env reader: KEY=VALUE lines -> os.environ (never overrides an
+    # already-set var). Checks CWD, CWD/.., and the bundle root (relative to
+    # this file), so it works whether you run from python/ or the bundle root.
+    import pathlib
+    here = pathlib.Path(__file__).resolve()
+    candidates = [
+        pathlib.Path.cwd() / ".env",
+        pathlib.Path.cwd().parent / ".env",
+        here.parent.parent.parent / ".env",
+    ]
+    for p in candidates:
+        try:
+            if not p.is_file():
+                continue
+            for line in p.read_text().splitlines():
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, _, v = line.partition("=")
+                k = k.strip()
+                v = v.strip().strip('"').strip("'")
+                if k and k not in os.environ:
+                    os.environ[k] = v
+        except Exception:
+            continue
+
+
 class Http:
     def __init__(self, base: str, timeout: float = 15.0):
         self.base = base.rstrip("/")
@@ -256,19 +284,39 @@ def render_md(results: dict, meta: dict) -> str:
 
 
 def main():
+    _load_dotenv()
     ap = argparse.ArgumentParser(description="RailBack read-path load test (read-only)")
-    ap.add_argument("--base", required=True)
-    ap.add_argument("--admin-email", required=True)
-    ap.add_argument("--admin-password", required=True)
+    ap.add_argument("--base", default=os.environ.get("RAILBACK_API_BASE", ""),
+                    help="live API base URL; default from RAILBACK_API_BASE in .env")
+    ap.add_argument("--admin-email", default=os.environ.get("RAILBACK_ADMIN_EMAIL", ""),
+                    help="default from RAILBACK_ADMIN_EMAIL in .env")
+    ap.add_argument("--admin-password", default=os.environ.get("RAILBACK_ADMIN_PASSWORD", ""),
+                    help="default from RAILBACK_ADMIN_PASSWORD in .env")
     ap.add_argument("--user-email", default="", help="seeded USER for user-scoped reads; auto-picked from loadtest- prefix if omitted")
-    ap.add_argument("--user-password", default="min-8-zeichen")
+    ap.add_argument("--user-password", default=os.environ.get("RAILBACK_USER_PASSWORD", "min-8-zeichen"))
     ap.add_argument("--levels", default="1,5,10,20,40")
     ap.add_argument("--requests-per-level", type=int, default=60)
     ap.add_argument("--settle-ms", type=int, default=1500)
     ap.add_argument("--timeout", type=float, default=15.0)
-    ap.add_argument("--out", default="/Users/I749952/Documents/railback-schema-docs")
+    ap.add_argument("--out", default=".")
+    ap.add_argument("--log", default="", help="append per-level progress here as the run proceeds (tail -f); default <out>/read_path_<ts>.log")
     args = ap.parse_args()
+    if not (args.base and args.admin_email and args.admin_password):
+        raise SystemExit("missing base/admin creds: set --base/--admin-email/--admin-password "
+                         "or RAILBACK_API_BASE/RAILBACK_ADMIN_EMAIL/RAILBACK_ADMIN_PASSWORD in .env")
     http = Http(args.base, timeout=args.timeout)
+    os.makedirs(args.out, exist_ok=True)
+    _run_ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    _log_path = args.log or os.path.join(args.out, f"read_path_{_run_ts}.log")
+    _logf = open(_log_path, "a", buffering=1)  # line-buffered → tail -f shows progress live
+
+    def _log(s: str) -> None:
+        print(s)
+        _logf.write(s + "\n")
+        _logf.flush()
+
+    _log(f"[start] {datetime.now(timezone.utc).isoformat()} base={args.base} "
+         f"levels={args.levels} rpl={args.requests_per_level} timeout={args.timeout}s")
     token = http.login(args.admin_email, args.admin_password)
     print("[auth] admin token acquired")
     # A seeded user shares the load-test password; pick one for the USER-scoped reads.
@@ -305,14 +353,14 @@ def main():
     results: dict = {}
     for name, (tok_kind, method, path, body) in pats.items():
         results[name] = []
-        print(f"\n### {name}\n    [{tok_kind}] {method} {path}")
+        _log(f"\n### {name}\n    [{tok_kind}] {method} {path}")
         for conc in levels:
             row = run_level(http, tokens[tok_kind], method, path, body, conc, args.requests_per_level)
             results[name].append(row)
-            print(f"    c={conc:>2}  err={row['error_rate_pct']:>5}%  "
-                  f"rps={row['rps']:>6}  avg={row['avg_ms']:>7}ms  "
-                  f"p99={row['p99_ms']:>7}ms  codes={json.dumps(row['codes'])}"
-                  + (f"  ex:{row['err_sample']}" if row['err_sample'] else ""))
+            _log(f"    c={conc:>2}  err={row['error_rate_pct']:>5}%  "
+                 f"rps={row['rps']:>6}  avg={row['avg_ms']:>7}ms  "
+                 f"p99={row['p99_ms']:>7}ms  codes={json.dumps(row['codes'])}"
+                 + (f"  ex:{row['err_sample']}" if row['err_sample'] else ""))
             time.sleep(args.settle_ms / 1000)
         # refresh both tokens between patterns (900s TTL)
         token = http.login(args.admin_email, args.admin_password)
